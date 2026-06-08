@@ -3,237 +3,529 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>手电筒</title>
+<title>私聊</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:#000; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif; overflow:hidden; }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0d1117;color:#e6edf3;font-family:-apple-system,sans-serif;height:100vh;overflow:hidden;}
+.screen{display:none;flex-direction:column;height:100vh;}
+.screen.active{display:flex;}
 
-/* 手电筒界面 */
-#flashlight-app { width:100%; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.fl-title { color:#888; font-size:14px; margin-bottom:40px; letter-spacing:2px; }
-.fl-btn { width:160px; height:160px; border-radius:50%; background:#1a1a1a; border:3px solid #333; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; }
-.fl-btn.on { background:#fff9e6; border-color:#ffd700; box-shadow:0 0 60px #ffd70088; }
-.fl-icon { font-size:64px; }
-.fl-status { color:#666; font-size:13px; margin-top:30px; }
-.fl-status.on { color:#ffd700; }
-.fl-corner { position:fixed; bottom:0; right:0; width:60px; height:60px; cursor:pointer; z-index:99; }
+/* 顶部栏 */
+.topbar{background:#161b22;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #30363d;flex-shrink:0;}
+.topbar-title{font-size:18px;font-weight:600;}
+.topbar-btn{color:#58a6ff;font-size:14px;cursor:pointer;padding:6px 10px;border-radius:8px;}
+.topbar-btn:active{background:#21262d;}
 
-/* 채팅 인터페이스 */
-#chat-app { display:none; width:100%; height:100vh; flex-direction:column; background:#0d1117; }
-.chat-header { background:#161b22; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #30363d; }
-.chat-header-title { color:#e6edf3; font-size:16px; font-weight:600; }
-.chat-back { color:#58a6ff; font-size:14px; cursor:pointer; padding:4px 8px; }
-.chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
-.msg { max-width:75%; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.5; word-break:break-word; }
-.msg.sent { background:#238636; color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
-.msg.received { background:#21262d; color:#e6edf3; align-self:flex-start; border-bottom-left-radius:4px; }
-.msg-time { font-size:10px; opacity:0.6; margin-top:4px; }
-.chat-input-area { background:#161b22; padding:12px 16px; display:flex; gap:10px; align-items:flex-end; border-top:1px solid #30363d; }
-.chat-input { flex:1; background:#21262d; border:1px solid #30363d; border-radius:20px; padding:10px 16px; color:#e6edf3; font-size:14px; outline:none; resize:none; max-height:100px; }
-.chat-send { width:40px; height:40px; border-radius:50%; background:#238636; border:none; color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+/* 底部导航 */
+.navbar{background:#161b22;border-top:1px solid #30363d;display:flex;flex-shrink:0;}
+.nav-item{flex:1;padding:12px 0;text-align:center;cursor:pointer;font-size:11px;color:#8b949e;}
+.nav-item.active{color:#58a6ff;}
+.nav-icon{font-size:22px;display:block;margin-bottom:2px;}
 
-/* 联系人列表 */
-#contacts-app { display:none; width:100%; height:100vh; flex-direction:column; background:#0d1117; }
-.contacts-header { background:#161b22; padding:16px 20px; border-bottom:1px solid #30363d; }
-.contacts-title { color:#e6edf3; font-size:18px; font-weight:600; }
-.contacts-subtitle { color:#8b949e; font-size:12px; margin-top:2px; }
-.contact-list { flex:1; overflow-y:auto; }
-.contact-item { display:flex; align-items:center; padding:14px 20px; border-bottom:1px solid #21262d; cursor:pointer; }
-.contact-item:active { background:#21262d; }
-.contact-avatar { width:48px; height:48px; border-radius:50%; background:#238636; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:600; flex-shrink:0; }
-.contact-info { margin-left:14px; flex:1; }
-.contact-name { color:#e6edf3; font-size:15px; font-weight:500; }
-.contact-last { color:#8b949e; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
-.contact-meta { text-align:right; }
-.contact-time { color:#8b949e; font-size:11px; }
-.contact-badge { background:#238636; color:#fff; border-radius:10px; padding:2px 7px; font-size:11px; margin-top:4px; display:inline-block; }
-.add-btn { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:#238636; border:none; color:#fff; font-size:28px; cursor:pointer; box-shadow:0 4px 16px #23863666; }
+/* 联系人 */
+.contact-list{flex:1;overflow-y:auto;}
+.contact-item{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #21262d;cursor:pointer;}
+.contact-item:active{background:#21262d;}
+.avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;flex-shrink:0;}
+.contact-info{margin-left:14px;flex:1;overflow:hidden;}
+.contact-name{font-size:15px;font-weight:500;}
+.contact-preview{color:#8b949e;font-size:13px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.contact-time{color:#8b949e;font-size:11px;flex-shrink:0;}
+.badge{background:#238636;color:#fff;border-radius:10px;padding:2px 7px;font-size:11px;margin-top:4px;display:inline-block;}
+.fab{position:fixed;bottom:80px;right:20px;width:54px;height:54px;border-radius:50%;background:#238636;border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 16px #23863666;display:flex;align-items:center;justify-content:center;}
+
+/* 聊天 */
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.msg{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-break:break-word;}
+.msg.sent{background:#238636;align-self:flex-end;border-bottom-right-radius:4px;}
+.msg.recv{background:#21262d;align-self:flex-start;border-bottom-left-radius:4px;}
+.msg-time{font-size:10px;opacity:0.6;margin-top:4px;}
+.input-area{background:#161b22;padding:10px 14px;display:flex;gap:10px;align-items:flex-end;border-top:1px solid #30363d;flex-shrink:0;}
+.msg-input{flex:1;background:#21262d;border:1px solid #30363d;border-radius:20px;padding:10px 16px;color:#e6edf3;font-size:14px;outline:none;resize:none;max-height:100px;}
+.send-btn{width:40px;height:40px;border-radius:50%;background:#238636;border:none;color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;}
+
+/* 设置 */
+.settings-list{flex:1;overflow-y:auto;}
+.settings-section{margin-top:20px;}
+.settings-label{color:#8b949e;font-size:12px;padding:0 20px 8px;text-transform:uppercase;letter-spacing:1px;}
+.settings-item{background:#161b22;display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid #21262d;cursor:pointer;}
+.settings-item:active{background:#21262d;}
+.settings-icon{font-size:22px;margin-right:14px;}
+.settings-text{flex:1;}
+.settings-title{font-size:15px;}
+.settings-desc{color:#8b949e;font-size:12px;margin-top:2px;}
+.settings-arrow{color:#8b949e;}
+.toggle{width:50px;height:28px;border-radius:14px;background:#30363d;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+.toggle.on{background:#238636;}
+.toggle-dot{width:24px;height:24px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left 0.2s;}
+.toggle.on .toggle-dot{left:24px;}
+
+/* 隐藏设置页 */
+.hide-options{flex:1;overflow-y:auto;padding:20px;}
+.hide-title{font-size:16px;font-weight:600;margin-bottom:6px;}
+.hide-desc{color:#8b949e;font-size:13px;margin-bottom:20px;line-height:1.5;}
+.option-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+.option-card{background:#161b22;border:2px solid #30363d;border-radius:12px;padding:16px;text-align:center;cursor:pointer;}
+.option-card.selected{border-color:#238636;}
+.option-card:active{background:#21262d;}
+.option-emoji{font-size:32px;margin-bottom:8px;}
+.option-name{font-size:13px;font-weight:500;}
+.section-title{font-size:14px;color:#8b949e;margin-bottom:12px;margin-top:8px;}
+.trigger-options{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.trigger-item{background:#161b22;border:2px solid #30363d;border-radius:10px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;}
+.trigger-item.selected{border-color:#238636;}
+.trigger-emoji{font-size:20px;}
+.trigger-text{font-size:14px;}
+.pin-input{background:#21262d;border:1px solid #30363d;border-radius:10px;padding:12px 16px;color:#e6edf3;font-size:16px;width:100%;outline:none;margin-bottom:24px;letter-spacing:4px;text-align:center;}
+.save-btn{background:#238636;border:none;color:#fff;padding:14px;border-radius:12px;font-size:16px;font-weight:600;width:100%;cursor:pointer;}
+.save-btn:active{background:#2ea043;}
+
+/* 伪装界面 */
+#disguise-screen{background:#000;align-items:center;justify-content:center;flex-direction:column;}
+.fl-title{color:#888;font-size:14px;margin-bottom:40px;letter-spacing:2px;}
+.fl-btn{width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #333;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
+.fl-btn.on{background:#fff9e6;border-color:#ffd700;box-shadow:0 0 60px #ffd70088;}
+.fl-status{color:#666;font-size:13px;margin-top:30px;}
+.fl-status.on{color:#ffd700;}
+.secret-zone{position:fixed;bottom:0;right:0;width:80px;height:80px;z-index:99;}
+
+/* 解锁弹窗 */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#000000aa;z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:#161b22;border-radius:16px;padding:24px;width:280px;text-align:center;}
+.modal-title{font-size:18px;font-weight:600;margin-bottom:8px;}
+.modal-desc{color:#8b949e;font-size:13px;margin-bottom:20px;}
+.modal-input{background:#21262d;border:1px solid #30363d;border-radius:10px;padding:12px 16px;color:#e6edf3;font-size:20px;width:100%;outline:none;letter-spacing:6px;text-align:center;margin-bottom:16px;}
+.modal-btn{background:#238636;border:none;color:#fff;padding:12px;border-radius:10px;font-size:15px;font-weight:600;width:100%;cursor:pointer;margin-bottom:8px;}
+.modal-cancel{background:none;border:none;color:#8b949e;font-size:14px;cursor:pointer;width:100%;padding:8px;}
+
+/* 计算器伪装 */
+#calc-screen{background:#1c1c1e;flex-direction:column;}
+.calc-display{flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:20px 24px;}
+.calc-expr{color:#8b949e;font-size:20px;min-height:28px;}
+.calc-result{font-size:64px;font-weight:300;color:#fff;}
+.calc-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;}
+.calc-btn{background:#1c1c1e;padding:20px 0;text-align:center;font-size:22px;cursor:pointer;color:#fff;}
+.calc-btn:active{background:#3a3a3c;}
+.calc-btn.op{background:#ff9f0a;color:#fff;}
+.calc-btn.op:active{background:#ffb340;}
+.calc-btn.fn{background:#2c2c2e;color:#fff;}
+.calc-btn.zero{grid-column:span 2;text-align:left;padding-left:28px;}
 </style>
 </head>
 <body>
 
-<!-- 手电筒伪装界面 -->
-<div id="flashlight-app">
-  <div class="fl-title">手电筒</div>
-  <div class="fl-btn" id="flBtn" onclick="toggleFlashlight()">
-    <span class="fl-icon">💡</span>
-  </div>
-  <div class="fl-status" id="flStatus">点击开启</div>
-  <!-- 隐藏触发区域：右下角 -->
-  <div class="fl-corner" id="secretCorner" onclick="handleSecretTap()"></div>
-</div>
-
-<!-- 联系人列表 -->
-<div id="contacts-app">
-  <div class="contacts-header">
-    <div class="contacts-title">消息</div>
-    <div class="contacts-subtitle">端对端加密 · 自动销毁</div>
+<!-- 正常聊天界面 -->
+<div id="main-screen" class="screen active">
+  <div class="topbar">
+    <span style="font-size:22px;">💬</span>
+    <span class="topbar-title">私聊</span>
+    <span class="topbar-btn" onclick="showNewChat()">✏️</span>
   </div>
   <div class="contact-list" id="contactList">
-    <div class="contact-item" onclick="openChat('Alex','A')">
-      <div class="contact-avatar">A</div>
+    <div class="contact-item" onclick="openChat('小美','小','#e74c3c')">
+      <div class="avatar" style="background:#e74c3c">小</div>
       <div class="contact-info">
-        <div class="contact-name">Alex</div>
-        <div class="contact-last">今晚有空吗？</div>
+        <div class="contact-name">小美</div>
+        <div class="contact-preview">今晚有空吗？</div>
       </div>
-      <div class="contact-meta">
+      <div style="text-align:right">
         <div class="contact-time">22:14</div>
-        <div class="contact-badge">2</div>
+        <div class="badge">3</div>
       </div>
     </div>
-    <div class="contact-item" onclick="openChat('Baby','B')">
-      <div class="contact-avatar" style="background:#8957e5">B</div>
+    <div class="contact-item" onclick="openChat('宝贝','宝','#8957e5')">
+      <div class="avatar" style="background:#8957e5">宝</div>
       <div class="contact-info">
-        <div class="contact-name">Baby</div>
-        <div class="contact-last">想你了 ❤️</div>
+        <div class="contact-name">宝贝</div>
+        <div class="contact-preview">想你了 ❤️</div>
       </div>
-      <div class="contact-meta">
+      <div style="text-align:right">
         <div class="contact-time">20:03</div>
       </div>
     </div>
   </div>
-  <button class="add-btn" onclick="addContact()">+</button>
+  <button class="fab" onclick="showNewChat()">+</button>
+  <div class="navbar">
+    <div class="nav-item active"><span class="nav-icon">💬</span>消息</div>
+    <div class="nav-item" onclick="showContacts()"><span class="nav-icon">👥</span>联系人</div>
+    <div class="nav-item" onclick="showSettings()"><span class="nav-icon">⚙️</span>设置</div>
+  </div>
 </div>
 
 <!-- 聊天界面 -->
-<div id="chat-app">
-  <div class="chat-header">
-    <span class="chat-back" onclick="showContacts()">← 返回</span>
-    <span class="chat-header-title" id="chatTitle">Alex</span>
-    <span style="width:48px"></span>
+<div id="chat-screen" class="screen">
+  <div class="topbar">
+    <span class="topbar-btn" onclick="showMain()">←</span>
+    <span class="topbar-title" id="chatName">小美</span>
+    <span class="topbar-btn">⋯</span>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input-area">
-    <textarea class="chat-input" id="msgInput" placeholder="消息..." rows="1" onkeydown="handleKey(event)"></textarea>
-    <button class="chat-send" onclick="sendMessage()">↑</button>
+  <div class="input-area">
+    <textarea class="msg-input" id="msgInput" placeholder="消息..." rows="1" onkeydown="handleKey(event)"></textarea>
+    <button class="send-btn" onclick="sendMsg()">↑</button>
+  </div>
+</div>
+
+<!-- 设置界面 -->
+<div id="settings-screen" class="screen">
+  <div class="topbar">
+    <span class="topbar-btn" onclick="showMain()">←</span>
+    <span class="topbar-title">设置</span>
+    <span></span>
+  </div>
+  <div class="settings-list">
+    <div class="settings-section">
+      <div class="settings-label">账号</div>
+      <div class="settings-item">
+        <span class="settings-icon">👤</span>
+        <div class="settings-text">
+          <div class="settings-title">我的账号</div>
+          <div class="settings-desc">设置用户名和头像</div>
+        </div>
+        <span class="settings-arrow">›</span>
+      </div>
+      <div class="settings-item">
+        <span class="settings-icon">🔗</span>
+        <div class="settings-text">
+          <div class="settings-title">邀请码</div>
+          <div class="settings-desc">分享给朋友添加联系人</div>
+        </div>
+        <span class="settings-arrow">›</span>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">隐私与安全</div>
+      <div class="settings-item" onclick="showHideSettings()">
+        <span class="settings-icon">🕵️</span>
+        <div class="settings-text">
+          <div class="settings-title">隐藏模式</div>
+          <div class="settings-desc" id="hideStatusDesc">未开启 · 点击设置</div>
+        </div>
+        <span class="settings-arrow">›</span>
+      </div>
+      <div class="settings-item">
+        <span class="settings-icon">💣</span>
+        <div class="settings-text">
+          <div class="settings-title">消息自动销毁</div>
+          <div class="settings-desc">阅后即焚</div>
+        </div>
+        <span class="settings-arrow">›</span>
+      </div>
+      <div class="settings-item">
+        <span class="settings-icon">🔒</span>
+        <div class="settings-text">
+          <div class="settings-title">端对端加密</div>
+          <div class="settings-desc">所有消息加密传输</div>
+        </div>
+        <div class="toggle on" onclick="toggleSwitch(this)"><div class="toggle-dot"></div></div>
+      </div>
+      <div class="settings-item">
+        <span class="settings-icon">📸</span>
+        <div class="settings-text">
+          <div class="settings-title">禁止截图</div>
+          <div class="settings-desc">防止对方截屏</div>
+        </div>
+        <div class="toggle" onclick="toggleSwitch(this)"><div class="toggle-dot"></div></div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">通知</div>
+      <div class="settings-item">
+        <span class="settings-icon">🔔</span>
+        <div class="settings-text">
+          <div class="settings-title">隐藏通知内容</div>
+          <div class="settings-desc">通知只显示"新消息"</div>
+        </div>
+        <div class="toggle on" onclick="toggleSwitch(this)"><div class="toggle-dot"></div></div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">关于</div>
+      <div class="settings-item">
+        <span class="settings-icon">ℹ️</span>
+        <div class="settings-text">
+          <div class="settings-title">版本</div>
+          <div class="settings-desc">v1.0.0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="navbar">
+    <div class="nav-item" onclick="showMain()"><span class="nav-icon">💬</span>消息</div>
+    <div class="nav-item" onclick="showContacts()"><span class="nav-icon">👥</span>联系人</div>
+    <div class="nav-item active"><span class="nav-icon">⚙️</span>设置</div>
+  </div>
+</div>
+
+<!-- 隐藏模式设置 -->
+<div id="hide-settings-screen" class="screen">
+  <div class="topbar">
+    <span class="topbar-btn" onclick="showSettings()">←</span>
+    <span class="topbar-title">隐藏模式设置</span>
+    <span></span>
+  </div>
+  <div class="hide-options">
+    <div class="hide-title">选择伪装外壳</div>
+    <div class="hide-desc">开启后App图标和界面将伪装成所选应用，只有输入正确密码才能进入真实界面。</div>
+    <div class="option-grid">
+      <div class="option-card selected" id="disguise-fl" onclick="selectDisguise('flashlight')">
+        <div class="option-emoji">🔦</div>
+        <div class="option-name">手电筒</div>
+      </div>
+      <div class="option-card" id="disguise-calc" onclick="selectDisguise('calculator')">
+        <div class="option-emoji">🧮</div>
+        <div class="option-name">计算器</div>
+      </div>
+      <div class="option-card" id="disguise-clock" onclick="selectDisguise('clock')">
+        <div class="option-emoji">🕐</div>
+        <div class="option-name">时钟</div>
+      </div>
+      <div class="option-card" id="disguise-note" onclick="selectDisguise('note')">
+        <div class="option-emoji">📝</div>
+        <div class="option-name">备忘录</div>
+      </div>
+    </div>
+    <div class="section-title">激活方式</div>
+    <div class="trigger-options">
+      <div class="trigger-item selected" id="trigger-pin" onclick="selectTrigger('pin')">
+        <span class="trigger-emoji">🔢</span>
+        <span class="trigger-text">输入密码激活</span>
+      </div>
+      <div class="trigger-item" id="trigger-tap" onclick="selectTrigger('tap')">
+        <span class="trigger-emoji">👆</span>
+        <span class="trigger-text">角落连点5次激活</span>
+      </div>
+      <div class="trigger-item" id="trigger-shake" onclick="selectTrigger('shake')">
+        <span class="trigger-emoji">📳</span>
+        <span class="trigger-text">摇一摇激活</span>
+      </div>
+    </div>
+    <div class="section-title">设置激活密码</div>
+    <input class="pin-input" type="password" id="pinInput" placeholder="输入4-8位密码" maxlength="8">
+    <button class="save-btn" onclick="saveHideSettings()">保存并开启隐藏模式</button>
+  </div>
+</div>
+
+<!-- 手电筒伪装界面 -->
+<div id="disguise-screen" class="screen">
+  <div class="fl-title">手电筒</div>
+  <div class="fl-btn" id="flBtn" onclick="toggleFL()"><span style="font-size:64px">💡</span></div>
+  <div class="fl-status" id="flStatus">点击开启</div>
+  <div class="secret-zone" id="secretZone" onclick="handleSecretTap()"></div>
+</div>
+
+<!-- 计算器伪装界面 -->
+<div id="calc-screen" class="screen">
+  <div class="calc-display">
+    <div class="calc-expr" id="calcExpr"></div>
+    <div class="calc-result" id="calcResult">0</div>
+  </div>
+  <div class="calc-btns">
+    <div class="calc-btn fn" onclick="calcPress('AC')">AC</div>
+    <div class="calc-btn fn" onclick="calcPress('+/-')">+/-</div>
+    <div class="calc-btn fn" onclick="calcPress('%')">%</div>
+    <div class="calc-btn op" onclick="calcPress('÷')">÷</div>
+    <div class="calc-btn" onclick="calcPress('7')">7</div>
+    <div class="calc-btn" onclick="calcPress('8')">8</div>
+    <div class="calc-btn" onclick="calcPress('9')">9</div>
+    <div class="calc-btn op" onclick="calcPress('×')">×</div>
+    <div class="calc-btn" onclick="calcPress('4')">4</div>
+    <div class="calc-btn" onclick="calcPress('5')">5</div>
+    <div class="calc-btn" onclick="calcPress('6')">6</div>
+    <div class="calc-btn op" onclick="calcPress('-')">−</div>
+    <div class="calc-btn" onclick="calcPress('1')">1</div>
+    <div class="calc-btn" onclick="calcPress('2')">2</div>
+    <div class="calc-btn" onclick="calcPress('3')">3</div>
+    <div class="calc-btn op" onclick="calcPress('+')">+</div>
+    <div class="calc-btn zero" onclick="calcPress('0')">0</div>
+    <div class="calc-btn" onclick="calcPress('.')">.</div>
+    <div class="calc-btn op" onclick="calcPress('=')">=</div>
+  </div>
+</div>
+
+<!-- 解锁弹窗 -->
+<div class="modal-overlay" id="unlockModal">
+  <div class="modal">
+    <div class="modal-title">🔐 验证身份</div>
+    <div class="modal-desc">请输入密码继续</div>
+    <input class="modal-input" type="password" id="unlockInput" maxlength="8" placeholder="••••">
+    <button class="modal-btn" onclick="tryUnlock()">确认</button>
+    <button class="modal-cancel" onclick="closeUnlock()">取消</button>
   </div>
 </div>
 
 <script>
-// ===== 状态 =====
-var flOn = false;
-var secretTapCount = 0;
-var secretTapTimer = null;
-var currentChat = '';
-var messages = {};
-var unlocked = false;
+// ===== 状态管理 =====
+var state = {
+  currentChat: '',
+  messages: {},
+  disguise: localStorage.getItem('disguise') || 'flashlight',
+  trigger: localStorage.getItem('trigger') || 'pin',
+  pin: localStorage.getItem('pin') || '1234',
+  hideMode: localStorage.getItem('hideMode') === 'true',
+  flOn: false,
+  tapCount: 0,
+  tapTimer: null,
+  calcInput: '',
+  calcOp: '',
+  calcPrev: ''
+};
 
-// ===== 手电筒逻辑 =====
-function toggleFlashlight() {
-  flOn = !flOn;
-  var btn = document.getElementById('flBtn');
-  var status = document.getElementById('flStatus');
-  if (flOn) {
-    btn.classList.add('on');
-    status.textContent = '已开启';
-    status.classList.add('on');
-    document.body.style.background = '#fffdf0';
+// ===== 启动逻辑 =====
+window.onload = function() {
+  if (state.hideMode) {
+    if (state.disguise === 'calculator') showScreen('calc-screen');
+    else showScreen('disguise-screen');
   } else {
-    btn.classList.remove('on');
-    status.textContent = '点击开启';
-    status.classList.remove('on');
-    document.body.style.background = '#000';
+    showScreen('main-screen');
   }
-}
-
-// ===== 隐藏激活：右下角连点5次 =====
-function handleSecretTap() {
-  secretTapCount++;
-  if (secretTapTimer) clearTimeout(secretTapTimer);
-  secretTapTimer = setTimeout(function(){ secretTapCount = 0; }, 2000);
-  if (secretTapCount >= 5) {
-    secretTapCount = 0;
-    showUnlock();
-  }
-}
-
-// ===== 解锁密码界面 =====
-function showUnlock() {
-  var pin = prompt('');
-  if (pin === '1234') {
-    unlocked = true;
-    showContacts();
-  }
-}
+  updateHideDesc();
+  setupShake();
+};
 
 // ===== 界面切换 =====
-function showContacts() {
-  document.getElementById('flashlight-app').style.display = 'none';
-  document.getElementById('chat-app').style.display = 'none';
-  document.getElementById('contacts-app').style.display = 'flex';
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
 }
+function showMain(){ showScreen('main-screen'); }
+function showSettings(){ showScreen('settings-screen'); }
+function showHideSettings(){ showScreen('hide-settings-screen'); }
+function showContacts(){ showMain(); }
 
-function openChat(name, initial) {
-  currentChat = name;
-  document.getElementById('chatTitle').textContent = name;
-  document.getElementById('contacts-app').style.display = 'none';
-  document.getElementById('chat-app').style.display = 'flex';
-  if (!messages[name]) messages[name] = [
-    {text:'你好！', sent:false, time:getTime()},
-  ];
-  renderMessages();
+// ===== 联系人/聊天 =====
+function openChat(name, initial, color) {
+  state.currentChat = name;
+  document.getElementById('chatName').textContent = name;
+  if (!state.messages[name]) state.messages[name] = [{text:'你好！', sent:false, time:getTime()}];
+  renderMsgs();
+  showScreen('chat-screen');
 }
-
-function showContacts() {
-  document.getElementById('flashlight-app').style.display = 'none';
-  document.getElementById('chat-app').style.display = 'none';
-  document.getElementById('contacts-app').style.display = 'flex';
-}
-
-// ===== 消息 =====
-function renderMessages() {
-  var container = document.getElementById('chatMessages');
-  var msgs = messages[currentChat] || [];
-  container.innerHTML = msgs.map(function(m){
-    return '<div class="msg '+(m.sent?'sent':'received')+'">'+
-      escapeHtml(m.text)+
-      '<div class="msg-time">'+m.time+'</div></div>';
+function renderMsgs() {
+  var c = document.getElementById('chatMessages');
+  c.innerHTML = (state.messages[state.currentChat]||[]).map(function(m){
+    return '<div class="msg '+(m.sent?'sent':'recv')+'">'+esc(m.text)+'<div class="msg-time">'+m.time+'</div></div>';
   }).join('');
-  container.scrollTop = container.scrollHeight;
+  c.scrollTop = c.scrollHeight;
+}
+function sendMsg() {
+  var inp = document.getElementById('msgInput');
+  var t = inp.value.trim();
+  if (!t) return;
+  if (!state.messages[state.currentChat]) state.messages[state.currentChat] = [];
+  state.messages[state.currentChat].push({text:t, sent:true, time:getTime()});
+  inp.value = '';
+  renderMsgs();
+}
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+function showNewChat(){
+  var n = prompt('输入联系人名称：');
+  if(n&&n.trim()) openChat(n.trim(), n[0], '#238636');
 }
 
-function sendMessage() {
-  var input = document.getElementById('msgInput');
-  var text = input.value.trim();
-  if (!text) return;
-  if (!messages[currentChat]) messages[currentChat] = [];
-  messages[currentChat].push({text:text, sent:true, time:getTime()});
-  input.value = '';
-  renderMessages();
+// ===== 设置 =====
+function toggleSwitch(el){ el.classList.toggle('on'); }
+function updateHideDesc(){
+  var d = document.getElementById('hideStatusDesc');
+  if(d) d.textContent = state.hideMode ? '已开启 · '+getDisguiseName(state.disguise) : '未开启 · 点击设置';
+}
+function getDisguiseName(d){
+  return {flashlight:'手电筒',calculator:'计算器',clock:'时钟',note:'备忘录'}[d]||d;
 }
 
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
+// ===== 隐藏模式设置 =====
+function selectDisguise(type){
+  state.disguise = type;
+  document.querySelectorAll('.option-card').forEach(function(c){c.classList.remove('selected');});
+  document.getElementById('disguise-'+type.substring(0,4)).classList.add('selected');
+}
+function selectTrigger(type){
+  state.trigger = type;
+  document.querySelectorAll('.trigger-item').forEach(function(c){c.classList.remove('selected');});
+  document.getElementById('trigger-'+type).classList.add('selected');
+}
+function saveHideSettings(){
+  var pin = document.getElementById('pinInput').value;
+  if(pin.length < 4){ alert('密码至少4位'); return; }
+  state.pin = pin;
+  state.hideMode = true;
+  localStorage.setItem('disguise', state.disguise);
+  localStorage.setItem('trigger', state.trigger);
+  localStorage.setItem('pin', state.pin);
+  localStorage.setItem('hideMode', 'true');
+  updateHideDesc();
+  alert('隐藏模式已开启！\n下次打开App将显示'+getDisguiseName(state.disguise)+'界面。');
+  showSettings();
+}
+
+// ===== 手电筒伪装 =====
+function toggleFL(){
+  state.flOn = !state.flOn;
+  var btn = document.getElementById('flBtn');
+  var st = document.getElementById('flStatus');
+  if(state.flOn){ btn.classList.add('on'); st.textContent='已开启'; st.classList.add('on'); document.getElementById('disguise-screen').style.background='#fffce8'; }
+  else{ btn.classList.remove('on'); st.textContent='点击开启'; st.classList.remove('on'); document.getElementById('disguise-screen').style.background='#000'; }
+}
+function handleSecretTap(){
+  state.tapCount++;
+  if(state.tapTimer) clearTimeout(state.tapTimer);
+  state.tapTimer = setTimeout(function(){ state.tapCount=0; }, 2000);
+  if(state.tapCount>=5){ state.tapCount=0; showUnlock(); }
+}
+
+// ===== 计算器伪装 =====
+function calcPress(btn){
+  var res = document.getElementById('calcResult');
+  var expr = document.getElementById('calcExpr');
+  if(btn==='AC'){ state.calcInput=''; state.calcOp=''; state.calcPrev=''; res.textContent='0'; expr.textContent=''; return; }
+  if('0123456789.'.includes(btn)){ state.calcInput+=btn; res.textContent=state.calcInput; }
+  if('+-×÷'.includes(btn)){ state.calcPrev=state.calcInput; state.calcOp=btn; state.calcInput=''; expr.textContent=state.calcPrev+btn; }
+  if(btn==='='){
+    var a=parseFloat(state.calcPrev), b=parseFloat(state.calcInput), r=0;
+    if(state.calcOp==='+') r=a+b;
+    else if(state.calcOp==='-') r=a-b;
+    else if(state.calcOp==='×') r=a*b;
+    else if(state.calcOp==='÷') r=b!==0?a/b:0;
+    // 暗码检测
+    var fullExpr = state.calcPrev + state.calcOp + state.calcInput;
+    if(state.calcInput === state.pin){ showUnlock(); return; }
+    res.textContent=r; expr.textContent=''; state.calcInput=String(r); state.calcOp=''; state.calcPrev='';
   }
 }
 
-function addContact() {
-  var name = prompt('输入联系人名称：');
-  if (name && name.trim()) {
-    var list = document.getElementById('contactList');
-    var initial = name.trim()[0].toUpperCase();
-    var colors = ['#238636','#8957e5','#1f6feb','#da3633','#e09b13'];
-    var color = colors[Math.floor(Math.random()*colors.length)];
-    var item = document.createElement('div');
-    item.className = 'contact-item';
-    item.innerHTML = '<div class="contact-avatar" style="background:'+color+'">'+initial+'</div>'+
-      '<div class="contact-info"><div class="contact-name">'+escapeHtml(name.trim())+'</div>'+
-      '<div class="contact-last">开始聊天</div></div>';
-    item.onclick = function(){ openChat(name.trim(), initial); };
-    list.appendChild(item);
-  }
+// ===== 摇一摇 =====
+function setupShake(){
+  if(!window.DeviceMotionEvent) return;
+  var last=0, threshold=25;
+  window.addEventListener('devicemotion', function(e){
+    var a=e.accelerationIncludingGravity;
+    if(!a) return;
+    var total=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z);
+    var now=Date.now();
+    if(total>threshold && now-last>1000){
+      last=now;
+      if(state.hideMode && state.trigger==='shake') showUnlock();
+    }
+  });
 }
 
-function getTime() {
-  var d = new Date();
-  return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+// ===== 解锁弹窗 =====
+function showUnlock(){
+  document.getElementById('unlockInput').value='';
+  document.getElementById('unlockModal').classList.add('show');
+  setTimeout(function(){ document.getElementById('unlockInput').focus(); }, 100);
+}
+function closeUnlock(){ document.getElementById('unlockModal').classList.remove('show'); }
+function tryUnlock(){
+  var input = document.getElementById('unlockInput').value;
+  if(input === state.pin){ closeUnlock(); showMain(); }
+  else{ document.getElementById('unlockInput').value=''; alert('密码错误'); }
 }
 
-function escapeHtml(t) {
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+// ===== 工具函数 =====
+function getTime(){ var d=new Date(); return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes(); }
+function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
