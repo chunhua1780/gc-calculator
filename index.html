@@ -5,197 +5,182 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>私聊</title>
 <style>
-:root{
-  --bg:#f2f2f7;--bg2:#fff;--bg3:#f2f2f7;
-  --text:#000;--text2:#3c3c43;--text3:#8e8e93;
-  --blue:#007aff;--green:#34c759;--red:#ff3b30;
-  --separator:#c6c6c8;--card:#fff;
-}
+:root{--bg:#f2f2f7;--bg2:#fff;--text:#000;--text2:#3c3c43;--text3:#8e8e93;--blue:#007aff;--green:#34c759;--red:#ff3b30;--sep:#c6c6c8;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display',sans-serif;height:100vh;overflow:hidden;}
 .screen{display:none;flex-direction:column;height:100vh;}
 .screen.active{display:flex;}
 
-/* 苹果风格导航栏 */
-.topbar{background:rgba(242,242,247,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:12px 16px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--separator);flex-shrink:0;}
-.topbar-title{font-size:17px;font-weight:600;letter-spacing:-0.4px;}
-.topbar-large{font-size:34px;font-weight:700;letter-spacing:-0.5px;padding:8px 16px 4px;}
-.topbar-btn{color:var(--blue);font-size:15px;cursor:pointer;padding:4px 8px;}
+/* 状态栏 */
+#status-bar{position:fixed;top:0;left:0;right:0;height:44px;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:0 20px;pointer-events:none;background:transparent;}
+.sb-time{font-size:15px;font-weight:600;color:#000;}
+.sb-time .colon{transition:opacity 0.3s;}
+.sb-time .colon.blink{opacity:0.15;}
+.sb-icons{display:flex;align-items:center;gap:6px;}
+.sb-signal{display:flex;gap:2px;align-items:flex-end;}
+.sb-bar{width:3px;border-radius:1px;background:#000;transition:background 0.8s;}
+.sb-bar:nth-child(1){height:4px;}
+.sb-bar:nth-child(2){height:7px;}
+.sb-bar:nth-child(3){height:10px;}
+.sb-bar:nth-child(4){height:13px;}
+.sb-wifi{font-size:14px;color:#000;transition:color 0.8s;}
+.sb-battery{display:flex;align-items:center;gap:1px;}
+.sb-bat-body{width:22px;height:11px;border:1.5px solid rgba(0,0,0,0.35);border-radius:3px;position:relative;transition:border-color 0.8s;}
+.sb-bat-fill{position:absolute;left:1px;top:1px;bottom:1px;width:70%;background:#000;border-radius:1.5px;transition:background 0.8s;}
+.sb-bat-tip{width:2px;height:5px;background:rgba(0,0,0,0.4);border-radius:0 1px 1px 0;}
+.sb-dot{width:5px;height:5px;border-radius:50%;background:transparent;transition:background 0.8s;}
 
-/* 底部导航 */
-.navbar{background:rgba(242,242,247,0.9);backdrop-filter:blur(20px);border-top:0.5px solid var(--separator);display:flex;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);}
+/* 导航栏 */
+.topbar{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);padding:52px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--sep);flex-shrink:0;}
+.topbar-sm{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);padding:52px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--sep);flex-shrink:0;}
+.tb-title{font-size:17px;font-weight:600;}
+.tb-large{font-size:34px;font-weight:700;letter-spacing:-0.5px;}
+.tb-btn{color:var(--blue);font-size:15px;cursor:pointer;padding:4px 8px;}
+.navbar{background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-top:0.5px solid var(--sep);display:flex;flex-shrink:0;}
 .nav-item{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:var(--text3);}
 .nav-item.active{color:var(--blue);}
 .nav-icon{font-size:24px;display:block;margin-bottom:2px;}
 
 /* 列表 */
-.list{flex:1;overflow-y:auto;background:var(--bg);}
-.list-section{margin-top:20px;}
-.list-header{font-size:13px;color:var(--text3);padding:0 16px 6px;text-transform:uppercase;letter-spacing:0.5px;}
-.list-card{background:var(--card);border-radius:12px;margin:0 16px;overflow:hidden;}
-.list-item{display:flex;align-items:center;padding:12px 16px;border-bottom:0.5px solid var(--separator);}
+.scroll-list{flex:1;overflow-y:auto;}
+.list-card{background:#fff;border-radius:12px;margin:8px 16px;overflow:hidden;}
+.list-item{display:flex;align-items:center;padding:12px 16px;border-bottom:0.5px solid var(--sep);}
 .list-item:last-child{border-bottom:none;}
 .list-item:active{background:#e5e5ea;}
-
-/* 联系人 */
 .avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;flex-shrink:0;color:#fff;}
-.contact-info{margin-left:12px;flex:1;overflow:hidden;}
-.contact-name{font-size:17px;font-weight:400;letter-spacing:-0.2px;}
-.contact-preview{color:var(--text3);font-size:14px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.contact-meta{text-align:right;flex-shrink:0;margin-left:8px;}
-.contact-time{color:var(--text3);font-size:13px;}
-.badge{background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:12px;font-weight:600;margin-top:4px;display:inline-block;}
-.chevron{color:#c7c7cc;font-size:14px;margin-left:4px;}
-.fab{position:fixed;bottom:90px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:28px;cursor:pointer;box-shadow:0 4px 20px rgba(0,122,255,0.4);display:flex;align-items:center;justify-content:center;}
+.ci{margin-left:12px;flex:1;overflow:hidden;}
+.cn{font-size:17px;}
+.cp{color:var(--text3);font-size:14px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.badge{background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:12px;font-weight:600;}
 
 /* 聊天 */
 .chat-bg{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:6px;background:#f2f2f7;}
-.msg-row{display:flex;flex-direction:column;}
-.msg-row.sent{align-items:flex-end;}
-.msg-row.recv{align-items:flex-start;}
+.mrow{display:flex;flex-direction:column;}
+.mrow.sent{align-items:flex-end;}
+.mrow.recv{align-items:flex-start;}
 .msg{max-width:72%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.4;word-break:break-word;}
-.msg-row.sent .msg{background:var(--blue);color:#fff;border-bottom-right-radius:4px;}
-.msg-row.recv .msg{background:#fff;color:#000;border-bottom-left-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,0.1);}
-.msg-time{font-size:11px;color:var(--text3);margin-top:2px;padding:0 4px;}
-.msg-img{max-width:220px;border-radius:16px;cursor:pointer;}
-.msg-voice{display:flex;align-items:center;gap:8px;min-width:120px;}
-.voice-wave{flex:1;height:3px;background:rgba(255,255,255,0.4);border-radius:2px;}
-.msg-row.recv .voice-wave{background:rgba(0,0,0,0.15);}
-
-.input-wrap{background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-top:0.5px solid var(--separator);flex-shrink:0;}
-.input-area{padding:8px 12px;display:flex;gap:8px;align-items:flex-end;}
-.input-side-btn{width:34px;height:34px;border-radius:50%;background:none;border:none;color:var(--blue);font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-.msg-input{flex:1;background:#fff;border:0.5px solid var(--separator);border-radius:18px;padding:8px 14px;color:var(--text);font-size:16px;outline:none;resize:none;max-height:100px;font-family:inherit;}
-.send-btn{width:34px;height:34px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-
-/* 功能面板 */
-.extra-panel{background:var(--bg2);border-top:0.5px solid var(--separator);padding:16px;display:none;}
+.mrow.sent .msg{background:var(--blue);color:#fff;border-bottom-right-radius:4px;}
+.mrow.recv .msg{background:#fff;color:#000;border-bottom-left-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.mt{font-size:11px;color:var(--text3);margin-top:2px;padding:0 4px;}
+.msg-img{max-width:220px;border-radius:16px;}
+.input-wrap{background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-top:0.5px solid var(--sep);flex-shrink:0;}
+.input-row{padding:8px 12px;display:flex;gap:8px;align-items:flex-end;}
+.ib{width:34px;height:34px;border-radius:50%;background:none;border:none;color:var(--blue);font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.mi{flex:1;background:#fff;border:0.5px solid var(--sep);border-radius:18px;padding:8px 14px;color:var(--text);font-size:16px;outline:none;resize:none;max-height:100px;font-family:inherit;}
+.sb2{width:34px;height:34px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;}
+.extra-panel{background:#fff;border-top:0.5px solid var(--sep);padding:16px;display:none;}
 .extra-panel.show{display:block;}
-.extra-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
-.extra-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
-.extra-icon-box{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;}
-.extra-label{font-size:11px;color:var(--text2);}
+.eg{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.ei{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.eib{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;}
+.el{font-size:11px;color:var(--text2);}
 
 /* 通话 */
-#call-screen{background:linear-gradient(135deg,#1c1c1e,#2c2c2e);align-items:center;justify-content:space-between;padding:60px 0 50px;}
-.call-avatar-wrap{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:700;color:#fff;}
-.call-btn-row{display:flex;gap:32px;align-items:flex-end;}
-.call-btn{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;}
-.call-label{font-size:12px;color:#8e8e93;text-align:center;margin-top:6px;}
+#call-screen{background:linear-gradient(160deg,#1c1c1e,#2c2c2e);}
+#video-screen{background:#000;position:relative;}
 
 /* 设置 */
-.settings-icon-box{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:12px;flex-shrink:0;}
+.sib{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:12px;flex-shrink:0;}
 .toggle{width:51px;height:31px;border-radius:16px;background:#e5e5ea;position:relative;cursor:pointer;transition:background 0.25s;flex-shrink:0;}
 .toggle.on{background:var(--green);}
-.toggle-dot{width:27px;height:27px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left 0.25s;box-shadow:0 2px 4px rgba(0,0,0,0.3);}
-.toggle.on .toggle-dot{left:22px;}
+.td{width:27px;height:27px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left 0.25s;box-shadow:0 2px 4px rgba(0,0,0,0.3);}
+.toggle.on .td{left:22px;}
+.chevron{color:#c7c7cc;font-size:16px;}
 
 /* 隐藏设置 */
-.option-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
-.option-card{background:var(--card);border:2px solid var(--separator);border-radius:14px;padding:18px;text-align:center;cursor:pointer;}
-.option-card.selected{border-color:var(--blue);background:#f0f8ff;}
-.option-emoji{font-size:34px;margin-bottom:8px;}
-.option-name{font-size:13px;font-weight:500;color:var(--text2);}
-.trigger-item{background:var(--card);border:2px solid var(--separator);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-.trigger-item.selected{border-color:var(--blue);}
-.pin-field{background:var(--card);border:0.5px solid var(--separator);border-radius:12px;padding:14px 16px;color:var(--text);font-size:18px;width:100%;outline:none;margin-bottom:16px;letter-spacing:6px;text-align:center;font-family:inherit;}
-.primary-btn{background:var(--blue);border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:12px;}
-.danger-btn{background:var(--red);border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
+.og{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.oc{background:#fff;border:2px solid var(--sep);border-radius:14px;padding:16px;text-align:center;cursor:pointer;}
+.oc.sel{border-color:var(--blue);}
+.oe{font-size:32px;margin-bottom:6px;}
+.on2{font-size:13px;font-weight:500;color:var(--text2);}
+.ti{background:#fff;border:2px solid var(--sep);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.ti.sel{border-color:var(--blue);}
+.pf{background:#fff;border:0.5px solid var(--sep);border-radius:12px;padding:14px 16px;color:var(--text);font-size:18px;width:100%;outline:none;margin-bottom:16px;letter-spacing:6px;text-align:center;font-family:inherit;}
+.pb{background:var(--blue);border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
+.db{background:var(--red);border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 
-/* 隐秘通知栏 */
-#notif-bar{position:fixed;top:0;left:0;right:0;height:44px;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 16px;pointer-events:none;}
-.notif-clock{font-size:15px;font-weight:600;color:var(--text);}
-.notif-clock span.alert{color:var(--red);animation:blink 1s infinite;}
-.notif-icons{display:flex;align-items:center;gap:6px;font-size:14px;}
-.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:none;}
-.notif-dot.pulse{display:block;animation:pulse 1.5s infinite;}
-.notif-battery{font-size:12px;color:var(--text3);}
-.notif-battery.alert{color:var(--red);}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.8);}}
+/* 伪装：时钟 */
+#clock-screen{background:#000;align-items:center;justify-content:center;flex-direction:column;}
+.clock-time{font-size:88px;font-weight:200;color:#fff;letter-spacing:-4px;font-variant-numeric:tabular-nums;}
+.clock-colon{transition:opacity 0.3s;}
+.clock-colon.dim{opacity:0.15;}
+.clock-date{color:#555;font-size:16px;margin-top:8px;}
+.clock-secret{position:fixed;bottom:0;right:0;width:80px;height:80px;}
 
-/* 伪装 */
-#disguise-screen{background:#000;align-items:center;justify-content:center;gap:0;}
-.fl-btn{width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #333;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;}
-.fl-btn.on{background:#fffce8;border-color:#ffd700;box-shadow:0 0 80px #ffd70099;}
-.secret-zone{position:fixed;bottom:0;right:0;width:80px;height:80px;z-index:99;}
-#calc-screen{background:#1c1c1e;flex-direction:column;}
-.calc-display{flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:24px;}
-.calc-expr{color:#8e8e93;font-size:22px;min-height:30px;}
-.calc-num{font-size:72px;font-weight:300;color:#fff;letter-spacing:-2px;}
-.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;}
-.cb{background:#1c1c1e;padding:0;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;color:#fff;font-weight:400;}
-.cb:active{opacity:0.7;}
-.cb.op{background:#ff9f0a;font-size:32px;}
-.cb.fn{background:#2c2c2e;font-size:24px;}
-.cb.zero{grid-column:span 2;justify-content:flex-start;padding-left:28px;}
+/* 伪装：备忘录 */
+#note-screen{background:#f5f0e8;flex-direction:column;}
+.note-header{background:#f5f0e8;padding:52px 16px 10px;border-bottom:0.5px solid #d4c9a8;}
+.note-title{font-size:28px;font-weight:700;color:#2c2c2e;}
+.note-list{flex:1;overflow-y:auto;padding:8px 0;}
+.note-item{padding:14px 16px;border-bottom:0.5px solid #d4c9a8;cursor:pointer;}
+.note-item:active{background:#e8e0cc;}
+.ni-title{font-size:16px;font-weight:600;color:#2c2c2e;}
+.ni-preview{font-size:14px;color:#8e8e93;margin-top:2px;}
+.note-secret{position:fixed;top:52px;left:0;width:60px;height:60px;}
 
-/* 弹窗 */
-.modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:flex-end;justify-content:center;}
-.modal-bg.show{display:flex;}
-.modal-sheet{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;}
-.modal-handle{width:36px;height:4px;background:#e5e5ea;border-radius:2px;margin:0 auto 20px;}
-.modal-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:8px;}
-.modal-desc{font-size:15px;color:var(--text3);text-align:center;margin-bottom:24px;}
+/* 伪装：系统设置 */
+#syssettings-screen{background:#f2f2f7;flex-direction:column;}
+
+/* PIN弹窗 */
+.pin-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:flex-end;}
+.pin-modal.show{display:flex;}
+.pin-sheet{background:#fff;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;}
+.pin-handle{width:36px;height:4px;background:#e5e5ea;border-radius:2px;margin:0 auto 20px;}
+.pin-heading{font-size:20px;font-weight:700;text-align:center;margin-bottom:20px;}
 .pin-dots{display:flex;justify-content:center;gap:16px;margin-bottom:24px;}
-.pin-dot{width:16px;height:16px;border-radius:50%;background:#e5e5ea;}
-.pin-dot.filled{background:var(--blue);}
-.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-.pin-key{height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.pin-key:active{background:#e5e5ea;}
-.pin-key.del{font-size:20px;}
-.pin-cancel{background:none;border:none;color:var(--blue);font-size:17px;cursor:pointer;width:100%;padding:16px 0 0;text-align:center;}
+.pd{width:16px;height:16px;border-radius:50%;background:#e5e5ea;transition:background 0.15s;}
+.pd.on{background:var(--blue);}
+.pkp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.pk{height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;font-weight:300;cursor:pointer;}
+.pk:active{background:#e5e5ea;}
+.pk-cancel{background:none;border:none;color:var(--blue);font-size:17px;cursor:pointer;width:100%;padding:14px 0 0;text-align:center;}
 
 /* 录音 */
-.rec-overlay{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);border-radius:16px;padding:20px 32px;text-align:center;display:none;z-index:200;}
-.rec-overlay.show{display:block;}
-.rec-icon{font-size:40px;animation:pulse 0.8s infinite;}
-.rec-time{font-size:20px;font-weight:600;color:#fff;margin-top:8px;}
-.rec-hint{color:rgba(255,255,255,0.6);font-size:12px;margin-top:4px;}
+.rec-ov{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);border-radius:16px;padding:20px 32px;text-align:center;display:none;z-index:200;}
+.rec-ov.show{display:block;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.2;}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
 </style>
 </head>
 <body>
 
-<!-- 隐秘通知栏 -->
-<div id="notif-bar">
-  <div class="notif-clock"><span id="notifTime">12:00</span></div>
-  <div class="notif-icons">
-    <div class="notif-dot" id="notifDot"></div>
-    <div class="notif-battery" id="notifBattery">█████</div>
+<!-- 隐秘状态栏 -->
+<div id="status-bar">
+  <div class="sb-time"><span id="sbH">12</span><span class="colon" id="sbColon">:</span><span id="sbM">00</span></div>
+  <div class="sb-icons">
+    <div class="sb-dot" id="sbDot"></div>
+    <div class="sb-signal">
+      <div class="sb-bar" id="sig1"></div>
+      <div class="sb-bar" id="sig2"></div>
+      <div class="sb-bar" id="sig3"></div>
+      <div class="sb-bar" id="sig4"></div>
+    </div>
+    <div class="sb-wifi" id="sbWifi">WiFi</div>
+    <div class="sb-battery">
+      <div class="sb-bat-body" id="sbBatBody"><div class="sb-bat-fill" id="sbBatFill"></div></div>
+      <div class="sb-bat-tip"></div>
+    </div>
   </div>
 </div>
 
 <!-- 消息列表 -->
 <div id="main-screen" class="screen active">
-  <div style="padding-top:44px;">
-    <div class="topbar-large">私聊</div>
-  </div>
-  <div class="list" id="contactList">
-    <div class="list-card" style="margin-top:8px;">
+  <div class="topbar"><div class="tb-large">私聊</div><span class="tb-btn" onclick="showNewChat()">✏️</span></div>
+  <div class="scroll-list">
+    <div class="list-card">
       <div class="list-item" onclick="openChat('小美','小','#ff3b30')">
         <div class="avatar" style="background:#ff3b30">小</div>
-        <div class="contact-info">
-          <div class="contact-name">小美</div>
-          <div class="contact-preview">今晚有空吗？</div>
-        </div>
-        <div class="contact-meta">
-          <div class="contact-time">22:14</div>
-          <div class="badge">3</div>
-        </div>
+        <div class="ci"><div class="cn">小美</div><div class="cp">今晚有空吗？</div></div>
+        <div style="text-align:right"><div style="color:var(--text3);font-size:13px;">22:14</div><div class="badge" style="margin-top:4px;">3</div></div>
       </div>
       <div class="list-item" onclick="openChat('宝贝','宝','#bf5af2')">
         <div class="avatar" style="background:#bf5af2">宝</div>
-        <div class="contact-info">
-          <div class="contact-name">宝贝</div>
-          <div class="contact-preview">想你了 ❤️</div>
-        </div>
-        <div class="contact-meta">
-          <div class="contact-time">20:03</div>
-        </div>
+        <div class="ci"><div class="cn">宝贝</div><div class="cp">想你了 ❤️</div></div>
+        <div style="text-align:right"><div style="color:var(--text3);font-size:13px;">20:03</div></div>
       </div>
     </div>
   </div>
-  <button class="fab" onclick="showNewChat()">✏️</button>
+  <button style="position:fixed;bottom:90px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--blue);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 20px rgba(0,122,255,0.4);" onclick="showNewChat()">✏️</button>
   <div class="navbar">
     <div class="nav-item active"><span class="nav-icon">💬</span>消息</div>
     <div class="nav-item"><span class="nav-icon">👥</span>联系人</div>
@@ -203,54 +188,43 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Di
   </div>
 </div>
 
-<!-- 聊天界面 -->
+<!-- 聊天 -->
 <div id="chat-screen" class="screen">
-  <div style="padding-top:44px;">
-    <div class="topbar">
-      <span class="topbar-btn" onclick="showMain()">‹ 返回</span>
-      <span class="topbar-title" id="chatName">小美</span>
-      <div style="display:flex;">
-        <span class="topbar-btn" onclick="startVoiceCall()">📞</span>
-        <span class="topbar-btn" onclick="startVideoCall()">📹</span>
-      </div>
-    </div>
-  </div>
-  <div class="chat-bg" id="chatMessages"></div>
+  <div class="topbar-sm"><span class="tb-btn" onclick="showMain()">‹ 返回</span><span class="tb-title" id="chatName">小美</span><div><span class="tb-btn" onclick="startVoiceCall()">📞</span><span class="tb-btn" onclick="startVideoCall()">📹</span></div></div>
+  <div class="chat-bg" id="chatMsgs"></div>
   <div class="input-wrap">
-    <div class="input-area">
-      <button class="input-side-btn" onclick="toggleExtra()">⊕</button>
-      <textarea class="msg-input" id="msgInput" placeholder="iMessage" rows="1" onkeydown="handleKey(event)"></textarea>
-      <button class="input-side-btn" id="voiceBtn" onmousedown="startRec()" onmouseup="stopRec()" ontouchstart="startRec(event)" ontouchend="stopRec()">🎤</button>
-      <button class="send-btn" onclick="sendMsg()">↑</button>
+    <div class="input-row">
+      <button class="ib" onclick="toggleExtra()">⊕</button>
+      <textarea class="mi" id="msgInput" placeholder="iMessage" rows="1" onkeydown="hk(event)"></textarea>
+      <button class="ib" onmousedown="startRec()" onmouseup="stopRec()" ontouchstart="startRec(event)" ontouchend="stopRec()">🎤</button>
+      <button class="sb2" onclick="sendMsg()">↑</button>
     </div>
     <div class="extra-panel" id="extraPanel">
-      <div class="extra-grid">
-        <div class="extra-item" onclick="sendPhoto()"><div class="extra-icon-box" style="background:#007aff">📷</div><span class="extra-label">拍照</span></div>
-        <div class="extra-item" onclick="sendImage()"><div class="extra-icon-box" style="background:#30b0c7">🖼️</div><span class="extra-label">相册</span></div>
-        <div class="extra-item" onclick="sendVideo()"><div class="extra-icon-box" style="background:#ff3b30">🎬</div><span class="extra-label">视频</span></div>
-        <div class="extra-item" onclick="sendLocation()"><div class="extra-icon-box" style="background:#34c759">📍</div><span class="extra-label">位置</span></div>
-        <div class="extra-item" onclick="sendFile()"><div class="extra-icon-box" style="background:#ff9f0a">📁</div><span class="extra-label">文件</span></div>
-        <div class="extra-item" onclick="setBurnTime()"><div class="extra-icon-box" style="background:#ff3b30">💣</div><span class="extra-label">阅后即焚</span></div>
-        <div class="extra-item" onclick="startVoiceCall()"><div class="extra-icon-box" style="background:#34c759">📞</div><span class="extra-label">语音通话</span></div>
-        <div class="extra-item" onclick="panicHide()"><div class="extra-icon-box" style="background:#ff3b30">🚨</div><span class="extra-label">紧急隐藏</span></div>
+      <div class="eg">
+        <div class="ei" onclick="doPhoto()"><div class="eib" style="background:#007aff">📷</div><span class="el">拍照</span></div>
+        <div class="ei" onclick="doImg()"><div class="eib" style="background:#30b0c7">🖼️</div><span class="el">相册</span></div>
+        <div class="ei" onclick="doVideo()"><div class="eib" style="background:#ff3b30">🎬</div><span class="el">视频</span></div>
+        <div class="ei" onclick="doLoc()"><div class="eib" style="background:#34c759">📍</div><span class="el">位置</span></div>
+        <div class="ei" onclick="doFile()"><div class="eib" style="background:#ff9f0a">📁</div><span class="el">文件</span></div>
+        <div class="ei" onclick="doBurn()"><div class="eib" style="background:#ff3b30">💣</div><span class="el">阅后即焚</span></div>
+        <div class="ei" onclick="startVoiceCall()"><div class="eib" style="background:#34c759">📞</div><span class="el">语音通话</span></div>
+        <div class="ei" onclick="panicHide()"><div class="eib" style="background:#ff3b30">🚨</div><span class="el">紧急隐藏</span></div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- 语音通话 -->
-<div id="call-screen" class="screen">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:linear-gradient(160deg,#1c1c1e,#2c2c2e);">
-    <div class="call-avatar-wrap" id="callAvatar" style="background:#ff3b30;">小</div>
-    <div style="font-size:28px;font-weight:600;color:#fff;" id="callName">小美</div>
-    <div style="font-size:16px;color:#8e8e93;" id="callStatus">正在呼叫...</div>
+<div id="call-screen" class="screen" style="background:linear-gradient(160deg,#1c1c1e,#2c2c2e);align-items:center;justify-content:space-between;padding:80px 0 60px;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+    <div id="callAv" style="width:96px;height:96px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;color:#fff;"></div>
+    <div id="callName" style="font-size:28px;font-weight:600;color:#fff;"></div>
+    <div id="callStatus" style="font-size:16px;color:#8e8e93;">正在呼叫...</div>
   </div>
-  <div style="background:linear-gradient(160deg,#1c1c1e,#2c2c2e);padding-bottom:50px;">
-    <div class="call-btn-row" style="justify-content:center;padding:20px 40px;">
-      <div style="text-align:center;"><div class="call-btn" style="background:#2c2c2e;" onclick="toggleMute(this)">🎤</div><div class="call-label">静音</div></div>
-      <div style="text-align:center;margin:0 24px;"><div class="call-btn" style="background:#ff3b30;" onclick="endCall()">📵</div><div class="call-label" style="color:#ff3b30;">挂断</div></div>
-      <div style="text-align:center;"><div class="call-btn" style="background:#2c2c2e;" onclick="toggleSpeaker(this)">🔊</div><div class="call-label">扬声器</div></div>
-    </div>
+  <div style="display:flex;gap:32px;">
+    <div style="text-align:center;"><div style="width:68px;height:68px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;" onclick="toggleMute(this)">🎤</div><div style="font-size:12px;color:#8e8e93;margin-top:6px;">静音</div></div>
+    <div style="text-align:center;"><div style="width:68px;height:68px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;" onclick="endCall()">📵</div><div style="font-size:12px;color:#ff3b30;margin-top:6px;">挂断</div></div>
+    <div style="text-align:center;"><div style="width:68px;height:68px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;" onclick="toggleSpk(this)">🔊</div><div style="font-size:12px;color:#8e8e93;margin-top:6px;">扬声器</div></div>
   </div>
 </div>
 
@@ -258,7 +232,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Di
 <div id="video-screen" class="screen" style="background:#000;position:relative;">
   <div style="flex:1;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:80px;">😊</div>
   <div style="position:absolute;top:60px;right:16px;width:90px;height:120px;background:#2d2d2d;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;border:2px solid #444;">🤳</div>
-  <div style="position:absolute;top:60px;left:16px;"><div style="color:#fff;font-size:16px;font-weight:600;" id="videoName">小美</div><div style="color:#8e8e93;font-size:13px;" id="videoTime">00:00</div></div>
+  <div style="position:absolute;top:60px;left:16px;"><div id="vidName" style="color:#fff;font-size:16px;font-weight:600;"></div><div id="vidTime" style="color:#8e8e93;font-size:13px;">00:00</div></div>
   <div style="position:absolute;bottom:50px;left:0;right:0;display:flex;justify-content:center;gap:20px;">
     <div style="width:60px;height:60px;border-radius:50%;background:rgba(44,44,46,0.9);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;">🎤</div>
     <div style="width:70px;height:70px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;" onclick="endCall()">📵</div>
@@ -268,78 +242,29 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Di
 
 <!-- 设置 -->
 <div id="settings-screen" class="screen">
-  <div style="padding-top:44px;">
-    <div class="topbar-large">设置</div>
-  </div>
-  <div class="list">
-    <div class="list-section">
-      <div class="list-card">
-        <div class="list-item">
-          <div class="settings-icon-box" style="background:#007aff;">👤</div>
-          <div style="flex:1;"><div style="font-size:17px;">我的账号</div><div style="font-size:13px;color:var(--text3);margin-top:1px;">设置用户名和头像</div></div>
-          <span class="chevron">›</span>
-        </div>
-        <div class="list-item">
-          <div class="settings-icon-box" style="background:#30b0c7;">🔗</div>
-          <div style="flex:1;"><div style="font-size:17px;">我的邀请码</div><div style="font-size:13px;color:var(--text3);margin-top:1px;">邀请好友加入</div></div>
-          <span class="chevron">›</span>
-        </div>
-      </div>
+  <div class="topbar"><div class="tb-large">设置</div></div>
+  <div class="scroll-list">
+    <div style="height:8px;"></div>
+    <div class="list-card">
+      <div class="list-item"><div class="sib" style="background:#007aff;">👤</div><div style="flex:1;"><div style="font-size:17px;">我的账号</div></div><span class="chevron">›</span></div>
+      <div class="list-item"><div class="sib" style="background:#30b0c7;">🔗</div><div style="flex:1;"><div style="font-size:17px;">邀请码</div></div><span class="chevron">›</span></div>
     </div>
-    <div class="list-section">
-      <div class="list-header">隐私与安全</div>
-      <div class="list-card">
-        <div class="list-item" onclick="showHideSettings()">
-          <div class="settings-icon-box" style="background:#636366;">🕵️</div>
-          <div style="flex:1;"><div style="font-size:17px;">隐藏模式</div><div style="font-size:13px;color:var(--text3);margin-top:1px;" id="hideStatusDesc">未开启 · 点击设置</div></div>
-          <span class="chevron">›</span>
-        </div>
-        <div class="list-item" onclick="panicHide()">
-          <div class="settings-icon-box" style="background:#ff3b30;">🚨</div>
-          <div style="flex:1;"><div style="font-size:17px;">紧急隐藏</div><div style="font-size:13px;color:var(--text3);margin-top:1px;">立即隐藏所有聊天记录</div></div>
-          <span class="chevron">›</span>
-        </div>
-        <div class="list-item">
-          <div class="settings-icon-box" style="background:#ff9f0a;">💣</div>
-          <div style="flex:1;"><div style="font-size:17px;">消息自动销毁</div><div style="font-size:13px;color:var(--text3);margin-top:1px;">阅后即焚</div></div>
-          <span class="chevron">›</span>
-        </div>
-        <div class="list-item">
-          <div class="settings-icon-box" style="background:#34c759;">🔒</div>
-          <div style="flex:1;"><div style="font-size:17px;">端对端加密</div><div style="font-size:13px;color:var(--text3);margin-top:1px;">所有消息加密传输</div></div>
-          <div class="toggle on" onclick="toggleSwitch(this)"><div class="toggle-dot"></div></div>
-        </div>
-        <div class="list-item">
-          <div class="settings-icon-box" style="background:#ff3b30;">📸</div>
-          <div style="flex:1;"><div style="font-size:17px;">禁止截图</div><div style="font-size:13px;color:var(--text3);margin-top:1px;">防止对方截屏</div></div>
-          <div class="toggle" onclick="toggleSwitch(this)"><div class="toggle-dot"></div></div>
-        </div>
-      </div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;">隐私与安全</div>
+    <div class="list-card">
+      <div class="list-item" onclick="showHideSettings()"><div class="sib" style="background:#636366;">🕵️</div><div style="flex:1;"><div style="font-size:17px;">隐藏模式</div><div style="font-size:13px;color:var(--text3);" id="hideDesc">未开启</div></div><span class="chevron">›</span></div>
+      <div class="list-item" onclick="panicHide()"><div class="sib" style="background:#ff3b30;">🚨</div><div style="flex:1;"><div style="font-size:17px;">紧急隐藏</div><div style="font-size:13px;color:var(--text3);">一键清除所有记录</div></div><span class="chevron">›</span></div>
+      <div class="list-item"><div class="sib" style="background:#ff9f0a;">💣</div><div style="flex:1;"><div style="font-size:17px;">消息自动销毁</div></div><span class="chevron">›</span></div>
+      <div class="list-item"><div class="sib" style="background:#34c759;">🔒</div><div style="flex:1;"><div style="font-size:17px;">端对端加密</div></div><div class="toggle on" onclick="toggleSw(this)"><div class="td"></div></div></div>
+      <div class="list-item"><div class="sib" style="background:#ff3b30;">📸</div><div style="flex:1;"><div style="font-size:17px;">禁止截图</div></div><div class="toggle" onclick="toggleSw(this)"><div class="td"></div></div></div>
     </div>
-    <div class="list-section">
-      <div class="list-header">隐秘通知</div>
-      <div class="list-card">
-        <div class="list-item">
-          <div class="settings-icon-box" style="background:#bf5af2;">🔔</div>
-          <div style="flex:1;"><div style="font-size:17px;">隐秘通知方式</div><div style="font-size:13px;color:var(--text3);margin-top:1px;" id="notifModeDesc">时钟数字变色</div></div>
-          <span class="chevron" onclick="showNotifSettings()">›</span>
-        </div>
-        <div class="list-item">
-          <div class="settings-icon-box" style="background:#636366;">🔕</div>
-          <div style="flex:1;"><div style="font-size:17px;">隐身模式</div><div style="font-size:13px;color:var(--text3);margin-top:1px;">对方看不到你在线</div></div>
-          <div class="toggle" onclick="toggleSwitch(this)"><div class="toggle-dot"></div></div>
-        </div>
-      </div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;">隐秘通知</div>
+    <div class="list-card">
+      <div class="list-item" onclick="showNotifSettings()"><div class="sib" style="background:#bf5af2;">🔔</div><div style="flex:1;"><div style="font-size:17px;">通知方式</div><div style="font-size:13px;color:var(--text3);" id="notifDesc">时钟冒号闪烁</div></div><span class="chevron">›</span></div>
+      <div class="list-item"><div class="sib" style="background:#636366;">🔕</div><div style="flex:1;"><div style="font-size:17px;">隐身模式</div></div><div class="toggle" onclick="toggleSw(this)"><div class="td"></div></div></div>
     </div>
-    <div class="list-section">
-      <div class="list-header">订阅</div>
-      <div class="list-card">
-        <div class="list-item">
-          <div class="settings-icon-box" style="background:#ff9f0a;">💰</div>
-          <div style="flex:1;"><div style="font-size:17px;">订阅会员</div><div style="font-size:13px;color:var(--text3);margin-top:1px;">$9.99/月 · 解锁全部功能</div></div>
-          <span class="chevron">›</span>
-        </div>
-      </div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;">订阅</div>
+    <div class="list-card">
+      <div class="list-item"><div class="sib" style="background:#ff9f0a;">💰</div><div style="flex:1;"><div style="font-size:17px;">订阅会员</div><div style="font-size:13px;color:var(--text3);">$9.99/月</div></div><span class="chevron">›</span></div>
     </div>
     <div style="height:30px;"></div>
   </div>
@@ -352,182 +277,238 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Di
 
 <!-- 隐藏模式设置 -->
 <div id="hide-settings-screen" class="screen">
-  <div style="padding-top:44px;">
-    <div class="topbar"><span class="topbar-btn" onclick="showSettings()">‹ 设置</span><span class="topbar-title">隐藏模式</span><span></span></div>
-  </div>
-  <div class="list" style="padding:16px;">
-    <div style="font-size:15px;color:var(--text3);margin-bottom:20px;line-height:1.5;">开启后App将伪装成所选应用，只有输入正确密码才能进入真实界面。</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">选择伪装外壳</div>
-    <div class="option-grid">
-      <div class="option-card selected" id="disguise-flas" onclick="selectDisguise('flashlight')"><div class="option-emoji">🔦</div><div class="option-name">手电筒</div></div>
-      <div class="option-card" id="disguise-calc" onclick="selectDisguise('calculator')"><div class="option-emoji">🧮</div><div class="option-name">计算器</div></div>
-      <div class="option-card" id="disguise-cloc" onclick="selectDisguise('clock')"><div class="option-emoji">🕐</div><div class="option-name">时钟</div></div>
-      <div class="option-card" id="disguise-note" onclick="selectDisguise('note')"><div class="option-emoji">📝</div><div class="option-name">备忘录</div></div>
+  <div class="topbar-sm"><span class="tb-btn" onclick="showSettings()">‹ 设置</span><span class="tb-title">隐藏模式</span><span></span></div>
+  <div class="scroll-list" style="padding:16px;">
+    <p style="font-size:14px;color:var(--text3);margin-bottom:20px;line-height:1.6;">开启后将完全伪装成另一个App，只有知道密码的人才能进入。</p>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">选择伪装外壳</div>
+    <div class="og">
+      <div class="oc sel" id="og-flas" onclick="selDis('flashlight')"><div class="oe">🔦</div><div class="on2">手电筒</div></div>
+      <div class="oc" id="og-calc" onclick="selDis('calculator')"><div class="oe">🧮</div><div class="on2">计算器</div></div>
+      <div class="oc" id="og-cloc" onclick="selDis('clock')"><div class="oe">🕐</div><div class="on2">时钟</div></div>
+      <div class="oc" id="og-note" onclick="selDis('note')"><div class="oe">📝</div><div class="on2">备忘录</div></div>
+      <div class="oc" id="og-syss" onclick="selDis('syssettings')"><div class="oe">⚙️</div><div class="on2">系统设置</div></div>
     </div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">激活方式</div>
-    <div class="trigger-item selected" id="trigger-pin" onclick="selectTrigger('pin')"><span style="font-size:20px;">🔢</span><span style="font-size:15px;">输入密码激活</span></div>
-    <div class="trigger-item" id="trigger-tap" onclick="selectTrigger('tap')"><span style="font-size:20px;">👆</span><span style="font-size:15px;">右下角连点5次</span></div>
-    <div class="trigger-item" id="trigger-shake" onclick="selectTrigger('shake')"><span style="font-size:20px;">📳</span><span style="font-size:15px;">摇一摇激活</span></div>
-    <div style="font-size:13px;color:var(--text3);margin:16px 0 12px;text-transform:uppercase;letter-spacing:0.5px;">激活密码</div>
-    <input class="pin-field" type="password" id="pinInput" placeholder="输入4-8位密码" maxlength="8">
-    <button class="primary-btn" onclick="saveHideSettings()">保存并开启隐藏模式</button>
-    <button class="danger-btn" onclick="disableHideMode()">关闭隐藏模式</button>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">激活方式</div>
+    <div class="ti sel" id="ti-pin" onclick="selTrig('pin')"><span style="font-size:20px;">🔢</span><span>密码输入激活</span></div>
+    <div class="ti" id="ti-tap" onclick="selTrig('tap')"><span style="font-size:20px;">👆</span><span>右下角连点5次</span></div>
+    <div class="ti" id="ti-ltap" onclick="selTrig('ltap')"><span style="font-size:20px;">✋</span><span>左上角长按3秒</span></div>
+    <div class="ti" id="ti-shake" onclick="selTrig('shake')"><span style="font-size:20px;">📳</span><span>摇一摇激活</span></div>
+    <div style="font-size:13px;color:var(--text3);margin:16px 0 10px;text-transform:uppercase;letter-spacing:0.5px;">激活密码</div>
+    <input class="pf" type="password" id="pinInput" placeholder="4-8位" maxlength="8">
+    <button class="pb" onclick="saveHide()">开启隐藏模式</button>
+    <button class="db" onclick="offHide()">关闭隐藏模式</button>
+    <div style="height:30px;"></div>
   </div>
 </div>
 
-<!-- 手电筒伪装 -->
+<!-- 伪装：手电筒 -->
 <div id="disguise-screen" class="screen" style="background:#000;align-items:center;justify-content:center;">
-  <div style="color:#555;font-size:14px;margin-bottom:48px;letter-spacing:3px;text-transform:uppercase;">手电筒</div>
-  <div class="fl-btn" id="flBtn" onclick="toggleFL()"><span style="font-size:64px;">💡</span></div>
-  <div style="color:#444;font-size:14px;margin-top:32px;" id="flStatus">轻触以开启</div>
-  <div class="secret-zone" id="secretZone" onclick="handleSecretTap()"></div>
+  <div style="color:#444;font-size:13px;letter-spacing:3px;text-transform:uppercase;margin-bottom:48px;">手电筒</div>
+  <div id="flBtn" style="width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #333;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;" onclick="togFL()"><span style="font-size:64px;">💡</span></div>
+  <div id="flSt" style="color:#333;font-size:14px;margin-top:32px;">轻触以开启</div>
+  <div id="flSecret" style="position:fixed;bottom:0;right:0;width:80px;height:80px;" onclick="hsTap()"></div>
 </div>
 
-<!-- 计算器伪装 -->
-<div id="calc-screen" class="screen">
-  <div class="calc-display">
-    <div class="calc-expr" id="calcExpr"></div>
-    <div class="calc-num" id="calcResult">0</div>
+<!-- 伪装：计算器 -->
+<div id="calc-screen" class="screen" style="background:#1c1c1e;flex-direction:column;">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:24px;">
+    <div id="calcExpr" style="color:#8e8e93;font-size:22px;min-height:30px;"></div>
+    <div id="calcNum" style="font-size:72px;font-weight:300;color:#fff;letter-spacing:-2px;">0</div>
   </div>
-  <div class="calc-grid">
-    <div class="cb fn" onclick="cp('AC')">AC</div>
-    <div class="cb fn" onclick="cp('+/-')">+/-</div>
-    <div class="cb fn" onclick="cp('%')">%</div>
-    <div class="cb op" onclick="cp('÷')">÷</div>
-    <div class="cb" onclick="cp('7')">7</div><div class="cb" onclick="cp('8')">8</div><div class="cb" onclick="cp('9')">9</div>
-    <div class="cb op" onclick="cp('×')">×</div>
-    <div class="cb" onclick="cp('4')">4</div><div class="cb" onclick="cp('5')">5</div><div class="cb" onclick="cp('6')">6</div>
-    <div class="cb op" onclick="cp('-')">−</div>
-    <div class="cb" onclick="cp('1')">1</div><div class="cb" onclick="cp('2')">2</div><div class="cb" onclick="cp('3')">3</div>
-    <div class="cb op" onclick="cp('+')">+</div>
-    <div class="cb zero" onclick="cp('0')">0</div>
-    <div class="cb" onclick="cp('.')">.</div>
-    <div class="cb op" onclick="cp('=')">=</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;">
+    <div style="background:#2c2c2e;height:80px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;cursor:pointer;" onclick="cc('AC')">AC</div>
+    <div style="background:#2c2c2e;height:80px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;cursor:pointer;" onclick="cc('+/-')">+/-</div>
+    <div style="background:#2c2c2e;height:80px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;cursor:pointer;" onclick="cc('%')">%</div>
+    <div style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;" onclick="cc('÷')">÷</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('7')">7</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('8')">8</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('9')">9</div>
+    <div style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;" onclick="cc('×')">×</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('4')">4</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('5')">5</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('6')">6</div>
+    <div style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;" onclick="cc('-')">−</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('1')">1</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('2')">2</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('3')">3</div>
+    <div style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;" onclick="cc('+')">+</div>
+    <div style="background:#1c1c1e;height:80px;grid-column:span 2;display:flex;align-items:center;justify-content:flex-start;padding-left:28px;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('0')">0</div>
+    <div style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;" onclick="cc('.')">.</div>
+    <div style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;" onclick="cc('=')">=</div>
+  </div>
+</div>
+
+<!-- 伪装：时钟 -->
+<div id="clock-screen" class="screen" style="background:#000;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="font-size:88px;font-weight:200;color:#fff;letter-spacing:-4px;font-variant-numeric:tabular-nums;">
+    <span id="ckH">12</span><span id="ckColon" style="transition:opacity 0.3s;">:</span><span id="ckM">00</span>
+  </div>
+  <div id="ckDate" style="color:#555;font-size:16px;margin-top:8px;"></div>
+  <div id="ckSecret" style="position:fixed;bottom:0;right:0;width:80px;height:80px;" onclick="hsTap()"></div>
+  <div id="ckLtSecret" style="position:fixed;top:44px;left:0;width:60px;height:60px;" onmousedown="ltStart()" onmouseup="ltEnd()" ontouchstart="ltStart()" ontouchend="ltEnd()"></div>
+</div>
+
+<!-- 伪装：备忘录 -->
+<div id="note-screen" class="screen" style="background:#f5f0e8;flex-direction:column;">
+  <div style="padding:52px 16px 10px;border-bottom:0.5px solid #d4c9a8;">
+    <div style="font-size:28px;font-weight:700;color:#2c2c2e;">备忘录</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div style="padding:14px 16px;border-bottom:0.5px solid #d4c9a8;cursor:pointer;" onclick="hsTap()">
+      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">购物清单</div>
+      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">牛奶、鸡蛋、面包...</div>
+    </div>
+    <div style="padding:14px 16px;border-bottom:0.5px solid #d4c9a8;">
+      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">会议记录</div>
+      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">周一上午10点...</div>
+    </div>
+    <div style="padding:14px 16px;border-bottom:0.5px solid #d4c9a8;">
+      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">旅行计划</div>
+      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">机票、酒店...</div>
+    </div>
+  </div>
+  <div id="noteSecret" style="position:fixed;top:52px;left:0;width:60px;height:60px;" onmousedown="ltStart()" onmouseup="ltEnd()" ontouchstart="ltStart()" ontouchend="ltEnd()"></div>
+</div>
+
+<!-- 伪装：系统设置 -->
+<div id="syssettings-screen" class="screen" style="background:#f2f2f7;flex-direction:column;">
+  <div style="padding:52px 16px 10px;"><div style="font-size:34px;font-weight:700;">设置</div></div>
+  <div style="flex:1;overflow-y:auto;">
+    <div class="list-card">
+      <div class="list-item"><div class="sib" style="background:#007aff;">🔔</div><div style="flex:1;font-size:17px;">通知</div><span class="chevron">›</span></div>
+      <div class="list-item"><div class="sib" style="background:#34c759;">🔊</div><div style="flex:1;font-size:17px;">声音与触感</div><span class="chevron">›</span></div>
+      <div class="list-item"><div class="sib" style="background:#636366;">🌙</div><div style="flex:1;font-size:17px;">专注模式</div><span class="chevron">›</span></div>
+    </div>
+    <div class="list-card" style="margin-top:16px;">
+      <div class="list-item"><div class="sib" style="background:#636366;">⚙️</div><div style="flex:1;font-size:17px;">通用</div><span class="chevron">›</span></div>
+      <div class="list-item" onclick="aboutTap()"><div class="sib" style="background:#636366;">ℹ️</div><div style="flex:1;font-size:17px;">关于本机</div><span class="chevron">›</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN解锁弹窗 -->
+<div class="pin-modal" id="pinModal">
+  <div class="pin-sheet">
+    <div class="pin-handle"></div>
+    <div class="pin-heading">输入密码</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pd" id="pd0"></div><div class="pd" id="pd1"></div>
+      <div class="pd" id="pd2"></div><div class="pd" id="pd3"></div>
+    </div>
+    <div class="pkp">
+      <button class="pk" onclick="pk('1')">1</button><button class="pk" onclick="pk('2')">2</button><button class="pk" onclick="pk('3')">3</button>
+      <button class="pk" onclick="pk('4')">4</button><button class="pk" onclick="pk('5')">5</button><button class="pk" onclick="pk('6')">6</button>
+      <button class="pk" onclick="pk('7')">7</button><button class="pk" onclick="pk('8')">8</button><button class="pk" onclick="pk('9')">9</button>
+      <button class="pk"></button><button class="pk" onclick="pk('0')">0</button><button class="pk" onclick="pd()">⌫</button>
+    </div>
+    <button class="pk-cancel" onclick="closePIN()">取消</button>
   </div>
 </div>
 
 <!-- 录音提示 -->
-<div class="rec-overlay" id="recOverlay">
-  <div class="rec-icon">🎤</div>
-  <div class="rec-time" id="recTime">0:00</div>
-  <div class="rec-hint">松开发送 · 上滑取消</div>
+<div class="rec-ov" id="recOv">
+  <div style="font-size:40px;animation:pulse 0.8s infinite;">🎤</div>
+  <div id="recT" style="font-size:20px;font-weight:600;color:#fff;margin-top:8px;">0:00</div>
+  <div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px;">松开发送</div>
 </div>
 
-<!-- PIN解锁 -->
-<div class="modal-bg" id="unlockModal">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">输入密码</div>
-    <div class="modal-desc">请输入访问密码</div>
-    <div class="pin-dots" id="pinDots">
-      <div class="pin-dot" id="d0"></div>
-      <div class="pin-dot" id="d1"></div>
-      <div class="pin-dot" id="d2"></div>
-      <div class="pin-dot" id="d3"></div>
-    </div>
-    <div class="pin-keypad">
-      <button class="pin-key" onclick="pinKey('1')">1</button>
-      <button class="pin-key" onclick="pinKey('2')">2</button>
-      <button class="pin-key" onclick="pinKey('3')">3</button>
-      <button class="pin-key" onclick="pinKey('4')">4</button>
-      <button class="pin-key" onclick="pinKey('5')">5</button>
-      <button class="pin-key" onclick="pinKey('6')">6</button>
-      <button class="pin-key" onclick="pinKey('7')">7</button>
-      <button class="pin-key" onclick="pinKey('8')">8</button>
-      <button class="pin-key" onclick="pinKey('9')">9</button>
-      <button class="pin-key" onclick="pinKey('')"></button>
-      <button class="pin-key" onclick="pinKey('0')">0</button>
-      <button class="pin-key del" onclick="pinDel()">⌫</button>
-    </div>
-    <button class="pin-cancel" onclick="closeUnlock()">取消</button>
-  </div>
-</div>
-
-<input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImg(event)">
-<input type="file" id="vidInput" accept="video/*" style="display:none" onchange="handleVid()">
+<input type="file" id="imgIn" accept="image/*" style="display:none" onchange="handleImg(event)">
+<input type="file" id="vidIn" accept="video/*" style="display:none" onchange="handleVid()">
 
 <script>
 var S={
-  chat:'', msgs:{},
-  disguise:localStorage.getItem('disguise')||'flashlight',
-  trigger:localStorage.getItem('trigger')||'pin',
-  pin:localStorage.getItem('pin')||'1234',
-  hideMode:localStorage.getItem('hideMode')==='true',
-  notifMode:localStorage.getItem('notifMode')||'clock',
-  flOn:false, tapN:0, tapT:null,
-  ci:'', co:'', cp2:'',
-  recOn:false, recSec:0, recInt:null,
-  callSec:0, callInt:null,
-  pinEntry:''
+  chat:'',msgs:{},
+  dis:ls('dis')||'flashlight',
+  trig:ls('trig')||'pin',
+  pin:ls('pin')||'1234',
+  hide:ls('hide')==='true',
+  notif:ls('notif')||'colon',
+  flOn:false,
+  tapN:0,tapT:null,
+  ltT:null,
+  ci:'',co:'',cpv:'',
+  recOn:false,recSec:0,recInt:null,
+  callInt:null,callSec:0,
+  pe:'',
+  aboutN:0,aboutT:null
 };
 
-// 启动
+function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lss(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
 window.onload=function(){
-  if(S.hideMode){
-    showScreen(S.disguise==='calculator'?'calc-screen':'disguise-screen');
-  } else showScreen('main-screen');
-  updateHideDesc();
+  if(S.hide){
+    var m={flashlight:'disguise-screen',calculator:'calc-screen',clock:'clock-screen',note:'note-screen',syssettings:'syssettings-screen'};
+    show(m[S.dis]||'disguise-screen');
+  } else show('main-screen');
+  updHideDesc();
   setupShake();
-  startNotifBar();
+  startClock();
+  startStatusBar();
 };
 
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-}
-function showMain(){showScreen('main-screen');}
-function showSettings(){showScreen('settings-screen');}
-function showHideSettings(){showScreen('hide-settings-screen');}
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById(id).classList.add('active');}
+function showMain(){show('main-screen');}
+function showSettings(){show('settings-screen');}
+function showHideSettings(){show('hide-settings-screen');}
 
-// 隐秘通知栏
-function startNotifBar(){
+// 状态栏隐秘通知
+function startStatusBar(){
   setInterval(function(){
-    var d=new Date();
-    var h=d.getHours(); var m=d.getMinutes(); var s=d.getSeconds();
-    var timeStr=h+':'+(m<10?'0':'')+m;
-    var el=document.getElementById('notifTime');
-    // 隐秘通知：分钟数字最后一位变红
-    if(S.notifMode==='clock' && hasNewMsg()){
-      el.innerHTML=h+':<span class="alert">'+(m<10?'0':'')+m+'</span>';
-    } else {
-      el.textContent=timeStr;
-    }
-    // 电池提示
-    var bat=document.getElementById('notifBattery');
-    if(S.notifMode==='battery' && hasNewMsg()){
-      bat.classList.add('alert');
-      bat.textContent='▓▓▓░░';
-    } else {
-      bat.classList.remove('alert');
-    }
-    // 绿点闪烁
-    var dot=document.getElementById('notifDot');
-    if(S.notifMode==='dot' && hasNewMsg()){
-      dot.classList.add('pulse');
-    } else {
-      dot.classList.remove('pulse');
-    }
-  },1000);
+    var d=new Date(),h=d.getHours(),m=d.getMinutes();
+    document.getElementById('sbH').textContent=h;
+    document.getElementById('sbM').textContent=(m<10?'0':'')+m;
+    var has=hasNew();
+    var nm=S.notif;
+    // 冒号闪烁（极细微：正常不闪，有消息时每3秒闪一次）
+    var col=document.getElementById('sbColon');
+    if(nm==='colon'&&has){col.style.opacity=Math.floor(Date.now()/1500)%2===0?'1':'0.12';}
+    else{col.style.opacity='1';}
+    // 信号格（最后一格极淡）
+    var s4=document.getElementById('sig4');
+    if(nm==='signal'&&has){s4.style.background='rgba(0,0,0,0.18)';}
+    else{s4.style.background='#000';}
+    // WiFi颜色（白→极淡蓝，几乎看不出）
+    var wf=document.getElementById('sbWifi');
+    if(nm==='wifi'&&has){wf.style.color='#b8d4f8';}
+    else{wf.style.color='#000';}
+    // 电池边框（正常透明→极淡绿）
+    var bb=document.getElementById('sbBatBody');
+    if(nm==='battery'&&has){bb.style.borderColor='rgba(52,199,89,0.6)';}
+    else{bb.style.borderColor='rgba(0,0,0,0.35)';}
+    // 绿点（最小，极淡）
+    var dot=document.getElementById('sbDot');
+    if(nm==='dot'&&has){dot.style.background='rgba(52,199,89,0.5)';dot.style.animation='pulse 2s infinite';}
+    else{dot.style.background='transparent';dot.style.animation='';}
+  },500);
 }
-function hasNewMsg(){ return true; } // 接入后端后改为真实判断
+function hasNew(){return true;} // 接入后端后改为真实判断
 
-function showNotifSettings(){
-  var modes=['clock：时钟分钟变红色','battery：电池电量变色','dot：状态栏绿点闪烁'];
-  var choice=prompt('选择隐秘通知方式：\n1. '+modes[0]+'\n2. '+modes[1]+'\n3. '+modes[2]+'\n\n输入1/2/3：');
-  if(choice==='1'){S.notifMode='clock';localStorage.setItem('notifMode','clock');document.getElementById('notifModeDesc').textContent='时钟数字变色';}
-  else if(choice==='2'){S.notifMode='battery';localStorage.setItem('notifMode','battery');document.getElementById('notifModeDesc').textContent='电池电量变色';}
-  else if(choice==='3'){S.notifMode='dot';localStorage.setItem('notifMode','dot');document.getElementById('notifModeDesc').textContent='状态栏绿点闪烁';}
+// 时钟同步
+function startClock(){
+  setInterval(function(){
+    var d=new Date(),h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
+    var hEl=document.getElementById('ckH'),mEl=document.getElementById('ckM'),col=document.getElementById('ckColon');
+    if(hEl) hEl.textContent=h;
+    if(mEl) mEl.textContent=(m<10?'0':'')+m;
+    // 时钟冒号：有消息时极细微闪烁（opacity 1→0.1）
+    if(col){
+      if(hasNew()&&S.notif==='colon'){col.style.opacity=s%3===0?'0.1':'1';}
+      else{col.style.opacity='1';}
+    }
+    var dk=document.getElementById('ckDate');
+    if(dk){var days=['周日','周一','周二','周三','周四','周五','周六'];dk.textContent=days[d.getDay()]+' '+(d.getMonth()+1)+'月'+d.getDate()+'日';}
+  },1000);
 }
 
 // 紧急隐藏
 function panicHide(){
-  if(confirm('⚠️ 确认紧急隐藏？\n所有聊天记录将被清除，App将切换到伪装界面。')){
+  if(confirm('⚠️ 确认紧急隐藏？\n所有聊天记录清除，切换至伪装界面。')){
     S.msgs={};
-    localStorage.clear();
-    S.hideMode=true;
-    localStorage.setItem('hideMode','true');
-    localStorage.setItem('disguise',S.disguise);
-    showScreen(S.disguise==='calculator'?'calc-screen':'disguise-screen');
+    try{localStorage.clear();}catch(e){}
+    S.hide=true;lss('hide','true');lss('dis',S.dis);
+    var m={flashlight:'disguise-screen',calculator:'calc-screen',clock:'clock-screen',note:'note-screen',syssettings:'syssettings-screen'};
+    show(m[S.dis]||'disguise-screen');
   }
 }
 
@@ -535,91 +516,98 @@ function panicHide(){
 function openChat(name,ini,color){
   S.chat=name;
   document.getElementById('chatName').textContent=name;
-  if(!S.msgs[name]) S.msgs[name]=[{text:'你好！',sent:false,t:getTime()}];
-  renderMsgs();
-  showScreen('chat-screen');
+  document.getElementById('callAv').textContent=ini;
+  document.getElementById('callAv').style.background=color;
+  document.getElementById('callName').textContent=name;
+  document.getElementById('vidName').textContent=name;
+  if(!S.msgs[name])S.msgs[name]=[{text:'你好！',sent:false,t:gt()}];
+  renderMsgs();show('chat-screen');
   document.getElementById('extraPanel').classList.remove('show');
 }
 function renderMsgs(){
-  var c=document.getElementById('chatMessages');
+  var c=document.getElementById('chatMsgs');
   c.innerHTML=(S.msgs[S.chat]||[]).map(function(m){
-    var cls='msg-row '+(m.sent?'sent':'recv');
-    var body='';
-    if(m.type==='image') body='<img class="msg-img" src="'+m.src+'">';
-    else if(m.type==='voice') body='<div class="msg-voice"><span>🎤</span><div class="voice-wave"></div><span style="font-size:12px;">'+m.dur+'″</span></div>';
-    else if(m.type==='location') body='📍 '+m.addr;
-    else if(m.type==='video') body='🎬 视频 '+m.dur;
-    else body=esc(m.text);
-    return '<div class="'+cls+'"><div class="msg">'+body+'</div><div class="msg-time">'+m.t+'</div></div>';
+    var cls='mrow '+(m.sent?'sent':'recv');
+    var body=m.type==='image'?'<img class="msg-img" src="'+m.src+'">'
+      :m.type==='voice'?'<div style="display:flex;align-items:center;gap:8px;min-width:120px;"><span>🎤</span><div style="flex:1;height:3px;background:rgba(255,255,255,0.3);border-radius:2px;"></div><span style="font-size:12px;">'+m.dur+'″</span></div>'
+      :m.type==='location'?'📍 '+m.addr
+      :m.type==='video'?'🎬 视频 '+m.dur
+      :esc(m.text);
+    return '<div class="'+cls+'"><div class="msg">'+body+'</div><div class="mt">'+m.t+'</div></div>';
   }).join('');
   c.scrollTop=c.scrollHeight;
 }
-function addMsg(m){
-  if(!S.msgs[S.chat]) S.msgs[S.chat]=[];
-  S.msgs[S.chat].push(m);
-  renderMsgs();
-}
-function sendMsg(){
-  var inp=document.getElementById('msgInput');
-  var t=inp.value.trim();
-  if(!t) return;
-  addMsg({text:t,sent:true,t:getTime()});
-  inp.value='';
-}
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function addMsg(m){if(!S.msgs[S.chat])S.msgs[S.chat]=[];S.msgs[S.chat].push(m);renderMsgs();}
+function sendMsg(){var i=document.getElementById('msgInput'),t=i.value.trim();if(!t)return;addMsg({text:t,sent:true,t:gt()});i.value='';}
+function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 function showNewChat(){var n=prompt('联系人名称：');if(n&&n.trim())openChat(n.trim(),n[0],'#007aff');}
 function toggleExtra(){document.getElementById('extraPanel').classList.toggle('show');}
-function sendPhoto(){document.getElementById('imgInput').setAttribute('capture','camera');document.getElementById('imgInput').click();}
-function sendImage(){document.getElementById('imgInput').removeAttribute('capture');document.getElementById('imgInput').click();}
-function handleImg(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){addMsg({type:'image',src:ev.target.result,sent:true,t:getTime()});};r.readAsDataURL(f);document.getElementById('extraPanel').classList.remove('show');}
-function sendVideo(){document.getElementById('vidInput').click();}
-function handleVid(){addMsg({type:'video',dur:'0:15',sent:true,t:getTime()});document.getElementById('extraPanel').classList.remove('show');}
-function sendLocation(){
-  navigator.geolocation?navigator.geolocation.getCurrentPosition(function(p){addMsg({type:'location',addr:'当前位置 ('+p.coords.latitude.toFixed(3)+', '+p.coords.longitude.toFixed(3)+')',sent:true,t:getTime()});},function(){addMsg({type:'location',addr:'位置信息',sent:true,t:getTime()});}):addMsg({type:'location',addr:'位置信息',sent:true,t:getTime()});
-  document.getElementById('extraPanel').classList.remove('show');
-}
-function sendFile(){alert('文件发送即将上线');}
-function setBurnTime(){var t=prompt('阅后即焚时间（秒）：','10');if(t)alert('已设置：'+t+'秒后销毁');}
+function doPhoto(){document.getElementById('imgIn').setAttribute('capture','camera');document.getElementById('imgIn').click();}
+function doImg(){document.getElementById('imgIn').removeAttribute('capture');document.getElementById('imgIn').click();}
+function handleImg(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){addMsg({type:'image',src:ev.target.result,sent:true,t:gt()});};r.readAsDataURL(f);document.getElementById('extraPanel').classList.remove('show');}
+function doVideo(){document.getElementById('vidIn').click();}
+function handleVid(){addMsg({type:'video',dur:'0:15',sent:true,t:gt()});document.getElementById('extraPanel').classList.remove('show');}
+function doLoc(){navigator.geolocation?navigator.geolocation.getCurrentPosition(function(p){addMsg({type:'location',addr:'('+p.coords.latitude.toFixed(3)+', '+p.coords.longitude.toFixed(3)+')',sent:true,t:gt()});},function(){addMsg({type:'location',addr:'当前位置',sent:true,t:gt()});}):addMsg({type:'location',addr:'当前位置',sent:true,t:gt()});document.getElementById('extraPanel').classList.remove('show');}
+function doFile(){alert('文件发送即将上线');}
+function doBurn(){var t=prompt('阅后即焚（秒）：','10');if(t)alert('已设置'+t+'秒后销毁');}
 
 // 录音
-function startRec(e){if(e)e.preventDefault();S.recOn=true;S.recSec=0;document.getElementById('recOverlay').classList.add('show');S.recInt=setInterval(function(){S.recSec++;var m=Math.floor(S.recSec/60),s=S.recSec%60;document.getElementById('recTime').textContent=m+':'+(s<10?'0':'')+s;},1000);}
-function stopRec(){if(!S.recOn)return;S.recOn=false;clearInterval(S.recInt);document.getElementById('recOverlay').classList.remove('show');if(S.recSec>0)addMsg({type:'voice',dur:S.recSec,sent:true,t:getTime()});}
+function startRec(e){if(e)e.preventDefault();S.recOn=true;S.recSec=0;document.getElementById('recOv').classList.add('show');S.recInt=setInterval(function(){S.recSec++;var m=Math.floor(S.recSec/60),s2=S.recSec%60;document.getElementById('recT').textContent=m+':'+(s2<10?'0':'')+s2;},1000);}
+function stopRec(){if(!S.recOn)return;S.recOn=false;clearInterval(S.recInt);document.getElementById('recOv').classList.remove('show');if(S.recSec>0)addMsg({type:'voice',dur:S.recSec,sent:true,t:gt()});}
 
 // 通话
-function startVoiceCall(){document.getElementById('callAvatar').textContent=S.chat[0];document.getElementById('callName').textContent=S.chat;document.getElementById('callStatus').textContent='正在呼叫...';showScreen('call-screen');setTimeout(function(){document.getElementById('callStatus').textContent='通话中 00:00';S.callSec=0;S.callInt=setInterval(function(){S.callSec++;var m=Math.floor(S.callSec/60),s=S.callSec%60;document.getElementById('callStatus').textContent='通话中 '+m+':'+(s<10?'0':'')+s;},1000);},1500);}
-function startVideoCall(){document.getElementById('videoName').textContent=S.chat;showScreen('video-screen');}
-function endCall(){clearInterval(S.callInt);showScreen('chat-screen');}
+function startVoiceCall(){show('call-screen');document.getElementById('callStatus').textContent='正在呼叫...';setTimeout(function(){S.callSec=0;S.callInt=setInterval(function(){S.callSec++;var m=Math.floor(S.callSec/60),s=S.callSec%60;document.getElementById('callStatus').textContent='通话中 '+m+':'+(s<10?'0':'')+s;},1000);},1500);}
+function startVideoCall(){show('video-screen');}
+function endCall(){clearInterval(S.callInt);show('chat-screen');}
 function toggleMute(el){el.textContent=el.textContent==='🎤'?'🔇':'🎤';}
-function toggleSpeaker(el){el.textContent=el.textContent==='🔊'?'🔈':'🔊';}
+function toggleSpk(el){el.textContent=el.textContent==='🔊'?'🔈':'🔊';}
 
 // 设置
-function toggleSwitch(el){el.classList.toggle('on');}
-function updateHideDesc(){var d=document.getElementById('hideStatusDesc');if(d)d.textContent=S.hideMode?'已开启 · '+dName(S.disguise):'未开启 · 点击设置';}
-function dName(d){return{flashlight:'手电筒',calculator:'计算器',clock:'时钟',note:'备忘录'}[d]||d;}
-function selectDisguise(t){S.disguise=t;document.querySelectorAll('.option-card').forEach(function(c){c.classList.remove('selected');});var id='disguise-'+t.substring(0,4);if(document.getElementById(id))document.getElementById(id).classList.add('selected');}
-function selectTrigger(t){S.trigger=t;document.querySelectorAll('.trigger-item').forEach(function(c){c.classList.remove('selected');});document.getElementById('trigger-'+t).classList.add('selected');}
-function saveHideSettings(){var p=document.getElementById('pinInput').value;if(p.length<4){alert('密码至少4位');return;}S.pin=p;S.hideMode=true;localStorage.setItem('disguise',S.disguise);localStorage.setItem('trigger',S.trigger);localStorage.setItem('pin',S.pin);localStorage.setItem('hideMode','true');updateHideDesc();alert('✅ 隐藏模式已开启！');showSettings();}
-function disableHideMode(){S.hideMode=false;localStorage.setItem('hideMode','false');updateHideDesc();alert('隐藏模式已关闭');showSettings();}
+function toggleSw(el){el.classList.toggle('on');}
+function updHideDesc(){var d=document.getElementById('hideDesc');if(d)d.textContent=S.hide?'已开启 · '+dname(S.dis):'未开启';}
+function dname(d){return{flashlight:'手电筒',calculator:'计算器',clock:'时钟',note:'备忘录',syssettings:'系统设置'}[d]||d;}
+function selDis(t){S.dis=t;document.querySelectorAll('.oc').forEach(function(c){c.classList.remove('sel');});var el=document.getElementById('og-'+t.substring(0,4));if(el)el.classList.add('sel');}
+function selTrig(t){S.trig=t;document.querySelectorAll('.ti').forEach(function(c){c.classList.remove('sel');});document.getElementById('ti-'+t).classList.add('sel');}
+function saveHide(){var p=document.getElementById('pinInput').value;if(p.length<4){alert('密码至少4位');return;}S.pin=p;S.hide=true;lss('dis',S.dis);lss('trig',S.trig);lss('pin',S.pin);lss('hide','true');updHideDesc();alert('✅ 隐藏模式已开启');showSettings();}
+function offHide(){S.hide=false;lss('hide','false');updHideDesc();alert('已关闭');showSettings();}
+
+// 隐秘通知设置
+function showNotifSettings(){
+  var ns=['1. 时钟冒号闪烁（最隐蔽）','2. 信号格变淡','3. WiFi颜色微变','4. 电池边框变色','5. 绿点（极小）'];
+  var c=prompt('选择隐秘通知方式：\n'+ns.join('\n')+'\n\n输入1-5：');
+  var m={1:'colon',2:'signal',3:'wifi',4:'battery',5:'dot'};
+  var nm2=['时钟冒号闪烁','信号格变淡','WiFi颜色微变','电池边框变色','绿点闪烁'];
+  if(c&&m[c]){S.notif=m[c];lss('notif',S.notif);var d=document.getElementById('notifDesc');if(d)d.textContent=nm2[c-1];}
+}
 
 // 手电筒
-function toggleFL(){S.flOn=!S.flOn;var b=document.getElementById('flBtn'),st=document.getElementById('flStatus'),sc=document.getElementById('disguise-screen');if(S.flOn){b.classList.add('on');st.textContent='已开启';st.style.color='#ffd700';sc.style.background='#fffce8';}else{b.classList.remove('on');st.textContent='轻触以开启';st.style.color='#444';sc.style.background='#000';}}
-function handleSecretTap(){S.tapN++;if(S.tapT)clearTimeout(S.tapT);S.tapT=setTimeout(function(){S.tapN=0;},2000);if(S.tapN>=5){S.tapN=0;showUnlock();}}
+function togFL(){S.flOn=!S.flOn;var b=document.getElementById('flBtn'),st=document.getElementById('flSt'),sc=document.getElementById('disguise-screen');if(S.flOn){b.style.background='#fffce8';b.style.borderColor='#ffd700';b.style.boxShadow='0 0 80px #ffd70099';st.textContent='已开启';st.style.color='#ffd700';sc.style.background='#fffce8';}else{b.style.background='#1a1a1a';b.style.borderColor='#333';b.style.boxShadow='none';st.textContent='轻触以开启';st.style.color='#333';sc.style.background='#000';}}
+
+// 隐藏触发
+function hsTap(){S.tapN++;if(S.tapT)clearTimeout(S.tapT);S.tapT=setTimeout(function(){S.tapN=0;},2000);if(S.tapN>=5){S.tapN=0;openPIN();}}
+
+// 长按触发
+function ltStart(){S.ltT=setTimeout(function(){S.ltT=null;openPIN();},3000);}
+function ltEnd(){if(S.ltT){clearTimeout(S.ltT);S.ltT=null;}}
+
+// 关于本机点3次
+function aboutTap(){S.aboutN++;if(S.aboutT)clearTimeout(S.aboutT);S.aboutT=setTimeout(function(){S.aboutN=0;},2000);if(S.aboutN>=3){S.aboutN=0;openPIN();}}
 
 // 计算器
-function cp(b){var res=document.getElementById('calcResult'),expr=document.getElementById('calcExpr');if(b==='AC'){S.ci='';S.co='';S.cp2='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){S.ci+=b;res.textContent=S.ci;}if('+-×÷'.includes(b)){S.cp2=S.ci;S.co=b;S.ci='';expr.textContent=S.cp2+b;}if(b==='='){if(S.ci===S.pin){showUnlock();return;}var a=parseFloat(S.cp2),bv=parseFloat(S.ci),r=0;if(S.co==='+')r=a+bv;else if(S.co==='-')r=a-bv;else if(S.co==='×')r=a*bv;else if(S.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';S.ci=String(r);S.co='';S.cp2='';}}
+function cc(b){var res=document.getElementById('calcNum'),expr=document.getElementById('calcExpr');if(b==='AC'){S.ci='';S.co='';S.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){S.ci+=b;res.textContent=S.ci;}if('+-×÷'.includes(b)){S.cpv=S.ci;S.co=b;S.ci='';expr.textContent=S.cpv+b;}if(b==='='){if(S.ci===S.pin){openPIN();return;}var a=parseFloat(S.cpv),bv=parseFloat(S.ci),r=0;if(S.co==='+')r=a+bv;else if(S.co==='-')r=a-bv;else if(S.co==='×')r=a*bv;else if(S.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';S.ci=String(r);S.co='';S.cpv='';}}
 
 // 摇一摇
-function setupShake(){if(!window.DeviceMotionEvent)return;var last=0;window.addEventListener('devicemotion',function(e){var a=e.accelerationIncludingGravity;if(!a)return;var tot=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z),now=Date.now();if(tot>25&&now-last>1000){last=now;if(S.hideMode&&S.trigger==='shake')showUnlock();}});}
+function setupShake(){if(!window.DeviceMotionEvent)return;var last=0;window.addEventListener('devicemotion',function(e){var a=e.accelerationIncludingGravity;if(!a)return;var tot=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z),now=Date.now();if(tot>25&&now-last>1000){last=now;if(S.hide&&S.trig==='shake')openPIN();}});}
 
 // PIN解锁
-S.pinEntry='';
-function showUnlock(){S.pinEntry='';updateDots();document.getElementById('unlockModal').classList.add('show');}
-function closeUnlock(){document.getElementById('unlockModal').classList.remove('show');}
-function pinKey(k){if(S.pinEntry.length>=S.pin.length)return;S.pinEntry+=k;updateDots();if(S.pinEntry.length===S.pin.length){setTimeout(function(){if(S.pinEntry===S.pin){closeUnlock();showMain();}else{S.pinEntry='';updateDots();var dots=document.getElementById('pinDots');dots.style.animation='shake 0.3s';setTimeout(function(){dots.style.animation='';},300);}},100);}}
-function pinDel(){S.pinEntry=S.pinEntry.slice(0,-1);updateDots();}
-function updateDots(){var len=S.pin.length;var entry=S.pinEntry.length;for(var i=0;i<4;i++){var d=document.getElementById('d'+i);if(d){d.classList.toggle('filled',i<entry);}}}
+S.pe='';
+function openPIN(){S.pe='';updDots();document.getElementById('pinModal').classList.add('show');}
+function closePIN(){document.getElementById('pinModal').classList.remove('show');}
+function pk(k){if(S.pe.length>=S.pin.length)return;S.pe+=k;updDots();if(S.pe.length===S.pin.length){setTimeout(function(){if(S.pe===S.pin){closePIN();showMain();}else{S.pe='';updDots();var dd=document.getElementById('pinDots');dd.style.animation='shake 0.3s';setTimeout(function(){dd.style.animation='';},300);}},80);}}
+function pd(){S.pe=S.pe.slice(0,-1);updDots();}
+function updDots(){for(var i=0;i<4;i++){var d=document.getElementById('pd'+i);if(d)d.classList.toggle('on',i<S.pe.length);}}
 
-function getTime(){var d=new Date();return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();}
+function gt(){var d=new Date();return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();}
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 </script>
 </body>
