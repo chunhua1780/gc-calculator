@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>手电筒</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif; overflow:hidden; }
+
+/* 手电筒界面 */
+#flashlight-app { width:100%; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.fl-title { color:#888; font-size:14px; margin-bottom:40px; letter-spacing:2px; }
+.fl-btn { width:160px; height:160px; border-radius:50%; background:#1a1a1a; border:3px solid #333; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s; }
+.fl-btn.on { background:#fff9e6; border-color:#ffd700; box-shadow:0 0 60px #ffd70088; }
+.fl-icon { font-size:64px; }
+.fl-status { color:#666; font-size:13px; margin-top:30px; }
+.fl-status.on { color:#ffd700; }
+.fl-corner { position:fixed; bottom:0; right:0; width:60px; height:60px; cursor:pointer; z-index:99; }
+
+/* 채팅 인터페이스 */
+#chat-app { display:none; width:100%; height:100vh; flex-direction:column; background:#0d1117; }
+.chat-header { background:#161b22; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #30363d; }
+.chat-header-title { color:#e6edf3; font-size:16px; font-weight:600; }
+.chat-back { color:#58a6ff; font-size:14px; cursor:pointer; padding:4px 8px; }
+.chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.msg { max-width:75%; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.5; word-break:break-word; }
+.msg.sent { background:#238636; color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+.msg.received { background:#21262d; color:#e6edf3; align-self:flex-start; border-bottom-left-radius:4px; }
+.msg-time { font-size:10px; opacity:0.6; margin-top:4px; }
+.chat-input-area { background:#161b22; padding:12px 16px; display:flex; gap:10px; align-items:flex-end; border-top:1px solid #30363d; }
+.chat-input { flex:1; background:#21262d; border:1px solid #30363d; border-radius:20px; padding:10px 16px; color:#e6edf3; font-size:14px; outline:none; resize:none; max-height:100px; }
+.chat-send { width:40px; height:40px; border-radius:50%; background:#238636; border:none; color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+/* 联系人列表 */
+#contacts-app { display:none; width:100%; height:100vh; flex-direction:column; background:#0d1117; }
+.contacts-header { background:#161b22; padding:16px 20px; border-bottom:1px solid #30363d; }
+.contacts-title { color:#e6edf3; font-size:18px; font-weight:600; }
+.contacts-subtitle { color:#8b949e; font-size:12px; margin-top:2px; }
+.contact-list { flex:1; overflow-y:auto; }
+.contact-item { display:flex; align-items:center; padding:14px 20px; border-bottom:1px solid #21262d; cursor:pointer; }
+.contact-item:active { background:#21262d; }
+.contact-avatar { width:48px; height:48px; border-radius:50%; background:#238636; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:600; flex-shrink:0; }
+.contact-info { margin-left:14px; flex:1; }
+.contact-name { color:#e6edf3; font-size:15px; font-weight:500; }
+.contact-last { color:#8b949e; font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
+.contact-meta { text-align:right; }
+.contact-time { color:#8b949e; font-size:11px; }
+.contact-badge { background:#238636; color:#fff; border-radius:10px; padding:2px 7px; font-size:11px; margin-top:4px; display:inline-block; }
+.add-btn { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:#238636; border:none; color:#fff; font-size:28px; cursor:pointer; box-shadow:0 4px 16px #23863666; }
+</style>
+</head>
+<body>
+
+<!-- 手电筒伪装界面 -->
+<div id="flashlight-app">
+  <div class="fl-title">手电筒</div>
+  <div class="fl-btn" id="flBtn" onclick="toggleFlashlight()">
+    <span class="fl-icon">💡</span>
+  </div>
+  <div class="fl-status" id="flStatus">点击开启</div>
+  <!-- 隐藏触发区域：右下角 -->
+  <div class="fl-corner" id="secretCorner" onclick="handleSecretTap()"></div>
+</div>
+
+<!-- 联系人列表 -->
+<div id="contacts-app">
+  <div class="contacts-header">
+    <div class="contacts-title">消息</div>
+    <div class="contacts-subtitle">端对端加密 · 自动销毁</div>
+  </div>
+  <div class="contact-list" id="contactList">
+    <div class="contact-item" onclick="openChat('Alex','A')">
+      <div class="contact-avatar">A</div>
+      <div class="contact-info">
+        <div class="contact-name">Alex</div>
+        <div class="contact-last">今晚有空吗？</div>
+      </div>
+      <div class="contact-meta">
+        <div class="contact-time">22:14</div>
+        <div class="contact-badge">2</div>
+      </div>
+    </div>
+    <div class="contact-item" onclick="openChat('Baby','B')">
+      <div class="contact-avatar" style="background:#8957e5">B</div>
+      <div class="contact-info">
+        <div class="contact-name">Baby</div>
+        <div class="contact-last">想你了 ❤️</div>
+      </div>
+      <div class="contact-meta">
+        <div class="contact-time">20:03</div>
+      </div>
+    </div>
+  </div>
+  <button class="add-btn" onclick="addContact()">+</button>
+</div>
+
+<!-- 聊天界面 -->
+<div id="chat-app">
+  <div class="chat-header">
+    <span class="chat-back" onclick="showContacts()">← 返回</span>
+    <span class="chat-header-title" id="chatTitle">Alex</span>
+    <span style="width:48px"></span>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-area">
+    <textarea class="chat-input" id="msgInput" placeholder="消息..." rows="1" onkeydown="handleKey(event)"></textarea>
+    <button class="chat-send" onclick="sendMessage()">↑</button>
+  </div>
+</div>
+
+<script>
+// ===== 状态 =====
+var flOn = false;
+var secretTapCount = 0;
+var secretTapTimer = null;
+var currentChat = '';
+var messages = {};
+var unlocked = false;
+
+// ===== 手电筒逻辑 =====
+function toggleFlashlight() {
+  flOn = !flOn;
+  var btn = document.getElementById('flBtn');
+  var status = document.getElementById('flStatus');
+  if (flOn) {
+    btn.classList.add('on');
+    status.textContent = '已开启';
+    status.classList.add('on');
+    document.body.style.background = '#fffdf0';
+  } else {
+    btn.classList.remove('on');
+    status.textContent = '点击开启';
+    status.classList.remove('on');
+    document.body.style.background = '#000';
+  }
+}
+
+// ===== 隐藏激活：右下角连点5次 =====
+function handleSecretTap() {
+  secretTapCount++;
+  if (secretTapTimer) clearTimeout(secretTapTimer);
+  secretTapTimer = setTimeout(function(){ secretTapCount = 0; }, 2000);
+  if (secretTapCount >= 5) {
+    secretTapCount = 0;
+    showUnlock();
+  }
+}
+
+// ===== 解锁密码界面 =====
+function showUnlock() {
+  var pin = prompt('');
+  if (pin === '1234') {
+    unlocked = true;
+    showContacts();
+  }
+}
+
+// ===== 界面切换 =====
+function showContacts() {
+  document.getElementById('flashlight-app').style.display = 'none';
+  document.getElementById('chat-app').style.display = 'none';
+  document.getElementById('contacts-app').style.display = 'flex';
+}
+
+function openChat(name, initial) {
+  currentChat = name;
+  document.getElementById('chatTitle').textContent = name;
+  document.getElementById('contacts-app').style.display = 'none';
+  document.getElementById('chat-app').style.display = 'flex';
+  if (!messages[name]) messages[name] = [
+    {text:'你好！', sent:false, time:getTime()},
+  ];
+  renderMessages();
+}
+
+function showContacts() {
+  document.getElementById('flashlight-app').style.display = 'none';
+  document.getElementById('chat-app').style.display = 'none';
+  document.getElementById('contacts-app').style.display = 'flex';
+}
+
+// ===== 消息 =====
+function renderMessages() {
+  var container = document.getElementById('chatMessages');
+  var msgs = messages[currentChat] || [];
+  container.innerHTML = msgs.map(function(m){
+    return '<div class="msg '+(m.sent?'sent':'received')+'">'+
+      escapeHtml(m.text)+
+      '<div class="msg-time">'+m.time+'</div></div>';
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendMessage() {
+  var input = document.getElementById('msgInput');
+  var text = input.value.trim();
+  if (!text) return;
+  if (!messages[currentChat]) messages[currentChat] = [];
+  messages[currentChat].push({text:text, sent:true, time:getTime()});
+  input.value = '';
+  renderMessages();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function addContact() {
+  var name = prompt('输入联系人名称：');
+  if (name && name.trim()) {
+    var list = document.getElementById('contactList');
+    var initial = name.trim()[0].toUpperCase();
+    var colors = ['#238636','#8957e5','#1f6feb','#da3633','#e09b13'];
+    var color = colors[Math.floor(Math.random()*colors.length)];
+    var item = document.createElement('div');
+    item.className = 'contact-item';
+    item.innerHTML = '<div class="contact-avatar" style="background:'+color+'">'+initial+'</div>'+
+      '<div class="contact-info"><div class="contact-name">'+escapeHtml(name.trim())+'</div>'+
+      '<div class="contact-last">开始聊天</div></div>';
+    item.onclick = function(){ openChat(name.trim(), initial); };
+    list.appendChild(item);
+  }
+}
+
+function getTime() {
+  var d = new Date();
+  return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
+}
+
+function escapeHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
