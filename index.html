@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>私聊</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --bg:#f2f2f7;--card:#ffffff;--text:#000000;--text2:#3c3c43;
@@ -778,3 +780,139 @@ function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 </script>
 </body>
 </html>
+<script>
+// Supabase实时聊天
+const _sb = supabase.createClient(
+  'https://mztoenhgfuomzrashrqk.supabase.co',
+  'sb_publishable_pOM3IfVWYiscQ-cz9vAwvA_F2Ht6zg1'
+);
+
+// 生成或获取用户ID
+var myId = localStorage.getItem('myId');
+if(!myId){ myId = 'user_'+Math.random().toString(36).substr(2,8); localStorage.setItem('myId',myId); }
+
+var currentRoom = null;
+var realtimeSub = null;
+
+// 打开聊天室
+async function joinRoom(contactName) {
+  var ids = [myId, contactName].sort();
+  currentRoom = ids.join('_');
+  
+  // 订阅实时消息
+  if(realtimeSub) realtimeSub.unsubscribe();
+  realtimeSub = _sb
+    .channel('room:'+currentRoom)
+    .on('postgres_changes', {
+      event:'INSERT', schema:'public', table:'messages',
+      filter:'room_id=eq.'+currentRoom
+    }, function(payload){
+      var m = payload.new;
+      if(m.sender !== myId) {
+        addMsg({text:m.content, type:m.type||'text', sent:false, t:gt()});
+      }
+    })
+    .subscribe();
+  
+  // 加载历史消息
+  var {data} = await _sb.from('messages')
+    .select('*')
+    .eq('room_id', currentRoom)
+    .order('created_at', {ascending:true})
+    .limit(50);
+  
+  if(data && data.length > 0) {
+    G.msgs[contactName] = data.map(function(m){
+      return {text:m.content, type:m.type||'text', sent:m.sender===myId, t:gt()};
+    });
+    renderMsgs();
+  }
+}
+
+// 发送真实消息
+var origSendMsg = sendMsg;
+sendMsg = async function(){
+  var inp = document.getElementById('mi');
+  var t = inp.value.trim();
+  if(!t || !currentRoom) { origSendMsg(); return; }
+  
+  addMsg({text:t, sent:true, t:gt()});
+  inp.value = '';
+  
+  await _sb.from('messages').insert({
+    room_id: currentRoom,
+    sender: myId,
+    content: t,
+    type: 'text'
+  });
+};
+
+// 覆盖openChat加入joinRoom
+var origOpenChat = openChat;
+openChat = function(name, ini, color) {
+  origOpenChat(name, ini, color);
+  joinRoom(name);
+};
+
+console.log('Supabase connected! MyID:', myId);
+</script>
+<script>
+const _sb = supabase.createClient(
+  'https://mztoenhgfuomzrashrqk.supabase.co',
+  'sb_publishable_pOM3IfVWYiscQ-cz9vAwvA_F2Ht6zg1'
+);
+var myId = localStorage.getItem('myId');
+if(!myId){ myId = 'user_'+Math.random().toString(36).substr(2,8); localStorage.setItem('myId',myId); }
+var currentRoom = null;
+var realtimeSub = null;
+async function joinRoom(contactName) {
+  var ids = [myId, contactName].sort();
+  currentRoom = ids.join('_');
+  if(realtimeSub) realtimeSub.unsubscribe();
+  realtimeSub = _sb
+    .channel('room:'+currentRoom)
+    .on('postgres_changes', {
+      event:'INSERT', schema:'public', table:'messages',
+      filter:'room_id=eq.'+currentRoom
+    }, function(payload){
+      var m = payload.new;
+      if(m.sender !== myId) {
+        addMsg({text:m.content, type:m.type||'text', sent:false, t:gt()});
+      }
+    })
+    .subscribe();
+  var {data} = await _sb.from('messages')
+    .select('*')
+    .eq('room_id', currentRoom)
+    .order('created_at', {ascending:true})
+    .limit(50);
+  if(data && data.length > 0) {
+    G.msgs[contactName] = data.map(function(m){
+      return {text:m.content, type:m.type||'text', sent:m.sender===myId, t:gt()};
+    });
+    renderMsgs();
+  }
+}
+var origSendMsg = sendMsg;
+sendMsg = async function(){
+  var inp = document.getElementById('mi');
+  var t = inp.value.trim();
+  if(!t){ origSendMsg(); return; }
+  addMsg({text:t, sent:true, t:gt()});
+  inp.value = '';
+  if(currentRoom){
+    await _sb.from('messages').insert({
+      room_id: currentRoom,
+      sender: myId,
+      content: t,
+      type: 'text'
+    });
+  }
+};
+var origOpenChat = openChat;
+openChat = function(name, ini, color) {
+  origOpenChat(name, ini, color);
+  joinRoom(name);
+};
+console.log('Supabase ready! ID:', myId);
+</script>
