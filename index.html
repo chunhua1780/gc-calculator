@@ -706,11 +706,6 @@ window.onload=function(){
     if(G.hide) show(dm[G.dis]||'dfl');
     else show('main');
   }
-  else{
-    var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote',syssettings:'dsys'};
-    if(G.hide)show(dm[G.dis]||'dfl');
-    else show('main');
-  }
   updHide();updDest();updNotif();
   setupShake();tickClock();
   var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId;
