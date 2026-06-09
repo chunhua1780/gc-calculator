@@ -569,7 +569,64 @@ function buildLangList(){
   var ll=document.getElementById('langList');if(!ll)return;
   ll.innerHTML='<div style="height:8px;"></div><div style="background:#fff;border-radius:12px;margin:0 16px;overflow:hidden;">'+Object.keys(LANGS).map(function(c){var l=LANGS[c];var sel=c===curLang;return '<div onclick="pickLang(\''+c+'\')" style="display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);cursor:pointer;background:'+(sel?'#f0f7ff':'#fff')+'"><span style="font-size:24px;margin-right:14px;">'+l.flag+'</span><span style="font-size:16px;flex:1;">'+l.name+'</span>'+(sel?'<span style="color:#007aff;font-size:18px;">✓</span>':'<span style="color:#c7c7cc;font-size:18px;">›</span>')+'</div>';}).join('')+'</div>';
 }
-function pickLang(code){curLang=code;ls('lang',code);var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[code]||{}).name||code;buildLangBtns();buildLangList();document.body.dir=['ar','ur'].includes(code)?'rtl':'ltr';show('settings');}
+function applyLang(){
+  var L={
+    'en':{app:'GhostChat',tag:'Private · Encrypted · Untraceable',msg:'Messages',set:'Settings',nick:'Nickname',pwd:'Password (4-8 digits)',cpwd:'Confirm password',create:'Create Account',haveAcct:'Already have account?',newUser:'New user?',forgot:'Forgot password?',hideMode:'Hide Mode',notEnabled:'Not enabled',secretNotif:'Secret Notification',destroyMethod:'Destroy Method',e2e:'End-to-End Encryption',destroyNow:'Destroy Now',subscribe:'Subscribe',logout:'Logout',lang:'Language',privacy:'Privacy & Security',flashlight:'Flashlight',calculator:'Calculator',clock:'Clock',notes:'Notes',calling:'Calling...',mute:'Mute',end:'End',speaker:'Speaker',incoming:'Incoming call...',decline:'Decline',accept:'Accept',enterPwd:'Enter Password',cancel:'Cancel',release:'Release to send',enableHide:'Enable Hide Mode',disableHide:'Disable Hide Mode',save:'Save'},
+    'zh-CN':{app:'私聊',tag:'私密 · 加密 · 无痕',msg:'消息',set:'设置',nick:'昵称',pwd:'密码（4-8位）',cpwd:'确认密码',create:'创建账号',haveAcct:'已有账号？',newUser:'新用户？',forgot:'忘记密码？',hideMode:'隐藏模式',notEnabled:'未开启',secretNotif:'隐秘通知',destroyMethod:'销毁方式',e2e:'端对端加密',destroyNow:'立即销毁',subscribe:'订阅会员',logout:'退出登录',lang:'语言',privacy:'隐私与安全',flashlight:'手电筒',calculator:'计算器',clock:'时钟',notes:'备忘录',calling:'正在呼叫...',mute:'静音',end:'挂断',speaker:'扬声器',incoming:'来电...',decline:'拒接',accept:'接听',enterPwd:'输入密码',cancel:'取消',release:'松开发送',enableHide:'开启隐藏模式',disableHide:'关闭隐藏模式',save:'保存'},
+    'zh-TW':{app:'私聊',tag:'私密 · 加密 · 無痕',msg:'訊息',set:'設定',nick:'暱稱',pwd:'密碼（4-8位）',cpwd:'確認密碼',create:'建立帳號',haveAcct:'已有帳號？',newUser:'新用戶？',forgot:'忘記密碼？',hideMode:'隱藏模式',notEnabled:'未開啟',secretNotif:'隱密通知',destroyMethod:'銷毀方式',e2e:'端對端加密',destroyNow:'立即銷毀',subscribe:'訂閱會員',logout:'登出',lang:'語言',privacy:'隱私與安全',flashlight:'手電筒',calculator:'計算機',clock:'時鐘',notes:'備忘錄',calling:'撥打中...',mute:'靜音',end:'掛斷',speaker:'擴音',incoming:'來電...',decline:'拒接',accept:'接聽',enterPwd:'輸入密碼',cancel:'取消',release:'放開傳送',enableHide:'開啟隱藏模式',disableHide:'關閉隱藏模式',save:'儲存'},
+    'es':{app:'GhostChat',tag:'Privado · Cifrado · Sin rastro',msg:'Mensajes',set:'Ajustes',nick:'Apodo',pwd:'Contraseña (4-8 dígitos)',cpwd:'Confirmar contraseña',create:'Crear cuenta',haveAcct:'¿Ya tienes cuenta?',newUser:'¿Nuevo usuario?',forgot:'¿Olvidaste la contraseña?',hideMode:'Modo oculto',notEnabled:'No activado',secretNotif:'Notif. secreta',destroyMethod:'Destrucción',e2e:'Cifrado E2E',destroyNow:'Destruir ahora',subscribe:'Suscribirse',logout:'Cerrar sesión',lang:'Idioma',privacy:'Privacidad',flashlight:'Linterna',calculator:'Calculadora',clock:'Reloj',notes:'Notas',calling:'Llamando...',mute:'Silencio',end:'Colgar',speaker:'Altavoz',incoming:'Llamada entrante...',decline:'Rechazar',accept:'Aceptar',enterPwd:'Contraseña',cancel:'Cancelar',release:'Soltar para enviar',enableHide:'Activar modo oculto',disableHide:'Desactivar',save:'Guardar'},
+    'fr':{app:'GhostChat',tag:'Privé · Chiffré · Sans trace',msg:'Messages',set:'Paramètres',nick:'Pseudo',pwd:'Mot de passe (4-8 chiffres)',cpwd:'Confirmer',create:'Créer un compte',haveAcct:'Déjà un compte?',newUser:'Nouvel utilisateur?',forgot:'Mot de passe oublié?',hideMode:'Mode caché',notEnabled:'Non activé',secretNotif:'Notif. secrète',destroyMethod:'Destruction',e2e:'Chiffrement E2E',destroyNow:'Détruire',subscribe:'Abonnement',logout:'Déconnexion',lang:'Langue',privacy:'Confidentialité',flashlight:'Lampe torche',calculator:'Calculatrice',clock:'Horloge',notes:'Notes',calling:'Appel en cours...',mute:'Muet',end:'Raccrocher',speaker:'Haut-parleur',incoming:'Appel entrant...',decline:'Refuser',accept:'Accepter',enterPwd:'Mot de passe',cancel:'Annuler',release:'Relâcher pour envoyer',enableHide:'Activer mode caché',disableHide:'Désactiver',save:'Enregistrer'},
+    'de':{app:'GhostChat',tag:'Privat · Verschlüsselt · Spurlos',msg:'Nachrichten',set:'Einstellungen',nick:'Spitzname',pwd:'Passwort (4-8 Ziffern)',cpwd:'Bestätigen',create:'Konto erstellen',haveAcct:'Schon ein Konto?',newUser:'Neuer Nutzer?',forgot:'Passwort vergessen?',hideMode:'Versteckter Modus',notEnabled:'Nicht aktiv',secretNotif:'Geheime Benachrichtigung',destroyMethod:'Zerstörung',e2e:'Ende-zu-Ende',destroyNow:'Jetzt zerstören',subscribe:'Abonnement',logout:'Abmelden',lang:'Sprache',privacy:'Datenschutz',flashlight:'Taschenlampe',calculator:'Rechner',clock:'Uhr',notes:'Notizen',calling:'Anrufen...',mute:'Stummschalten',end:'Auflegen',speaker:'Lautsprecher',incoming:'Eingehender Anruf...',decline:'Ablehnen',accept:'Annehmen',enterPwd:'Passwort',cancel:'Abbrechen',release:'Loslassen zum Senden',enableHide:'Modus aktivieren',disableHide:'Deaktivieren',save:'Speichern'},
+    'ru':{app:'GhostChat',tag:'Приватно · Зашифровано · Без следов',msg:'Сообщения',set:'Настройки',nick:'Псевдоним',pwd:'Пароль (4-8 цифр)',cpwd:'Подтвердить',create:'Создать аккаунт',haveAcct:'Уже есть аккаунт?',newUser:'Новый пользователь?',forgot:'Забыли пароль?',hideMode:'Скрытый режим',notEnabled:'Не активно',secretNotif:'Тайное уведомление',destroyMethod:'Уничтожение',e2e:'Сквозное шифрование',destroyNow:'Уничтожить',subscribe:'Подписка',logout:'Выйти',lang:'Язык',privacy:'Конфиденциальность',flashlight:'Фонарик',calculator:'Калькулятор',clock:'Часы',notes:'Заметки',calling:'Вызов...',mute:'Без звука',end:'Завершить',speaker:'Динамик',incoming:'Входящий звонок...',decline:'Отклонить',accept:'Принять',enterPwd:'Пароль',cancel:'Отмена',release:'Отпустить для отправки',enableHide:'Включить скрытый режим',disableHide:'Отключить',save:'Сохранить'},
+    'ar':{app:'GhostChat',tag:'خاص · مشفر · بلا أثر',msg:'رسائل',set:'إعدادات',nick:'اللقب',pwd:'كلمة المرور',cpwd:'تأكيد',create:'إنشاء حساب',haveAcct:'لديك حساب؟',newUser:'مستخدم جديد؟',forgot:'نسيت كلمة المرور؟',hideMode:'وضع الإخفاء',notEnabled:'غير مفعل',secretNotif:'إشعار سري',destroyMethod:'التدمير',e2e:'تشفير كامل',destroyNow:'تدمير الآن',subscribe:'اشتراك',logout:'خروج',lang:'اللغة',privacy:'الخصوصية',flashlight:'مصباح',calculator:'آلة حاسبة',clock:'ساعة',notes:'ملاحظات',calling:'جارٍ الاتصال...',mute:'كتم',end:'إنهاء',speaker:'مكبر',incoming:'مكالمة واردة...',decline:'رفض',accept:'قبول',enterPwd:'كلمة المرور',cancel:'إلغاء',release:'أفلت للإرسال',enableHide:'تفعيل وضع الإخفاء',disableHide:'تعطيل',save:'حفظ'},
+    'ja':{app:'GhostChat',tag:'プライベート · 暗号化 · 痕跡なし',msg:'メッセージ',set:'設定',nick:'ニックネーム',pwd:'パスワード (4-8桁)',cpwd:'確認',create:'アカウント作成',haveAcct:'アカウントをお持ちですか?',newUser:'新規ユーザー?',forgot:'パスワードを忘れた?',hideMode:'隠しモード',notEnabled:'無効',secretNotif:'秘密通知',destroyMethod:'消去',e2e:'エンドツーエンド暗号化',destroyNow:'今すぐ消去',subscribe:'サブスク',logout:'ログアウト',lang:'言語',privacy:'プライバシー',flashlight:'懐中電灯',calculator:'計算機',clock:'時計',notes:'メモ',calling:'発信中...',mute:'ミュート',end:'終了',speaker:'スピーカー',incoming:'着信...',decline:'拒否',accept:'応答',enterPwd:'パスワード',cancel:'キャンセル',release:'離して送信',enableHide:'隠しモードON',disableHide:'OFF',save:'保存'},
+    'ko':{app:'GhostChat',tag:'프라이빗 · 암호화 · 흔적없음',msg:'메시지',set:'설정',nick:'닉네임',pwd:'비밀번호 (4-8자리)',cpwd:'확인',create:'계정 만들기',haveAcct:'이미 계정이 있나요?',newUser:'새 사용자?',forgot:'비밀번호를 잊었나요?',hideMode:'숨김 모드',notEnabled:'비활성',secretNotif:'비밀 알림',destroyMethod:'삭제',e2e:'종단간 암호화',destroyNow:'지금 삭제',subscribe:'구독',logout:'로그아웃',lang:'언어',privacy:'개인정보',flashlight:'손전등',calculator:'계산기',clock:'시계',notes:'메모',calling:'통화 중...',mute:'음소거',end:'종료',speaker:'스피커',incoming:'수신 전화...',decline:'거절',accept:'수락',enterPwd:'비밀번호',cancel:'취소',release:'놓으면 전송',enableHide:'숨김 모드 켜기',disableHide:'끄기',save:'저장'},
+    'pt':{app:'GhostChat',tag:'Privado · Criptografado · Sem rastros',msg:'Mensagens',set:'Configurações',nick:'Apelido',pwd:'Senha (4-8 dígitos)',cpwd:'Confirmar',create:'Criar conta',haveAcct:'Já tem conta?',newUser:'Novo usuário?',forgot:'Esqueceu a senha?',hideMode:'Modo oculto',notEnabled:'Não ativado',secretNotif:'Notif. secreta',destroyMethod:'Destruição',e2e:'Criptografia E2E',destroyNow:'Destruir agora',subscribe:'Assinar',logout:'Sair',lang:'Idioma',privacy:'Privacidade',flashlight:'Lanterna',calculator:'Calculadora',clock:'Relógio',notes:'Notas',calling:'Chamando...',mute:'Mudo',end:'Desligar',speaker:'Alto-falante',incoming:'Chamada recebida...',decline:'Recusar',accept:'Atender',enterPwd:'Senha',cancel:'Cancelar',release:'Soltar para enviar',enableHide:'Ativar modo oculto',disableHide:'Desativar',save:'Salvar'},
+    'hi':{app:'GhostChat',tag:'निजी · एन्क्रिप्टेड · निशान रहित',msg:'संदेश',set:'सेटिंग्स',nick:'उपनाम',pwd:'पासवर्ड (4-8 अंक)',cpwd:'पुष्टि करें',create:'खाता बनाएं',haveAcct:'पहले से खाता है?',newUser:'नया उपयोगकर्ता?',forgot:'पासवर्ड भूल गए?',hideMode:'छुपाएं मोड',notEnabled:'सक्रिय नहीं',secretNotif:'गुप्त सूचना',destroyMethod:'नष्ट करें',e2e:'एंड-टू-एंड',destroyNow:'अभी नष्ट करें',subscribe:'सदस्यता',logout:'लॉग आउट',lang:'भाषा',privacy:'गोपनीयता',flashlight:'टॉर्च',calculator:'कैलकुलेटर',clock:'घड़ी',notes:'नोट्स',calling:'कॉल हो रही है...',mute:'म्यूट',end:'काटें',speaker:'स्पीकर',incoming:'आने वाली कॉल...',decline:'अस्वीकार',accept:'स्वीकार',enterPwd:'पासवर्ड',cancel:'रद्द करें',release:'भेजने के लिए छोड़ें',enableHide:'छुपाएं मोड चालू',disableHide:'बंद करें',save:'सहेजें'}
+  };
+  var l=L[curLang]||L['en'];
+  document.body.dir=['ar','ur'].includes(curLang)?'rtl':'ltr';
+  function T(id,key){var e=document.getElementById(id);if(e&&l[key])e.textContent=l[key];}
+  function TP(id,key){var e=document.getElementById(id);if(e&&l[key])e.placeholder=l[key];}
+  function TQ(sel,key){var e=document.querySelector(sel);if(e&&l[key])e.textContent=l[key];}
+  // 注册页
+  T('app-name','app');
+  TP('regName','nick');TP('regPin','pwd');TP('regPin2','cpwd');
+  T('reg-btn','create');T('login-btn','login');
+  // 主界面
+  TQ('#main .nav-lg .t','msg');
+  TQ('#settings .nav-lg .t','set');
+  // 设置项
+  T('set-hideMode','hideMode');T('set-secretNotif','secretNotif');
+  T('set-destroyMethod','destroyMethod');T('set-e2e','e2e');
+  T('set-destroyNow','destroyNow');T('set-subscribe','subscribe');
+  T('set-logout','logout');T('set-lang','lang');
+  T('set-privacy-hd','privacy');
+  // 隐藏设置
+  T('d-fl-name','flashlight');T('d-calc-name','calculator');
+  T('d-clk-name','clock');T('d-note-name','notes');
+  T('enable-hide-btn','enableHide');T('disable-hide-btn','disableHide');
+  // 通话
+  T('mute-lbl','mute');T('end-lbl','end');T('spk-lbl','speaker');
+  T('inc-lbl','incoming');T('decline-lbl','decline');T('accept-lbl','accept');
+  // PIN
+  TQ('#pinOv .psh > div:nth-child(2)','enterPwd');
+  TQ('.pcan','cancel');
+  // 录音
+  TQ('#recHud > div:last-child','release');
+  // 保存按钮
+  document.querySelectorAll('.btn-blue[onclick="saveNotif()"],.btn-blue[onclick="saveDestruct()"]').forEach(function(b){b.textContent=l.save;});
+  // curLangShow
+  var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
+}
+
+function pickLang(code){
+  curLang=code;ls('lang',code);
+  document.body.dir=['ar','ur'].includes(code)?'rtl':'ltr';
+  applyLang();
+  buildLangBtns();buildLangList();
+  show('settings');
+}
 
 // ═══ Supabase ═══
 var _sb=supabase.createClient('https://mztoenhgfuomzrashrqk.supabase.co','sb_publishable_pOM3IfVWYiscQ-cz9vAwvA_F2Ht6zg1');
