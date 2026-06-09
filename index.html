@@ -6,346 +6,524 @@
 <title>GhostChat</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:100vh;overflow:hidden;}
+body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;}
 .screen{display:none;flex-direction:column;height:100vh;}
 .screen.active{display:flex;}
 .btn-blue{background:#007aff;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 .field{background:#fff;border:0.5px solid rgba(60,60,67,0.18);border-radius:12px;padding:14px 16px;color:#000;font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
+.nav-bar{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(60,60,67,0.18);flex-shrink:0;}
+.nav-lg{padding:52px 20px 12px;}
+.nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
+.nav-sm{padding:52px 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+.nav-sm .t{font-size:17px;font-weight:600;}
+.nav-btn{color:#007aff;font-size:15px;cursor:pointer;padding:4px 8px;}
+.tabs{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);display:flex;flex-shrink:0;}
+.tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.tab.on{color:#007aff;}
+.tab svg{width:24px;height:24px;}
+.scroll{flex:1;overflow-y:auto;background:#f2f2f7;}
+.card{background:#fff;border-radius:12px;margin:0 16px;overflow:hidden;}
+.row{display:flex;align-items:center;padding:12px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);cursor:pointer;gap:12px;}
+.row:last-child{border-bottom:none;}
+.row:active{background:#e5e5ea;}
+.av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:#fff;flex-shrink:0;}
+.si{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;}
+.tog{width:51px;height:31px;border-radius:16px;background:#e5e5ea;position:relative;cursor:pointer;transition:background .25s;flex-shrink:0;}
+.tog.on{background:#34c759;}
+.td{width:27px;height:27px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .25s;box-shadow:0 2px 5px rgba(0,0,0,.25);}
+.tog.on .td{left:22px;}
+.cbg{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:6px;background:#f2f2f7;}
+.mr{display:flex;flex-direction:column;margin-bottom:2px;}
+.mr.s{align-items:flex-end;}.mr.r{align-items:flex-start;}
+.bub{max-width:72%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.45;word-break:break-word;}
+.mr.s .bub{background:#007aff;color:#fff;border-bottom-right-radius:5px;}
+.mr.r .bub{background:#fff;color:#000;border-bottom-left-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.mt{font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;}
+.msg-img{max-width:220px;border-radius:16px;display:block;}
+.ibar{background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);flex-shrink:0;}
+.irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
+.ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#007aff;flex-shrink:0;}
+.ibtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.itxt{flex:1;background:#fff;border:0.5px solid rgba(60,60,67,0.18);border-radius:18px;padding:8px 14px;color:#000;font-size:16px;outline:none;resize:none;max-height:100px;font-family:inherit;line-height:1.4;}
+.isend{width:34px;height:34px;border-radius:50%;background:#007aff;border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.xp{background:#fff;border-top:0.5px solid rgba(60,60,67,0.18);padding:16px;display:none;}
+.xp.on{display:block;}
+.xg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.xi{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.xi:active{opacity:.6;}
+.xib{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;}
+.xil{font-size:11px;color:#3c3c43;}
+.og{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.oc{background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;}
+.oc.on{border-color:#007aff;background:#f0f7ff;}
+.nc{background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:border-color .2s;}
+.nc.on{border-color:#007aff;background:#f0f7ff;}
+.dr{background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;}
+.dr.on{border-color:#ff3b30;}
+.tr2{background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;}
+.tr2.on{border-color:#007aff;}
+.pov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:flex-end;}
+.pov.on{display:flex;}
+.psh{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 44px;width:100%;}
+.ph{width:36px;height:4px;background:#e5e5ea;border-radius:2px;margin:0 auto 20px;}
+.pkb{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.pk{height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;font-weight:300;cursor:pointer;font-family:inherit;}
+.pk:active{background:#e5e5ea;}
+.rh{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.82);border-radius:16px;padding:20px 36px;text-align:center;display:none;z-index:200;}
+.rh.on{display:block;}
+.inc{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;}
+.inc.on{display:flex;}
+#dfl{background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;}
+.flr{width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:64px;}
+.flr.on{background:#fffce8;border-color:#ffd700;box-shadow:0 0 80px rgba(255,215,0,.5);}
+#dcalc{background:#1c1c1e;flex-direction:column;}
+.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;}
+.ck{height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;color:#fff;}
+.ck:active{opacity:.7;}
+.ck.fn{background:#2c2c2e;font-size:22px;}
+.ck.op{background:#ff9f0a;font-size:32px;}
+.ck.num{background:#1c1c1e;}
+.ck.z{grid-column:span 2;justify-content:flex-start;padding-left:28px;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.2;}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-10px);}75%{transform:translateX(10px);}}
 </style>
 </head>
 <body>
 
-<!-- 注册/登录界面 -->
+<!-- 注册/登录 -->
 <div id="reg" class="screen active">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:#f2f2f7;">
-    <div style="font-size:64px;margin-bottom:16px;">🔐</div>
-    <div style="font-size:32px;font-weight:700;margin-bottom:8px;">GhostChat</div>
-    <div style="font-size:15px;color:#8e8e93;margin-bottom:40px;text-align:center;">Private · Encrypted · Untraceable</div>
-    
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,#f2f2f7,#e8eaf0);">
+    <div style="width:80px;height:80px;background:#007aff;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 8px 24px rgba(0,122,255,.3);">
+      <svg viewBox="0 0 24 24" width="44" height="44" stroke="#fff" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <div style="font-size:28px;font-weight:700;margin-bottom:6px;letter-spacing:-.5px;">GhostChat</div>
+    <div style="font-size:15px;color:#8e8e93;margin-bottom:32px;text-align:center;">Private · Encrypted · Untraceable</div>
     <div style="width:100%;max-width:320px;">
-      <!-- 注册部分 -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;justify-content:center;" id="langBtns"></div>
       <div id="reg-form">
-        <div style="font-size:13px;color:#8e8e93;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Nickname</div>
-        <input id="regName" class="field" placeholder="Enter nickname" maxlength="20">
-        <div style="font-size:13px;color:#8e8e93;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Password (4-8 digits)</div>
-        <input id="regPin" type="password" class="field" placeholder="4-8 digits" maxlength="8" style="letter-spacing:4px;text-align:center;">
+        <input id="regName" class="field" placeholder="Nickname" maxlength="20">
+        <input id="regPin" type="password" class="field" placeholder="Password (4-8 digits)" maxlength="8" style="letter-spacing:4px;text-align:center;">
         <input id="regPin2" type="password" class="field" placeholder="Confirm password" maxlength="8" style="letter-spacing:4px;text-align:center;">
         <button class="btn-blue" onclick="doRegister()">Create Account</button>
-        <div style="text-align:center;margin-top:8px;">
-          <span style="font-size:14px;color:#8e8e93;">Already have account? </span>
-          <span style="font-size:14px;color:#007aff;cursor:pointer;" onclick="switchToLogin()">Login</span>
-        </div>
+        <div style="text-align:center;margin-top:10px;font-size:14px;color:#8e8e93;">Already have account? <span style="color:#007aff;cursor:pointer;" onclick="switchTo('login')">Login</span></div>
       </div>
-
-      <!-- 登录部分 -->
       <div id="login-form" style="display:none;">
-        <div style="font-size:13px;color:#8e8e93;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Password</div>
-        <input id="loginPin" type="password" class="field" placeholder="Enter password" maxlength="8" style="letter-spacing:4px;text-align:center;">
+        <div style="font-size:18px;font-weight:600;margin-bottom:20px;text-align:center;" id="welcome-name">Welcome back!</div>
+        <input id="loginPin" type="password" class="field" placeholder="Password" maxlength="8" style="letter-spacing:4px;text-align:center;">
         <button class="btn-blue" onclick="doLogin()">Login</button>
-        <div style="text-align:center;margin-top:8px;">
-          <span style="font-size:14px;color:#8e8e93;">New user? </span>
-          <span style="font-size:14px;color:#007aff;cursor:pointer;" onclick="switchToReg()">Register</span>
-        </div>
-        <div style="text-align:center;margin-top:16px;">
-          <span style="font-size:13px;color:#8e8e93;cursor:pointer;" onclick="showRecovery()">Forgot password?</span>
-        </div>
+        <div style="text-align:center;margin-top:10px;font-size:14px;color:#8e8e93;">New user? <span style="color:#007aff;cursor:pointer;" onclick="switchTo('reg')">Register</span></div>
+        <div style="text-align:center;margin-top:12px;"><span style="font-size:13px;color:#8e8e93;cursor:pointer;" onclick="switchTo('recovery')">Forgot password?</span></div>
       </div>
-
-      <!-- 找回密码 -->
       <div id="recovery-form" style="display:none;">
-        <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Account Recovery</div>
-        <div style="font-size:13px;color:#8e8e93;margin-bottom:16px;line-height:1.5;">Enter your 12-digit rescue code. Recovery fee: $5 via PayPal.</div>
+        <div style="font-size:17px;font-weight:600;margin-bottom:8px;">Account Recovery</div>
+        <div style="font-size:14px;color:#8e8e93;margin-bottom:16px;line-height:1.5;">Enter your rescue code. Recovery fee: $5 via PayPal.</div>
         <input id="rescueInput" class="field" placeholder="XXXX-XXXX-XXXX" maxlength="14" style="letter-spacing:2px;text-align:center;">
         <button class="btn-blue" onclick="doRecovery()">Verify & Pay $5</button>
-        <div style="text-align:center;margin-top:8px;">
-          <span style="font-size:14px;color:#007aff;cursor:pointer;" onclick="switchToLogin()">← Back to Login</span>
-        </div>
+        <div style="text-align:center;margin-top:10px;"><span style="font-size:14px;color:#007aff;cursor:pointer;" onclick="switchTo('login')">← Back to Login</span></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 主聊天界面（简化版，可以工作） -->
+<!-- 消息列表 -->
 <div id="main" class="screen">
-  <div style="background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(60,60,67,0.18);padding:52px 20px 12px;flex-shrink:0;">
-    <div style="font-size:34px;font-weight:700;letter-spacing:-.5px;">Messages</div>
-  </div>
-  <div style="flex:1;overflow-y:auto;background:#f2f2f7;padding:8px 0;">
-    <div style="background:#fff;border-radius:12px;margin:0 16px;overflow:hidden;">
-      <div style="display:flex;align-items:center;padding:12px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);cursor:pointer;" onclick="openChat('Friend','F','#007aff')">
-        <div style="width:52px;height:52px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:#fff;flex-shrink:0;">F</div>
-        <div style="margin-left:12px;flex:1;">
-          <div style="font-size:17px;">Friend</div>
-          <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Start chatting...</div>
-        </div>
+  <div class="nav-bar nav-lg"><div class="t">Messages</div></div>
+  <div class="scroll">
+    <div style="height:8px;"></div>
+    <div class="card" id="chatList">
+      <div class="row" onclick="openChat('Friend','F','#007aff')">
+        <div class="av" style="background:linear-gradient(135deg,#007aff,#5ac8fa)">F</div>
+        <div style="flex:1;"><div style="font-size:17px;">Friend</div><div style="font-size:14px;color:#8e8e93;margin-top:2px;">Tap to start chatting...</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
     </div>
   </div>
-  <button onclick="showNewChat()" style="position:fixed;bottom:90px;right:20px;width:52px;height:52px;border-radius:50%;background:#007aff;border:none;color:#fff;font-size:28px;cursor:pointer;box-shadow:0 4px 20px rgba(0,122,255,.4);">+</button>
-  <div style="background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);display:flex;flex-shrink:0;">
-    <div style="flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#007aff;">💬 Messages</div>
-    <div style="flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;">👥 Contacts</div>
-    <div style="flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;" onclick="show('settings')">⚙️ Settings</div>
+  <button onclick="showNewChat()" style="position:fixed;bottom:90px;right:20px;width:52px;height:52px;border-radius:50%;background:#007aff;border:none;color:#fff;cursor:pointer;box-shadow:0 4px 20px rgba(0,122,255,.4);display:flex;align-items:center;justify-content:center;">
+    <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+  </button>
+  <div class="tabs">
+    <div class="tab on"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Messages</div>
+    <div class="tab"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Contacts</div>
+    <div class="tab" onclick="show('settings')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
   </div>
 </div>
 
-<!-- 聊天界面 -->
+<!-- 聊天 -->
 <div id="chat" class="screen">
-  <div style="background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(60,60,67,0.18);padding:52px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-    <span style="color:#007aff;cursor:pointer;font-size:15px;" onclick="show('main')">‹ Back</span>
-    <span style="font-size:17px;font-weight:600;" id="chatName">Friend</span>
-    <div>
-      <span style="color:#007aff;cursor:pointer;font-size:15px;margin-left:8px;" onclick="startCall()">📞</span>
-      <span style="color:#007aff;cursor:pointer;font-size:15px;margin-left:8px;" onclick="startVideo()">📹</span>
+  <div class="nav-bar nav-sm">
+    <span class="nav-btn" onclick="show('main')">‹ Back</span>
+    <span class="t" id="chatName">Friend</span>
+    <div style="display:flex;">
+      <span class="nav-btn" onclick="startCall()"><svg viewBox="0 0 24 24" width="20" height="20" stroke="#007aff" fill="none" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg></span>
+      <span class="nav-btn" onclick="startVideo()"><svg viewBox="0 0 24 24" width="20" height="20" stroke="#007aff" fill="none" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></span>
     </div>
   </div>
-  <div id="chatMsgs" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px;background:#f2f2f7;"></div>
-  <div style="background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);padding:8px 12px;display:flex;gap:8px;align-items:flex-end;flex-shrink:0;">
-    <textarea id="mi" style="flex:1;background:#fff;border:0.5px solid rgba(60,60,67,0.18);border-radius:18px;padding:8px 14px;color:#000;font-size:16px;outline:none;resize:none;max-height:100px;font-family:inherit;" placeholder="Message..." rows="1" onkeydown="hk(event)"></textarea>
-    <button onclick="sendMsg()" style="width:34px;height:34px;border-radius:50%;background:#007aff;border:none;color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;">↑</button>
+  <div class="cbg" id="chatMsgs"></div>
+  <div class="ibar">
+    <div class="irow">
+      <div class="ibtn" onclick="togXP()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+      <textarea class="itxt" id="mi" placeholder="Message..." rows="1" onkeydown="hk(event)"></textarea>
+      <div class="ibtn" onmousedown="recStart()" onmouseup="recStop()" ontouchstart="recStart(event)" ontouchend="recStop()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg></div>
+      <button class="isend" onclick="sendMsg()"><svg viewBox="0 0 24 24" width="16" height="16" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
+    </div>
+    <div class="xp" id="xpanel">
+      <div class="xg">
+        <div class="xi" onclick="doPhoto()"><div class="xib" style="background:#007aff">📷</div><span class="xil">Camera</span></div>
+        <div class="xi" onclick="doImg()"><div class="xib" style="background:#5ac8fa">🖼️</div><span class="xil">Gallery</span></div>
+        <div class="xi" onclick="doVid()"><div class="xib" style="background:#ff3b30">🎬</div><span class="xil">Video</span></div>
+        <div class="xi" onclick="doLoc()"><div class="xib" style="background:#34c759">📍</div><span class="xil">Location</span></div>
+        <div class="xi" onclick="doFile()"><div class="xib" style="background:#ff9f0a">📁</div><span class="xil">File</span></div>
+        <div class="xi" onclick="doBurn()"><div class="xib" style="background:#ff3b30">💣</div><span class="xil">Burn</span></div>
+        <div class="xi" onclick="startCall()"><div class="xib" style="background:#34c759">📞</div><span class="xil">Voice</span></div>
+        <div class="xi" onclick="panic()"><div class="xib" style="background:#ff3b30">🚨</div><span class="xil">Destroy</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- 设置界面 -->
-<div id="settings" class="screen">
-  <div style="background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(60,60,67,0.18);padding:52px 20px 12px;flex-shrink:0;">
-    <div style="font-size:34px;font-weight:700;">Settings</div>
+<!-- 语音通话 -->
+<div id="callscr" class="screen" style="background:linear-gradient(170deg,#1c1c1e,#2c2c2e);align-items:center;justify-content:space-between;padding:80px 0 60px;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
+    <div id="callAv" style="width:100px;height:100px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:700;color:#fff;box-shadow:0 0 0 12px rgba(0,122,255,.15);"></div>
+    <div id="callNm" style="font-size:28px;font-weight:600;color:#fff;"></div>
+    <div id="callSt" style="font-size:16px;color:#8e8e93;">Calling...</div>
   </div>
-  <div style="flex:1;overflow-y:auto;background:#f2f2f7;padding:8px 0;">
-    <div style="background:#fff;border-radius:12px;margin:8px 16px;overflow:hidden;">
-      <div style="display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);">
-        <div style="width:32px;height:32px;border-radius:8px;background:#007aff;display:flex;align-items:center;justify-content:center;margin-right:12px;">👤</div>
-        <div style="flex:1;">
-          <div style="font-size:17px;">My Account</div>
-          <div style="font-size:13px;color:#8e8e93;" id="myIdShow">ID: ...</div>
+  <div style="display:flex;gap:32px;">
+    <div style="text-align:center;cursor:pointer;" onclick="toggleMic()">
+      <div id="micBtn" style="width:68px;height:68px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center;font-size:28px;">🎤</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:8px;">Mute</div>
+    </div>
+    <div style="text-align:center;cursor:pointer;" onclick="endCall()">
+      <div style="width:68px;height:68px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:28px;">📵</div>
+      <div style="font-size:12px;color:#ff3b30;margin-top:8px;">End</div>
+    </div>
+    <div style="text-align:center;cursor:pointer;">
+      <div style="width:68px;height:68px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center;font-size:28px;">🔊</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:8px;">Speaker</div>
+    </div>
+  </div>
+</div>
+
+<!-- 视频通话 -->
+<div id="vidscr" class="screen" style="background:#000;position:relative;">
+  <video id="remoteVideo" autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></video>
+  <video id="localVideo" autoplay playsinline muted style="position:absolute;top:60px;right:16px;width:100px;height:140px;border-radius:14px;object-fit:cover;z-index:10;border:2px solid rgba(255,255,255,.3);"></video>
+  <div style="position:absolute;top:60px;left:16px;z-index:10;">
+    <div id="vidNm" style="color:#fff;font-size:16px;font-weight:600;"></div>
+    <div id="vidTime" style="color:rgba(255,255,255,.7);font-size:13px;margin-top:2px;">00:00</div>
+  </div>
+  <div style="position:absolute;bottom:50px;left:0;right:0;display:flex;justify-content:center;gap:20px;z-index:10;">
+    <div onclick="toggleMic()" style="width:60px;height:60px;border-radius:50%;background:rgba(44,44,46,.9);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;">🎤</div>
+    <div onclick="endCall()" style="width:70px;height:70px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;">📵</div>
+    <div onclick="toggleCam()" style="width:60px;height:60px;border-radius:50%;background:rgba(44,44,46,.9);display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;">🔄</div>
+  </div>
+</div>
+
+<!-- 来电 -->
+<div class="inc" id="incCall">
+  <div style="text-align:center;padding:40px 20px;">
+    <div id="incAv" style="width:96px;height:96px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:700;color:#fff;margin:0 auto 16px;box-shadow:0 0 0 16px rgba(0,122,255,.15);animation:pulse 1.5s infinite;"></div>
+    <div id="incNm" style="font-size:24px;font-weight:600;color:#fff;margin-bottom:8px;"></div>
+    <div style="font-size:16px;color:#8e8e93;margin-bottom:56px;">Incoming call...</div>
+    <div style="display:flex;gap:56px;justify-content:center;">
+      <div style="text-align:center;cursor:pointer;" onclick="rejectCall()">
+        <div style="width:72px;height:72px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:30px;">📵</div>
+        <div style="color:#ff3b30;font-size:13px;margin-top:10px;">Decline</div>
+      </div>
+      <div style="text-align:center;cursor:pointer;" onclick="acceptCall()">
+        <div style="width:72px;height:72px;border-radius:50%;background:#34c759;display:flex;align-items:center;justify-content:center;font-size:30px;">📞</div>
+        <div style="color:#34c759;font-size:13px;margin-top:10px;">Accept</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 设置 -->
+<div id="settings" class="screen">
+  <div class="nav-bar nav-lg"><div class="t">Settings</div></div>
+  <div class="scroll">
+    <div style="height:8px;"></div>
+    <div class="card">
+      <div class="row" style="padding:16px;">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#007aff,#5ac8fa);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:700;flex-shrink:0;" id="avatarDisplay">?</div>
+        <div style="flex:1;margin-left:4px;">
+          <div style="font-size:17px;font-weight:600;" id="nameDisplay">My Account</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:2px;" id="myIdShow">ID: ...</div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);cursor:pointer;" onclick="show('hide-set')">
-        <div style="width:32px;height:32px;border-radius:8px;background:#636366;display:flex;align-items:center;justify-content:center;margin-right:12px;">🕵️</div>
-        <div style="flex:1;"><div style="font-size:17px;">Hide Mode</div><div style="font-size:13px;color:#8e8e93;" id="hideDesc">Not enabled</div></div>
+    </div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Privacy & Security</div>
+    <div class="card">
+      <div class="row" onclick="show('hide-set')">
+        <div class="si" style="background:#636366;">🕵️</div>
+        <div style="flex:1;"><div style="font-size:17px;">Hide Mode</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="hideDesc">Not enabled</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
-      <div style="display:flex;align-items:center;padding:14px 16px;cursor:pointer;" onclick="panic()">
-        <div style="width:32px;height:32px;border-radius:8px;background:#ff3b30;display:flex;align-items:center;justify-content:center;margin-right:12px;">🚨</div>
-        <div style="flex:1;"><div style="font-size:17px;">Destroy Now</div><div style="font-size:13px;color:#8e8e93;">Clear all records</div></div>
+      <div class="row" onclick="show('notif-set')">
+        <div class="si" style="background:#bf5af2;">🔔</div>
+        <div style="flex:1;"><div style="font-size:17px;">Secret Notification</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="notifDesc">● Dot</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+      <div class="row" onclick="show('dest-set')">
+        <div class="si" style="background:#ff3b30;">💣</div>
+        <div style="flex:1;"><div style="font-size:17px;">Destroy Method</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="destructDesc">3 wrong passwords</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+      <div class="row" onclick="panic()">
+        <div class="si" style="background:#ff3b30;">🚨</div>
+        <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;">Destroy Now</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">Clear all records instantly</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+      <div class="row">
+        <div class="si" style="background:#34c759;">🔒</div>
+        <div style="flex:1;"><div style="font-size:17px;">End-to-End Encryption</div></div>
+        <div class="tog on" onclick="this.classList.toggle('on')"><div class="td"></div></div>
+      </div>
+    </div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Language</div>
+    <div class="card">
+      <div class="row" onclick="show('lang-set')">
+        <div class="si" style="background:#007aff;">🌐</div>
+        <div style="flex:1;"><div style="font-size:17px;">Language</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="curLangShow">English</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
     </div>
-    <div style="background:#fff;border-radius:12px;margin:8px 16px;overflow:hidden;">
-      <div style="display:flex;align-items:center;padding:14px 16px;cursor:pointer;" onclick="doLogout()">
-        <div style="width:32px;height:32px;border-radius:8px;background:#ff3b30;display:flex;align-items:center;justify-content:center;margin-right:12px;">🚪</div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Subscription</div>
+    <div class="card">
+      <div class="row">
+        <div class="si" style="background:#ff9f0a;">💰</div>
+        <div style="flex:1;"><div style="font-size:17px;">Subscribe</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">$9.99/month · Unlock all features</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+    </div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Account</div>
+    <div class="card">
+      <div class="row" onclick="doLogout()">
+        <div class="si" style="background:#ff3b30;">🚪</div>
         <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;">Logout</div></div>
       </div>
     </div>
     <div style="height:30px;"></div>
   </div>
-  <div style="background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);display:flex;flex-shrink:0;">
-    <div style="flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;" onclick="show('main')">💬 Messages</div>
-    <div style="flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;">👥 Contacts</div>
-    <div style="flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#007aff;">⚙️ Settings</div>
+  <div class="tabs">
+    <div class="tab" onclick="show('main')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Messages</div>
+    <div class="tab"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Contacts</div>
+    <div class="tab on"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
   </div>
 </div>
 
 <!-- 隐藏模式设置 -->
 <div id="hide-set" class="screen">
-  <div style="background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(60,60,67,0.18);padding:52px 16px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-    <span style="color:#007aff;cursor:pointer;" onclick="show('settings')">‹ Settings</span>
-    <span style="font-size:17px;font-weight:600;">Hide Mode</span>
-    <span></span>
-  </div>
-  <div style="flex:1;overflow-y:auto;padding:16px;background:#f2f2f7;">
-    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">After enabling, app will disguise as another app.</p>
-    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;">Disguise Shell</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
-      <div id="od-flas" onclick="selD('flashlight')" style="background:#fff;border:2px solid #007aff;border-radius:14px;padding:16px;text-align:center;cursor:pointer;">
-        <div style="font-size:32px;margin-bottom:6px;">🔦</div><div style="font-size:13px;font-weight:500;">Flashlight</div>
-      </div>
-      <div id="od-calc" onclick="selD('calculator')" style="background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:14px;padding:16px;text-align:center;cursor:pointer;">
-        <div style="font-size:32px;margin-bottom:6px;">🧮</div><div style="font-size:13px;font-weight:500;">Calculator</div>
-      </div>
-      <div id="od-cloc" onclick="selD('clock')" style="background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:14px;padding:16px;text-align:center;cursor:pointer;">
-        <div style="font-size:32px;margin-bottom:6px;">🕐</div><div style="font-size:13px;font-weight:500;">Clock</div>
-      </div>
-      <div id="od-note" onclick="selD('note')" style="background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:14px;padding:16px;text-align:center;cursor:pointer;">
-        <div style="font-size:32px;margin-bottom:6px;">📝</div><div style="font-size:13px;font-weight:500;">Notes</div>
-      </div>
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Hide Mode</span><span></span></div>
+  <div class="scroll" style="padding:16px;">
+    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">App will completely disguise as another app. Only you know how to unlock it.</p>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Disguise Shell</div>
+    <div class="og">
+      <div class="oc on" id="od-flas" onclick="selD('flashlight')"><div style="font-size:36px;margin-bottom:8px;">🔦</div><div style="font-size:14px;font-weight:500;">Flashlight</div></div>
+      <div class="oc" id="od-calc" onclick="selD('calculator')"><div style="font-size:36px;margin-bottom:8px;">🧮</div><div style="font-size:14px;font-weight:500;">Calculator</div></div>
+      <div class="oc" id="od-cloc" onclick="selD('clock')"><div style="font-size:36px;margin-bottom:8px;">🕐</div><div style="font-size:14px;font-weight:500;">Clock</div></div>
+      <div class="oc" id="od-note" onclick="selD('note')"><div style="font-size:36px;margin-bottom:8px;">📝</div><div style="font-size:14px;font-weight:500;">Notes</div></div>
     </div>
-    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;">Entry Password</div>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Activation Method</div>
+    <div class="tr2 on" id="tr-pin" onclick="selT('pin')"><div style="font-size:22px;width:36px;text-align:center;">🔢</div><div><div style="font-size:15px;font-weight:500;">Password activation</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Enter password to unlock</div></div></div>
+    <div class="tr2" id="tr-tap" onclick="selT('tap')"><div style="font-size:22px;width:36px;text-align:center;">👆</div><div><div style="font-size:15px;font-weight:500;">Tap corner 5 times</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Quickly tap bottom-right corner</div></div></div>
+    <div class="tr2" id="tr-ltap" onclick="selT('ltap')"><div style="font-size:22px;width:36px;text-align:center;">✋</div><div><div style="font-size:15px;font-weight:500;">Long press top-left 3s</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Hold top-left corner for 3 seconds</div></div></div>
+    <div class="tr2" id="tr-shake" onclick="selT('shake')"><div style="font-size:22px;width:36px;text-align:center;">📳</div><div><div style="font-size:15px;font-weight:500;">Shake to activate</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Shake phone to activate</div></div></div>
+    <div style="font-size:13px;color:#8e8e93;margin:16px 0 12px;text-transform:uppercase;letter-spacing:.3px;">Entry Password</div>
     <input id="hidePin" type="password" class="field" placeholder="4-8 digits" maxlength="8" style="letter-spacing:4px;text-align:center;">
     <button class="btn-blue" onclick="saveHide()">Enable Hide Mode</button>
-    <button class="btn-red" onclick="offHide()" style="margin-top:10px;">Disable Hide Mode</button>
+    <button class="btn-red" style="margin-top:10px;" onclick="offHide()">Disable Hide Mode</button>
+    <div style="height:30px;"></div>
   </div>
+</div>
+
+<!-- 通知设置 -->
+<div id="notif-set" class="screen">
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Secret Notification</span><span></span></div>
+  <div class="scroll" style="padding:16px;">
+    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">When you receive a new message, a subtle symbol appears in notifications. Only you know its meaning.</p>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Notification Symbol</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;">
+      <div class="nc on" id="ns-dot" onclick="selN('dot','● Dot')"><div style="font-size:22px;margin-bottom:4px;">●</div><div style="font-size:11px;color:#8e8e93;">Dot</div></div>
+      <div class="nc" id="ns-line" onclick="selN('line','| Line')"><div style="font-size:22px;margin-bottom:4px;">|</div><div style="font-size:11px;color:#8e8e93;">Line</div></div>
+      <div class="nc" id="ns-star" onclick="selN('star','✦ Star')"><div style="font-size:22px;margin-bottom:4px;">✦</div><div style="font-size:11px;color:#8e8e93;">Star</div></div>
+      <div class="nc" id="ns-tri" onclick="selN('tri','▲ Tri')"><div style="font-size:22px;margin-bottom:4px;">▲</div><div style="font-size:11px;color:#8e8e93;">Triangle</div></div>
+      <div class="nc" id="ns-dia" onclick="selN('dia','◆ Dia')"><div style="font-size:22px;margin-bottom:4px;">◆</div><div style="font-size:11px;color:#8e8e93;">Diamond</div></div>
+      <div class="nc" id="ns-wave" onclick="selN('wave','～ Wave')"><div style="font-size:22px;margin-bottom:4px;">～</div><div style="font-size:11px;color:#8e8e93;">Wave</div></div>
+      <div class="nc" id="ns-sync" onclick="selN('sync','↻ Sync')"><div style="font-size:22px;margin-bottom:4px;">↻</div><div style="font-size:11px;color:#8e8e93;">Sync</div></div>
+      <div class="nc" id="ns-mail" onclick="selN('mail','✉ Mail')"><div style="font-size:22px;margin-bottom:4px;">✉</div><div style="font-size:11px;color:#8e8e93;">Mail</div></div>
+    </div>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Notification Text (what others see)</div>
+    <div class="tr2 on" id="nt-sys" onclick="selNT('sys')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">System notification</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">"System update complete"</div></div></div>
+    <div class="tr2" id="nt-sync" onclick="selNT('sync')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Sync notification</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">"Data syncing"</div></div></div>
+    <div class="tr2" id="nt-cal" onclick="selNT('cal')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Calendar reminder</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">"Reminder"</div></div></div>
+    <div class="tr2" id="nt-none" onclick="selNT('none')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Symbol only</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">No text shown</div></div></div>
+    <div style="height:12px;"></div>
+    <button class="btn-blue" onclick="saveNotif()">Save</button>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+<!-- 销毁设置 -->
+<div id="dest-set" class="screen">
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Destroy Method</span><span></span></div>
+  <div class="scroll" style="padding:16px;">
+    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">When triggered, all records are immediately cleared and app switches to disguise mode.</p>
+    <div class="dr on" id="dt-wrong" onclick="selDest('wrong')"><div style="font-size:22px;width:36px;text-align:center;">❌</div><div><div style="font-size:15px;font-weight:500;">3 wrong passwords</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Looks like a normal security lockout</div></div></div>
+    <div class="dr" id="dt-dpin" onclick="selDest('dpin')"><div style="font-size:22px;width:36px;text-align:center;">🔑</div><div><div style="font-size:15px;font-weight:500;">Special destroy PIN</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Enter a different PIN to trigger destroy</div></div></div>
+    <div class="dr" id="dt-shake" onclick="selDest('shake')"><div style="font-size:22px;width:36px;text-align:center;">📳</div><div><div style="font-size:15px;font-weight:500;">Shake 10 times</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Rapidly shake phone to trigger</div></div></div>
+    <div id="dpin-area" style="display:none;margin-top:12px;">
+      <input id="dpinIn" type="password" class="field" placeholder="Destroy PIN (different from entry PIN)" maxlength="8" style="letter-spacing:4px;text-align:center;">
+    </div>
+    <div style="height:12px;"></div>
+    <button class="btn-blue" onclick="saveDestruct()">Save</button>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+
+<!-- 语言设置 -->
+<div id="lang-set" class="screen">
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Language</span><span></span></div>
+  <div class="scroll" id="langList" style="padding:8px 0;background:#f2f2f7;"></div>
 </div>
 
 <!-- 伪装：手电筒 -->
 <div id="dfl" class="screen" style="background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;">
-  <div style="color:#444;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Flashlight</div>
-  <div id="flR" onclick="togFL()" style="width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:64px;">💡</div>
-  <div id="flSt" style="color:#333;font-size:14px;">Tap to turn on</div>
+  <div style="color:#3a3a3a;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Flashlight</div>
+  <div class="flr" id="flR" onclick="togFL()">💡</div>
+  <div id="flSt" style="color:#2a2a2a;font-size:14px;">Tap to turn on</div>
   <div onclick="tapSecret()" style="position:fixed;bottom:0;right:0;width:80px;height:80px;"></div>
 </div>
 
 <!-- 伪装：计算器 -->
-<div id="dcalc" class="screen" style="background:#1c1c1e;flex-direction:column;">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:0 24px 16px;">
+<div id="dcalc" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:0 24px 16px;background:#1c1c1e;">
     <div id="cExpr" style="color:#636366;font-size:22px;min-height:28px;"></div>
     <div id="cNum" style="font-size:76px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1.1;">0</div>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;">
-    <div onclick="cp('AC')" style="background:#2c2c2e;height:80px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;cursor:pointer;">AC</div>
-    <div onclick="cp('+/-')" style="background:#2c2c2e;height:80px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;cursor:pointer;">+/-</div>
-    <div onclick="cp('%')" style="background:#2c2c2e;height:80px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;cursor:pointer;">%</div>
-    <div onclick="cp('÷')" style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;">÷</div>
-    <div onclick="cp('7')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">7</div>
-    <div onclick="cp('8')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">8</div>
-    <div onclick="cp('9')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">9</div>
-    <div onclick="cp('×')" style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;">×</div>
-    <div onclick="cp('4')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">4</div>
-    <div onclick="cp('5')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">5</div>
-    <div onclick="cp('6')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">6</div>
-    <div onclick="cp('-')" style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;">−</div>
-    <div onclick="cp('1')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">1</div>
-    <div onclick="cp('2')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">2</div>
-    <div onclick="cp('3')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">3</div>
-    <div onclick="cp('+')" style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;">+</div>
-    <div onclick="cp('0')" style="background:#1c1c1e;height:80px;grid-column:span 2;display:flex;align-items:center;justify-content:flex-start;padding-left:28px;font-size:28px;color:#fff;cursor:pointer;">0</div>
-    <div onclick="cp('.')" style="background:#1c1c1e;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;">.</div>
-    <div onclick="cp('=')" style="background:#ff9f0a;height:80px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;cursor:pointer;">=</div>
+  <div class="cg">
+    <div class="ck fn" onclick="cp('AC')">AC</div><div class="ck fn" onclick="cp('+/-')">+/-</div><div class="ck fn" onclick="cp('%')">%</div><div class="ck op" onclick="cp('÷')">÷</div>
+    <div class="ck num" onclick="cp('7')">7</div><div class="ck num" onclick="cp('8')">8</div><div class="ck num" onclick="cp('9')">9</div><div class="ck op" onclick="cp('×')">×</div>
+    <div class="ck num" onclick="cp('4')">4</div><div class="ck num" onclick="cp('5')">5</div><div class="ck num" onclick="cp('6')">6</div><div class="ck op" onclick="cp('-')">−</div>
+    <div class="ck num" onclick="cp('1')">1</div><div class="ck num" onclick="cp('2')">2</div><div class="ck num" onclick="cp('3')">3</div><div class="ck op" onclick="cp('+')">+</div>
+    <div class="ck num z" onclick="cp('0')">0</div><div class="ck num" onclick="cp('.')">.</div><div class="ck op" onclick="cp('=')">=</div>
   </div>
 </div>
 
 <!-- 伪装：时钟 -->
 <div id="dclk" class="screen" style="background:#000;align-items:center;justify-content:center;flex-direction:column;">
-  <div style="font-size:88px;font-weight:200;color:#fff;letter-spacing:-4px;"><span id="ckH">12</span>:<span id="ckM">00</span></div>
-  <div id="ckD" style="color:#444;font-size:16px;margin-top:12px;"></div>
+  <div style="font-size:88px;font-weight:200;color:#fff;letter-spacing:-4px;font-variant-numeric:tabular-nums;line-height:1;"><span id="ckH">12</span><span id="ckC" style="opacity:.8;">:</span><span id="ckM">00</span></div>
+  <div id="ckD" style="color:#444;font-size:16px;margin-top:16px;letter-spacing:1px;"></div>
   <div onclick="tapSecret()" style="position:fixed;bottom:0;right:0;width:80px;height:80px;"></div>
+  <div onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()" style="position:fixed;top:44px;left:0;width:60px;height:60px;"></div>
 </div>
 
 <!-- 伪装：备忘录 -->
 <div id="dnote" class="screen" style="background:#faf9f0;flex-direction:column;">
-  <div style="padding:52px 20px 12px;border-bottom:0.5px solid #e0d9c0;">
+  <div style="padding:52px 20px 12px;border-bottom:0.5px solid #e0d9c0;background:#faf9f0;">
     <div style="font-size:28px;font-weight:700;color:#2c2c2e;">Notes</div>
   </div>
   <div style="flex:1;overflow-y:auto;">
     <div style="padding:14px 20px;border-bottom:0.5px solid #e0d9c0;cursor:pointer;" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()">
-      <div style="font-size:16px;font-weight:600;">Shopping list</div>
-      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Milk, eggs, bread...</div>
+      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">Shopping list</div>
+      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Milk, eggs, bread, apples...</div>
     </div>
     <div style="padding:14px 20px;border-bottom:0.5px solid #e0d9c0;">
-      <div style="font-size:16px;font-weight:600;">Meeting notes</div>
-      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Monday 10am...</div>
+      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">Meeting notes</div>
+      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Monday 10am, Room B...</div>
+    </div>
+    <div style="padding:14px 20px;">
+      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">Travel plans</div>
+      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Flights, hotel bookings...</div>
     </div>
   </div>
 </div>
 
 <!-- PIN解锁 -->
-<div id="pinOv" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:flex-end;">
-  <div style="background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 44px;width:100%;">
-    <div style="width:36px;height:4px;background:#e5e5ea;border-radius:2px;margin:0 auto 20px;"></div>
-    <div style="font-size:20px;font-weight:700;text-align:center;margin-bottom:20px;">Enter Password</div>
-    <div id="pinDots" style="display:flex;justify-content:center;gap:16px;margin-bottom:24px;"></div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-      <button onclick="pk('1')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">1</button>
-      <button onclick="pk('2')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">2</button>
-      <button onclick="pk('3')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">3</button>
-      <button onclick="pk('4')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">4</button>
-      <button onclick="pk('5')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">5</button>
-      <button onclick="pk('6')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">6</button>
-      <button onclick="pk('7')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">7</button>
-      <button onclick="pk('8')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">8</button>
-      <button onclick="pk('9')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">9</button>
-      <button style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;"></button>
-      <button onclick="pk('0')" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">0</button>
-      <button onclick="pkd()" style="height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;cursor:pointer;">⌫</button>
+<div class="pov" id="pinOv">
+  <div class="psh">
+    <div class="ph"></div>
+    <div style="font-size:20px;font-weight:700;text-align:center;margin-bottom:6px;">Enter Password</div>
+    <div style="font-size:14px;color:#8e8e93;text-align:center;margin-bottom:20px;" id="wrongHint"></div>
+    <div id="pinDots" style="display:flex;justify-content:center;gap:16px;margin-bottom:28px;"></div>
+    <div class="pkb">
+      <button class="pk" onclick="pk('1')">1</button><button class="pk" onclick="pk('2')">2</button><button class="pk" onclick="pk('3')">3</button>
+      <button class="pk" onclick="pk('4')">4</button><button class="pk" onclick="pk('5')">5</button><button class="pk" onclick="pk('6')">6</button>
+      <button class="pk" onclick="pk('7')">7</button><button class="pk" onclick="pk('8')">8</button><button class="pk" onclick="pk('9')">9</button>
+      <button class="pk"></button><button class="pk" onclick="pk('0')">0</button><button class="pk" onclick="pkd()">⌫</button>
     </div>
     <button onclick="closePIN()" style="background:none;border:none;color:#007aff;font-size:17px;cursor:pointer;width:100%;padding:14px 0 0;text-align:center;">Cancel</button>
-    <div id="support-btn" style="display:none;text-align:center;margin-top:8px;">
-      <span onclick="showRecoveryFromPin()" style="font-size:13px;color:#8e8e93;cursor:pointer;">Forgot password? Contact Support</span>
+    <div id="support-btn" style="display:none;text-align:center;margin-top:10px;">
+      <span onclick="gotoRecovery()" style="font-size:13px;color:#8e8e93;cursor:pointer;text-decoration:underline;">Forgot password? Contact Support</span>
     </div>
   </div>
 </div>
 
+<!-- 录音HUD -->
+<div class="rh" id="recHud">
+  <div style="font-size:36px;animation:pulse 0.8s infinite;">🎤</div>
+  <div id="recTm" style="font-size:20px;font-weight:600;color:#fff;margin-top:8px;">0:00</div>
+  <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;">Release to send</div>
+</div>
+
 <audio id="remoteAudio" autoplay playsinline style="display:none;"></audio>
+<input type="file" id="imgIn" accept="image/*" style="display:none" onchange="onImg(event)">
+<input type="file" id="vidIn" accept="video/*" style="display:none" onchange="onVid()">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ═══ 基础工具 ═══
+// ═══ 工具函数 ═══
 function lg(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function ls(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 function gt(){var d=new Date();return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();}
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function makeRC(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<12;i++){if(i>0&&i%4===0)s+='-';s+=c[Math.floor(Math.random()*c.length)];}return s;}
 
-function makeRescueCode(){
-  var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';
-  for(var i=0;i<12;i++){if(i>0&&i%4===0)s+='-';s+=c[Math.floor(Math.random()*c.length)];}
-  return s;
-}
+// ═══ 语言 ═══
+var LANGS={'en':{name:'English',flag:'🇺🇸'},'zh-CN':{name:'中文简体',flag:'🇨🇳'},'zh-TW':{name:'中文繁體',flag:'🇹🇼'},'es':{name:'Español',flag:'🇪🇸'},'fr':{name:'Français',flag:'🇫🇷'},'de':{name:'Deutsch',flag:'🇩🇪'},'ru':{name:'Русский',flag:'🇷🇺'},'ar':{name:'العربية',flag:'🇸🇦'},'pt':{name:'Português',flag:'🇧🇷'},'hi':{name:'हिन्दी',flag:'🇮🇳'},'ja':{name:'日本語',flag:'🇯🇵'},'ko':{name:'한국어',flag:'🇰🇷'},'tr':{name:'Türkçe',flag:'🇹🇷'},'nl':{name:'Nederlands',flag:'🇳🇱'},'no':{name:'Norsk',flag:'🇳🇴'},'da':{name:'Dansk',flag:'🇩🇰'},'ur':{name:'اردو',flag:'🇵🇰'},'bn':{name:'বাংলা',flag:'🇧🇩'}};
+var curLang=lg('lang')||'en';
 
 // ═══ 状态 ═══
 var myId=lg('myId')||('gc_'+Math.random().toString(36).substr(2,10));
 ls('myId',myId);
-
 var G={
   chat:'',msgs:{},
   pin:lg('pin')||'',
-  dis:lg('dis')||'flashlight',
+  dis:lg('dis')||'flashlight',trig:lg('trig')||'pin',
   hide:lg('hide')==='true',
+  dest:lg('dest')||'wrong',dpin:lg('dpin')||'',
+  notifSym:lg('notifSym')||'dot',notifTxt:lg('notifTxt')||'sys',
   flOn:false,tapN:0,tapT:null,ltT:null,
   ci:'',co:'',cpv:'',
+  recOn:false,recS:0,recI:null,
   callI:null,callS:0,
-  pe:'',wrongN:0
+  pe:'',wrongN:0,
+  selD2:'flashlight',selT2:'pin',selDest2:'wrong',selN2:'dot',selNT2:'sys'
 };
 
 // ═══ 启动 ═══
 window.onload=function(){
-  var si=document.getElementById('myIdShow');
-  if(si)si.textContent='ID: '+myId+(lg('myName')?' | '+lg('myName'):'');
-  updHide();
-
-  if(!lg('registered')){
-    show('reg');
-    return;
-  }
-
-  var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
-  if(G.hide) show(dm[G.dis]||'dfl');
-  else show('main');
-
+  buildLangBtns();buildLangList();
+  updHide();updDest();updNotif();
   tickClock();
-  listenForCalls();
+  var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId;
+  var na=document.getElementById('nameDisplay');if(na&&lg('myName'))na.textContent=lg('myName');
+  var av=document.getElementById('avatarDisplay');if(av&&lg('myName'))av.textContent=lg('myName')[0].toUpperCase();
+  var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
+  if(!lg('registered')){show('reg');return;}
+  var wn=document.getElementById('welcome-name');if(wn)wn.textContent='Welcome back'+(lg('myName')?', '+lg('myName'):'')+'!';
+  if(G.hide){var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};show(dm[G.dis]||'dfl');}
+  else{show('main');listenForCalls();}
 };
 
-// ═══ 界面切换 ═══
-function show(id){
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  var el=document.getElementById(id);
-  if(el) el.classList.add('active');
-  else console.error('Screen not found:',id);
-}
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
 
 // ═══ 注册/登录 ═══
-function switchToLogin(){
-  document.getElementById('reg-form').style.display='none';
-  document.getElementById('login-form').style.display='block';
-  document.getElementById('recovery-form').style.display='none';
+function switchTo(f){
+  ['reg-form','login-form','recovery-form'].forEach(function(id){document.getElementById(id).style.display='none';});
+  document.getElementById(f+'-form').style.display='block';
 }
-function switchToReg(){
-  document.getElementById('reg-form').style.display='block';
-  document.getElementById('login-form').style.display='none';
-  document.getElementById('recovery-form').style.display='none';
-}
-function showRecovery(){
-  document.getElementById('reg-form').style.display='none';
-  document.getElementById('login-form').style.display='none';
-  document.getElementById('recovery-form').style.display='block';
-}
-function showRecoveryFromPin(){
-  closePIN();
-  show('reg');
-  showRecovery();
-}
-
 function doRegister(){
   var name=document.getElementById('regName').value.trim();
   var pin=document.getElementById('regPin').value;
@@ -353,292 +531,222 @@ function doRegister(){
   if(!name){alert('Please enter a nickname');return;}
   if(pin.length<4){alert('Password must be at least 4 digits');return;}
   if(pin!==pin2){alert('Passwords do not match');return;}
-  var rc=makeRescueCode();
-  G.pin=pin;
-  ls('pin',pin);ls('myName',name);ls('registered','true');ls('rescueCode',rc);
-  var si=document.getElementById('myIdShow');
-  if(si)si.textContent='ID: '+myId+' | '+name;
-  alert('✅ Account created!\n\n🔐 RESCUE CODE:\n'+rc+'\n\nSave this! Needed for recovery ($5 fee).');
-  show('main');
-  tickClock();
-  listenForCalls();
+  var rc=makeRC();
+  G.pin=pin;ls('pin',pin);ls('myName',name);ls('registered','true');ls('rescueCode',rc);
+  var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId;
+  var na=document.getElementById('nameDisplay');if(na)na.textContent=name;
+  var av=document.getElementById('avatarDisplay');if(av)av.textContent=name[0].toUpperCase();
+  alert('✅ Account created!\n\n🔐 RESCUE CODE:\n'+rc+'\n\nSave this screenshot!\nNeeded to recover account ($5 fee).');
+  show('main');listenForCalls();
 }
-
 function doLogin(){
   var pin=document.getElementById('loginPin').value;
   if(!pin){alert('Enter password');return;}
-  if(pin===lg('pin')){
-    show('main');
-    tickClock();
-    listenForCalls();
-  } else {
-    alert('Wrong password');
-  }
+  if(pin===lg('pin')){show('main');listenForCalls();}
+  else alert('Wrong password');
 }
-
-function doLogout(){
-  if(confirm('Logout?')){
-    show('reg');
-    switchToLogin();
-  }
-}
-
+function doLogout(){if(confirm('Logout?')){show('reg');switchTo('login');}}
 function doRecovery(){
   var input=document.getElementById('rescueInput').value.replace(/-/g,'').toUpperCase();
   var saved=(lg('rescueCode')||'').replace(/-/g,'');
-  if(!saved){alert('No rescue code found');return;}
+  if(!saved){alert('No rescue code found on this device');return;}
   if(input===saved){
-    if(confirm('Code verified!\n\nPay $5 via PayPal to reset password.\n\nClick OK to open PayPal.')){
+    if(confirm('✅ Code verified!\nPay $5 via PayPal to reset password.')){
       window.open('https://www.paypal.com/paypalme/ghostchatapp/5','_blank');
-      setTimeout(function(){
-        if(confirm('Payment complete? Click OK to reset password to 1234.')){
-          G.pin='1234';ls('pin','1234');
-          G.wrongN=0;
-          alert('Password reset to: 1234\nPlease change it in Settings.');
-          show('main');
-        }
-      },3000);
+      setTimeout(function(){if(confirm('Payment complete? Reset password to 1234?')){G.pin='1234';ls('pin','1234');G.wrongN=0;alert('Password reset to: 1234');show('main');}},3000);
     }
-  } else {
-    alert('Invalid rescue code');
-  }
+  } else alert('Invalid rescue code');
 }
+function gotoRecovery(){closePIN();show('reg');switchTo('recovery');}
+
+// ═══ 语言 ═══
+function buildLangBtns(){
+  var lb=document.getElementById('langBtns');if(!lb)return;
+  var top=['zh-CN','en','es','fr','de','ru','ar','pt','hi','ja'];
+  lb.innerHTML=top.map(function(c){var l=LANGS[c];return '<button onclick="pickLang(\''+c+'\')" style="padding:5px 10px;border-radius:20px;border:1.5px solid '+(c===curLang?'#007aff':'rgba(60,60,67,0.18)')+';background:'+(c===curLang?'#f0f7ff':'#fff')+';font-size:12px;cursor:pointer;" id="lb-'+c+'">'+l.flag+' '+l.name+'</button>';}).join('');
+}
+function buildLangList(){
+  var ll=document.getElementById('langList');if(!ll)return;
+  ll.innerHTML='<div style="height:8px;"></div><div style="background:#fff;border-radius:12px;margin:0 16px;overflow:hidden;">'+Object.keys(LANGS).map(function(c){var l=LANGS[c];var sel=c===curLang;return '<div onclick="pickLang(\''+c+'\')" style="display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);cursor:pointer;background:'+(sel?'#f0f7ff':'#fff')+'"><span style="font-size:24px;margin-right:14px;">'+l.flag+'</span><span style="font-size:16px;flex:1;">'+l.name+'</span>'+(sel?'<span style="color:#007aff;font-size:18px;">✓</span>':'<span style="color:#c7c7cc;font-size:18px;">›</span>')+'</div>';}).join('')+'</div>';
+}
+function pickLang(code){curLang=code;ls('lang',code);var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[code]||{}).name||code;buildLangBtns();buildLangList();document.body.dir=['ar','ur'].includes(code)?'rtl':'ltr';show('settings');}
 
 // ═══ Supabase ═══
 var _sb=supabase.createClient('https://mztoenhgfuomzrashrqk.supabase.co','sb_publishable_pOM3IfVWYiscQ-cz9vAwvA_F2Ht6zg1');
 var currentRoom=null,realtimeSub=null;
-
 async function joinRoom(name){
   var ids=[myId,name].sort();currentRoom=ids.join('_');
   if(realtimeSub)realtimeSub.unsubscribe();
-  realtimeSub=_sb.channel('room:'+currentRoom)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
-      var m=p.new;if(m.sender!==myId)addMsg({text:m.content,sent:false,t:gt()});
-    }).subscribe();
-  var {data}=await _sb.from('messages').select('*').eq('room_id',currentRoom).order('created_at',{ascending:true}).limit(50);
-  if(data&&data.length>0){
-    G.msgs[name]=data.map(function(m){return{text:m.content,sent:m.sender===myId,t:gt()};});
-    renderMsgs();
-  }
+  realtimeSub=_sb.channel('room:'+currentRoom).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){var m=p.new;if(m.sender!==myId){addMsg({text:m.content,type:m.type||'text',sent:false,t:gt()});sendNotif();}}).subscribe();
+  var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).order('created_at',{ascending:true}).limit(50);
+  if(res.data&&res.data.length>0){G.msgs[name]=res.data.map(function(m){return{text:m.content,type:m.type||'text',sent:m.sender===myId,t:gt()};});renderMsgs();}
 }
 
 // ═══ WebRTC ═══
 var RTC={pc:null,localStream:null,isCaller:false,callRoom:null,pendingOffer:null,pendingFrom:null};
-var iceServers={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
-
+var ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
 async function initiateCall(name,isVideo){
   RTC.isCaller=true;RTC.callRoom=[myId,name].sort().join('_call');
   try{
     RTC.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:isVideo});
-    RTC.pc=new RTCPeerConnection(iceServers);
+    if(isVideo){var lv=document.getElementById('localVideo');if(lv)lv.srcObject=RTC.localStream;}
+    RTC.pc=new RTCPeerConnection(ICE);
     RTC.localStream.getTracks().forEach(function(t){RTC.pc.addTrack(t,RTC.localStream);});
-    RTC.pc.ontrack=function(e){var ra=document.getElementById('remoteAudio');if(ra){ra.srcObject=e.streams[0];ra.play().catch(function(){});}};
+    RTC.pc.ontrack=function(e){var ra=document.getElementById('remoteAudio');if(ra){ra.srcObject=e.streams[0];ra.play().catch(function(){});}var rv=document.getElementById('remoteVideo');if(rv&&isVideo)rv.srcObject=e.streams[0];};
     RTC.pc.onicecandidate=function(e){if(e.candidate)_sb.from('calls').insert({room_id:RTC.callRoom,type:'ice',data:JSON.stringify(e.candidate),sender:myId});};
-    var offer=await RTC.pc.createOffer();
-    await RTC.pc.setLocalDescription(offer);
+    var offer=await RTC.pc.createOffer();await RTC.pc.setLocalDescription(offer);
     await _sb.from('calls').insert({room_id:RTC.callRoom,type:'offer',data:JSON.stringify(offer),sender:myId});
-    _sb.channel('call:'+RTC.callRoom).on('postgres_changes',{event:'INSERT',schema:'public',table:'calls',filter:'room_id=eq.'+RTC.callRoom},handleCallSig).subscribe();
-    alert('Calling '+name+'...\nWaiting for answer.');
-  }catch(e){alert('Cannot access microphone: '+e.message);}
+    subCallSig();
+    document.getElementById('callAv').textContent=name[0];document.getElementById('callNm').textContent=name;document.getElementById('callSt').textContent='Calling...';
+    if(isVideo){document.getElementById('vidNm').textContent=name;show('vidscr');}else show('callscr');
+  }catch(e){alert('Cannot access mic/camera:\n'+e.message);}
 }
-
+function subCallSig(){_sb.channel('call:'+RTC.callRoom).on('postgres_changes',{event:'INSERT',schema:'public',table:'calls',filter:'room_id=eq.'+RTC.callRoom},handleCallSig).subscribe();}
 async function handleCallSig(payload){
   var msg=payload.new;if(msg.sender===myId)return;
-  if(msg.type==='answer'&&RTC.pc){await RTC.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(msg.data)));}
+  if(msg.type==='answer'&&RTC.pc){await RTC.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(msg.data)));document.getElementById('callSt').textContent='In call 00:00';startCallTimer();}
   if(msg.type==='ice'&&RTC.pc){try{await RTC.pc.addIceCandidate(new RTCIceCandidate(JSON.parse(msg.data)));}catch(e){}}
-  if(msg.type==='offer'){
-    if(confirm('📞 Incoming call from '+msg.sender+'. Answer?')){
-      RTC.pendingFrom=msg.sender;RTC.pendingOffer=JSON.parse(msg.data);
-      await answerCall();
-    }
-  }
+  if(msg.type==='offer')showIncoming(msg.sender,JSON.parse(msg.data));
   if(msg.type==='hangup')endCall();
 }
-
-async function answerCall(){
+function showIncoming(from,offer){RTC.pendingFrom=from;RTC.pendingOffer=offer;document.getElementById('incAv').textContent=from[0];document.getElementById('incNm').textContent=from;document.getElementById('incCall').classList.add('on');}
+async function acceptCall(){
+  document.getElementById('incCall').classList.remove('on');
   RTC.isCaller=false;RTC.callRoom=[myId,RTC.pendingFrom].sort().join('_call');
   try{
     RTC.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-    RTC.pc=new RTCPeerConnection(iceServers);
+    RTC.pc=new RTCPeerConnection(ICE);
     RTC.localStream.getTracks().forEach(function(t){RTC.pc.addTrack(t,RTC.localStream);});
     RTC.pc.ontrack=function(e){var ra=document.getElementById('remoteAudio');if(ra){ra.srcObject=e.streams[0];ra.play().catch(function(){});}};
     RTC.pc.onicecandidate=function(e){if(e.candidate)_sb.from('calls').insert({room_id:RTC.callRoom,type:'ice',data:JSON.stringify(e.candidate),sender:myId});};
     await RTC.pc.setRemoteDescription(new RTCSessionDescription(RTC.pendingOffer));
-    var answer=await RTC.pc.createAnswer();
-    await RTC.pc.setLocalDescription(answer);
-    await _sb.from('calls').insert({room_id:RTC.callRoom,type:'answer',data:JSON.stringify(answer),sender:myId});
+    var ans=await RTC.pc.createAnswer();await RTC.pc.setLocalDescription(ans);
+    await _sb.from('calls').insert({room_id:RTC.callRoom,type:'answer',data:JSON.stringify(ans),sender:myId});
+    subCallSig();document.getElementById('callAv').textContent=RTC.pendingFrom[0];document.getElementById('callNm').textContent=RTC.pendingFrom;document.getElementById('callSt').textContent='In call';show('callscr');startCallTimer();
   }catch(e){alert('Cannot answer: '+e.message);}
 }
-
-function listenForCalls(){
-  _sb.channel('inc:'+myId).on('postgres_changes',{event:'INSERT',schema:'public',table:'calls'},function(p){
-    var msg=p.new;
-    if(msg.sender!==myId&&msg.type==='offer'&&msg.room_id.includes(myId)){
-      if(confirm('📞 Incoming call from '+msg.sender+'. Answer?')){
-        RTC.pendingFrom=msg.sender;RTC.pendingOffer=JSON.parse(msg.data);
-        answerCall();
-      }
-    }
-  }).subscribe();
-}
+function rejectCall(){document.getElementById('incCall').classList.remove('on');if(RTC.pendingFrom)_sb.from('calls').insert({room_id:[myId,RTC.pendingFrom].sort().join('_call'),type:'hangup',data:'{}',sender:myId});}
+function endCall(){if(RTC.pc){RTC.pc.close();RTC.pc=null;}if(RTC.localStream){RTC.localStream.getTracks().forEach(function(t){t.stop();});RTC.localStream=null;}if(RTC.callRoom)_sb.from('calls').insert({room_id:RTC.callRoom,type:'hangup',data:'{}',sender:myId});clearInterval(G.callI);show('chat');}
+function startCallTimer(){G.callS=0;G.callI=setInterval(function(){G.callS++;var m=Math.floor(G.callS/60),s=G.callS%60;var st=document.getElementById('callSt');if(st)st.textContent='In call '+m+':'+(s<10?'0':'')+s;},1000);}
+function startCall(){if(G.chat)initiateCall(G.chat,false);}
+function startVideo(){if(G.chat)initiateCall(G.chat,true);}
+function toggleMic(){if(RTC.localStream)RTC.localStream.getAudioTracks().forEach(function(t){t.enabled=!t.enabled;});var b=document.getElementById('micBtn');if(b)b.textContent=b.textContent==='🎤'?'🔇':'🎤';}
+function toggleCam(){if(RTC.localStream)RTC.localStream.getVideoTracks().forEach(function(t){t.enabled=!t.enabled;});}
+function listenForCalls(){_sb.channel('inc:'+myId).on('postgres_changes',{event:'INSERT',schema:'public',table:'calls'},function(p){var msg=p.new;if(msg.sender!==myId&&msg.type==='offer'&&msg.room_id.includes(myId))showIncoming(msg.sender,JSON.parse(msg.data));}).subscribe();}
 
 // ═══ 聊天 ═══
 function openChat(name,ini,color){
-  G.chat=name;
-  document.getElementById('chatName').textContent=name;
-  if(!G.msgs[name])G.msgs[name]=[{text:'👋 Hi!',sent:false,t:gt()}];
-  renderMsgs();show('chat');
+  G.chat=name;document.getElementById('chatName').textContent=name;
+  document.getElementById('callAv').textContent=ini||name[0];document.getElementById('callAv').style.background=color||'#007aff';
+  document.getElementById('callNm').textContent=name;document.getElementById('vidNm').textContent=name;
+  if(!G.msgs[name])G.msgs[name]=[{text:'👋',sent:false,t:gt()}];
+  renderMsgs();show('chat');document.getElementById('xpanel').classList.remove('on');
   joinRoom(name);
 }
-
 function renderMsgs(){
   var c=document.getElementById('chatMsgs');
   c.innerHTML=(G.msgs[G.chat]||[]).map(function(m){
     var s=m.sent;
-    return '<div style="display:flex;flex-direction:column;align-items:'+(s?'flex-end':'flex-start')+';margin-bottom:2px;"><div style="max-width:72%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.45;word-break:break-word;background:'+(s?'#007aff':'#fff')+';color:'+(s?'#fff':'#000')+(s?';border-bottom-right-radius:5px':';border-bottom-left-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.08)')+'">'+esc(m.text)+'</div><div style="font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;">'+m.t+'</div></div>';
+    var b=m.type==='image'?'<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">'
+      :m.type==='voice'?'<div style="display:flex;align-items:center;gap:8px;min-width:120px;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg><div style="flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+m.dur+'″</span></div>'
+      :m.type==='location'?'<div style="display:flex;align-items:center;gap:6px;">📍 <span>'+m.addr+'</span></div>'
+      :m.type==='video'?'<div style="display:flex;align-items:center;gap:8px;">🎬 <span>Video clip</span></div>'
+      :esc(m.text);
+    return '<div class="mr '+(s?'s':'r')+'"><div class="bub">'+b+'</div><div class="mt">'+m.t+'</div></div>';
   }).join('');
   c.scrollTop=c.scrollHeight;
 }
-
-function addMsg(m){
-  if(!G.msgs[G.chat])G.msgs[G.chat]=[];
-  G.msgs[G.chat].push(m);
-  renderMsgs();
-}
-
+function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];G.msgs[G.chat].push(m);renderMsgs();}
 async function sendMsg(){
-  var inp=document.getElementById('mi'),t=inp.value.trim();
-  if(!t)return;
-  addMsg({text:t,sent:true,t:gt()});
-  inp.value='';
+  var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
+  addMsg({text:t,sent:true,t:gt()});inp.value='';
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:myId,content:t,type:'text'});
 }
-
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function showNewChat(){var n=prompt('Enter contact ID or name:');if(n&&n.trim())openChat(n.trim(),n[0],'#007aff');}
+function togXP(){document.getElementById('xpanel').classList.toggle('on');}
+function doPhoto(){document.getElementById('imgIn').setAttribute('capture','camera');document.getElementById('imgIn').click();}
+function doImg(){document.getElementById('imgIn').removeAttribute('capture');document.getElementById('imgIn').click();}
+function onImg(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){addMsg({type:'image',src:ev.target.result,sent:true,t:gt()});};r.readAsDataURL(f);document.getElementById('xpanel').classList.remove('on');}
+function doVid(){document.getElementById('vidIn').click();}
+function onVid(){addMsg({type:'video',sent:true,t:gt()});document.getElementById('xpanel').classList.remove('on');}
+function doLoc(){navigator.geolocation?navigator.geolocation.getCurrentPosition(function(p){addMsg({type:'location',addr:'('+p.coords.latitude.toFixed(4)+', '+p.coords.longitude.toFixed(4)+')',sent:true,t:gt()});},function(){addMsg({type:'location',addr:'Current location',sent:true,t:gt()});}):addMsg({type:'location',addr:'Location unavailable',sent:true,t:gt()});document.getElementById('xpanel').classList.remove('on');}
+function doFile(){alert('File sharing coming soon');}
+function doBurn(){var t=prompt('Self-destruct after (seconds):','10');if(t)alert('Set: messages will disappear after '+t+'s');}
+function recStart(e){if(e)e.preventDefault();G.recOn=true;G.recS=0;document.getElementById('recHud').classList.add('on');G.recI=setInterval(function(){G.recS++;var m=Math.floor(G.recS/60),s=G.recS%60;document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;},1000);}
+function recStop(){if(!G.recOn)return;G.recOn=false;clearInterval(G.recI);document.getElementById('recHud').classList.remove('on');if(G.recS>0)addMsg({type:'voice',dur:G.recS,sent:true,t:gt()});}
 
-function showNewChat(){
-  var n=prompt('Enter contact ID or name:');
-  if(n&&n.trim())openChat(n.trim(),n[0],'#007aff');
-}
-
-function startCall(){if(G.chat)initiateCall(G.chat,false);}
-function startVideo(){if(G.chat)initiateCall(G.chat,true);}
-function endCall(){
-  if(RTC.pc){RTC.pc.close();RTC.pc=null;}
-  if(RTC.localStream){RTC.localStream.getTracks().forEach(function(t){t.stop();});}
+// ═══ 通知 ═══
+function sendNotif(){
+  if(!('Notification' in window))return;
+  var symMap={dot:'●',line:'|',star:'✦',tri:'▲',dia:'◆',wave:'～',sync:'↻',mail:'✉'};
+  var sym=symMap[G.notifSym]||'●';
+  var txt={sys:'System update complete',sync:'Data syncing',cal:'Reminder',none:''}[G.notifTxt]||'';
+  if(Notification.permission==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});
+  else if(Notification.permission!=='denied')Notification.requestPermission().then(function(p){if(p==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});});
 }
 
 // ═══ 设置 ═══
-function updHide(){
-  var d=document.getElementById('hideDesc');
-  if(d)d.textContent=G.hide?'Enabled · '+(G.dis||'flashlight'):'Not enabled';
-}
+function updHide(){var d=document.getElementById('hideDesc');if(d)d.textContent=G.hide?'Enabled · '+G.dis:'Not enabled';}
+function updDest(){var d=document.getElementById('destructDesc');if(d)d.textContent={wrong:'3 wrong passwords',dpin:'Special destroy PIN',shake:'Shake 10 times'}[G.dest]||'';}
+function updNotif(){var d=document.getElementById('notifDesc');if(d)d.textContent=({dot:'● Dot',line:'| Line',star:'✦ Star',tri:'▲ Triangle',dia:'◆ Diamond',wave:'～ Wave',sync:'↻ Sync',mail:'✉ Mail'})[G.notifSym]||'● Dot';}
+function selD(t){G.selD2=t;document.querySelectorAll('.oc').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('od-'+t.substring(0,4));if(el)el.classList.add('on');}
+function selT(t){G.selT2=t;document.querySelectorAll('.tr2').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('tr-'+t);if(el)el.classList.add('on');}
+function saveHide(){var p=document.getElementById('hidePin').value;if(p.length<4){alert('Min 4 digits');return;}G.pin=p;G.hide=true;G.dis=G.selD2;G.trig=G.selT2;ls('pin',p);ls('dis',G.dis);ls('trig',G.trig);ls('hide','true');updHide();alert('✅ Hide mode enabled!\nNext time you open the app, it will look like '+G.dis);show('settings');}
+function offHide(){G.hide=false;ls('hide','false');updHide();show('settings');}
+function selN(id){G.selN2=id;document.querySelectorAll('.nc').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('ns-'+id);if(el)el.classList.add('on');}
+function selNT(t){G.selNT2=t;document.querySelectorAll('#notif-set .tr2').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('nt-'+t);if(el)el.classList.add('on');}
+function saveNotif(){G.notifSym=G.selN2;G.notifTxt=G.selNT2;ls('notifSym',G.notifSym);ls('notifTxt',G.notifTxt);updNotif();sendNotif();alert('✅ Saved!');show('settings');}
+function selDest(t){G.selDest2=t;document.querySelectorAll('.dr').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('dt-'+t);if(el)el.classList.add('on');var da=document.getElementById('dpin-area');if(da)da.style.display=t==='dpin'?'block':'none';}
+function saveDestruct(){G.dest=G.selDest2;if(G.dest==='dpin'){var dp=document.getElementById('dpinIn').value;if(dp.length<4){alert('Min 4 digits');return;}G.dpin=dp;ls('dpin',dp);}ls('dest',G.dest);updDest();alert('✅ Saved!');show('settings');}
+function panic(){if(confirm('⚠️ DESTROY ALL RECORDS NOW?\n\nThis cannot be undone.')){doDestruct();}}
 
-function selD(t){
-  G.dis=t;
-  ['od-flas','od-calc','od-cloc','od-note'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(el)el.style.borderColor='rgba(60,60,67,0.18)';
-  });
-  var sel=document.getElementById('od-'+t.substring(0,4));
-  if(sel)sel.style.borderColor='#007aff';
-}
-
-function saveHide(){
-  var p=document.getElementById('hidePin').value;
-  if(p.length<4){alert('Min 4 digits');return;}
-  G.pin=p;G.hide=true;
-  ls('pin',p);ls('dis',G.dis);ls('hide','true');
-  updHide();
-  alert('✅ Hide mode enabled!');
-  show('settings');
-}
-
-function offHide(){
-  G.hide=false;ls('hide','false');updHide();
-  show('settings');
-}
-
-function panic(){
-  if(confirm('⚠️ Destroy all records now?')){
-    G.msgs={};
-    try{
-      var p=G.pin,rc=lg('rescueCode'),mid=myId,mn=lg('myName'),lang=lg('lang');
-      localStorage.clear();
-      ls('pin',p);ls('rescueCode',rc);ls('myId',mid);ls('myName',mn);ls('lang',lang);ls('registered','true');ls('hide','true');ls('dis',G.dis);
-    }catch(e){}
-    var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
-    show(dm[G.dis]||'dfl');
-  }
+// ═══ 销毁 ═══
+function doDestruct(){
+  G.msgs={};
+  try{var p=G.pin,rc=lg('rescueCode'),mid=myId,mn=lg('myName'),lang=curLang,reg=lg('registered'),di=G.dis,tr=G.trig,de=G.dest;
+    localStorage.clear();ls('pin',p);ls('rescueCode',rc);ls('myId',mid);ls('myName',mn);ls('lang',lang);ls('registered',reg);ls('hide','true');ls('dis',di);ls('trig',tr);ls('dest',de);}catch(e){}
+  G.wrongN=0;G.pe='';closePIN();
+  var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
+  show(dm[G.dis]||'dfl');
 }
 
 // ═══ 手电筒 ═══
-function togFL(){
-  G.flOn=!G.flOn;
-  var r=document.getElementById('flR'),st=document.getElementById('flSt'),sc=document.getElementById('dfl');
-  if(G.flOn){r.style.background='#fffce8';r.style.borderColor='#ffd700';r.style.boxShadow='0 0 80px rgba(255,215,0,.5)';st.textContent='ON';st.style.color='#ffd700';sc.style.background='#fffce8';}
-  else{r.style.background='#1a1a1a';r.style.borderColor='#2a2a2a';r.style.boxShadow='none';st.textContent='Tap to turn on';st.style.color='#333';sc.style.background='#000';}
-}
+function togFL(){G.flOn=!G.flOn;var r=document.getElementById('flR'),st=document.getElementById('flSt'),sc=document.getElementById('dfl');if(G.flOn){r.classList.add('on');st.textContent='ON';st.style.color='#ffd700';sc.style.background='#fffce8';}else{r.classList.remove('on');st.textContent='Tap to turn on';st.style.color='#2a2a2a';sc.style.background='#000';}}
 
 // ═══ 激活触发 ═══
-function tapSecret(){
-  G.tapN++;
-  if(G.tapT)clearTimeout(G.tapT);
-  G.tapT=setTimeout(function(){G.tapN=0;},2000);
-  if(G.tapN>=5){G.tapN=0;openPIN();}
-}
+function tapSecret(){G.tapN++;if(G.tapT)clearTimeout(G.tapT);G.tapT=setTimeout(function(){G.tapN=0;},2000);if(G.tapN>=5){G.tapN=0;openPIN();}}
 var ltTimer=null;
 function ltS(){ltTimer=setTimeout(function(){ltTimer=null;openPIN();},3000);}
 function ltE(){if(ltTimer){clearTimeout(ltTimer);ltTimer=null;}}
 
 // ═══ 计算器 ═══
-function cp(b){
-  var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');
-  if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}
-  if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}
-  if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}
-  if(b==='='){
-    if(G.ci===G.pin){openPIN();return;}
-    var a=parseFloat(G.cpv),bv=parseFloat(G.ci),r=0;
-    if(G.co==='+')r=a+bv;else if(G.co==='-')r=a-bv;else if(G.co==='×')r=a*bv;else if(G.co==='÷')r=bv?a/bv:0;
-    res.textContent=parseFloat(r.toFixed(8));expr.textContent='';G.ci=String(r);G.co='';G.cpv='';
-  }
-}
+function cp(b){var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}if(b==='='){if(G.ci===G.pin){openPIN();return;}if(G.dpin&&G.ci===G.dpin){doDestruct();return;}var a=parseFloat(G.cpv),bv=parseFloat(G.ci),r=0;if(G.co==='+')r=a+bv;else if(G.co==='-')r=a-bv;else if(G.co==='×')r=a*bv;else if(G.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';G.ci=String(r);G.co='';G.cpv='';}}
 
 // ═══ 时钟 ═══
-function tickClock(){
-  setInterval(function(){
-    var d=new Date();
-    var hE=document.getElementById('ckH'),mE=document.getElementById('ckM'),dE=document.getElementById('ckD');
-    if(hE)hE.textContent=d.getHours();
-    if(mE)mE.textContent=(d.getMinutes()<10?'0':'')+d.getMinutes();
-    if(dE){var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];dE.textContent=days[d.getDay()]+' '+(d.getMonth()+1)+'/'+(d.getDate());}
-  },1000);
-}
+function tickClock(){setInterval(function(){var d=new Date(),hE=document.getElementById('ckH'),mE=document.getElementById('ckM'),dE=document.getElementById('ckD');if(hE)hE.textContent=d.getHours();if(mE)mE.textContent=(d.getMinutes()<10?'0':'')+d.getMinutes();if(dE){var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];dE.textContent=days[d.getDay()].toUpperCase()+' · '+(d.getMonth()+1)+'/'+(d.getDate())+'/'+(d.getFullYear());}},1000);}
 
-// ═══ PIN解锁 ═══
+// ═══ 摇一摇 ═══
+window.addEventListener('load',function(){if(!window.DeviceMotionEvent)return;var last=0,shakeN=0,shakeT=null;window.addEventListener('devicemotion',function(e){var a=e.accelerationIncludingGravity;if(!a)return;var tot=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z),now=Date.now();if(tot>25&&now-last>300){last=now;if(G.hide&&G.trig==='shake')openPIN();if(G.dest==='shake'){shakeN++;if(shakeT)clearTimeout(shakeT);shakeT=setTimeout(function(){shakeN=0;},3000);if(shakeN>=10){shakeN=0;doDestruct();}}}});});
+
+// ═══ PIN ═══
 G.pe='';
-function openPIN(){
-  G.pe='';G.wrongN=G.wrongN||0;
-  updDots(false);
-  document.getElementById('pinOv').style.display='flex';
-}
-function closePIN(){document.getElementById('pinOv').style.display='none';}
+function openPIN(){G.pe='';var wh=document.getElementById('wrongHint');if(wh)wh.textContent='';updDots(false);document.getElementById('pinOv').classList.add('on');}
+function closePIN(){document.getElementById('pinOv').classList.remove('on');}
 function pk(k){
   if(G.pe.length>=Math.max(G.pin.length,4))return;
   G.pe+=k;updDots(false);
   if(G.pe.length===Math.max(G.pin.length,4)||G.pe.length===G.pin.length){
     setTimeout(function(){
-      if(G.pe===G.pin){
-        G.wrongN=0;closePIN();show('main');
-      } else {
+      if(G.pe===G.pin){G.wrongN=0;closePIN();show('main');listenForCalls();}
+      else if(G.dpin&&G.pe===G.dpin){doDestruct();}
+      else{
         G.wrongN++;
-        if(G.wrongN>=8){
-          var sb=document.getElementById('support-btn');
-          if(sb)sb.style.display='block';
-        }
-        G.pe='';updDots(true);
-        setTimeout(function(){updDots(false);},600);
+        var wh=document.getElementById('wrongHint');
+        if(wh)wh.textContent=G.wrongN>=2?'Warning: '+(3-G.wrongN)+' attempts left':'';
+        if(G.wrongN>=8){var sb=document.getElementById('support-btn');if(sb)sb.style.display='block';}
+        if(G.dest==='wrong'&&G.wrongN>=3){doDestruct();return;}
+        G.pe='';updDots(true);setTimeout(function(){updDots(false);},600);
       }
     },80);
   }
@@ -646,20 +754,10 @@ function pk(k){
 function pkd(){G.pe=G.pe.slice(0,-1);updDots(false);}
 function updDots(err){
   var len=Math.max((G.pin||'1234').length,4);
-  var dots=document.getElementById('pinDots');
-  if(!dots)return;
-  if(dots.children.length!==len){
-    dots.innerHTML='';
-    for(var i=0;i<len;i++){
-      var d=document.createElement('div');
-      d.style.cssText='width:16px;height:16px;border-radius:50%;background:#e5e5ea;transition:background .15s;';
-      d.id='pd'+i;dots.appendChild(d);
-    }
-  }
-  for(var i=0;i<len;i++){
-    var d=document.getElementById('pd'+i);
-    if(d)d.style.background=err?'#ff3b30':(i<G.pe.length?'#007aff':'#e5e5ea');
-  }
+  var dots=document.getElementById('pinDots');if(!dots)return;
+  if(dots.children.length!==len){dots.innerHTML='';for(var i=0;i<len;i++){var d=document.createElement('div');d.style.cssText='width:16px;height:16px;border-radius:50%;background:#e5e5ea;transition:background .15s;';d.id='pd'+i;dots.appendChild(d);}}
+  for(var i=0;i<len;i++){var d=document.getElementById('pd'+i);if(d)d.style.background=err?'#ff3b30':(i<G.pe.length?'#007aff':'#e5e5ea');}
+  if(err){var ds=document.getElementById('pinDots');ds.style.animation='shake 0.4s';setTimeout(function(){ds.style.animation='';},400);}
 }
 </script>
 </body>
