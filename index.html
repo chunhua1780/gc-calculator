@@ -700,18 +700,12 @@ window.onload=function(){
   }
   applyLang();
   if(!lg('registered')){
-    var randName='User'+Math.random().toString(36).substr(2,5).toUpperCase();
-    ls('myName',randName);
-    ls('pin','1234');
-    G.pin='1234';
-    ls('registered','true');
-    var rc=generateRescueCode();
-    ls('rescueCode',rc);
-    setTimeout(function(){
-      alert('🔐 Your Rescue Code:\n\n'+rc+'\n\nSave this code! You will need it to recover your account.\nFee: $5');
-    },1000);
+    show('reg');
+  } else {
+    var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote',syssettings:'dsys'};
+    if(G.hide) show(dm[G.dis]||'dfl');
+    else show('main');
   }
-  show('main');
   else{
     var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote',syssettings:'dsys'};
     if(G.hide)show(dm[G.dis]||'dfl');
@@ -741,11 +735,20 @@ function doRegister(){
   var name=document.getElementById('regName').value.trim();
   var pin=document.getElementById('regPin').value;
   var pin2=document.getElementById('regPin2').value;
-  if(!name){alert(T('nickname')+' required');return;}
-  if(pin.length<4){alert('Password: min 4 digits');return;}
+  if(!name){alert('Please enter a nickname');return;}
+  if(pin.length<4){alert('Password must be at least 4 digits');return;}
   if(pin!==pin2){alert('Passwords do not match');return;}
-  G.pin=pin;ls('pin',pin);ls('myName',name);ls('registered','true');
-  var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId;
+  // 生成救援码
+  var rc=generateRescueCode();
+  ls('rescueCode',rc);
+  G.pin=pin;
+  ls('pin',pin);
+  ls('myName',name);
+  ls('registered','true');
+  var si=document.getElementById('myIdShow');
+  if(si)si.textContent='ID: '+myId;
+  // 显示救援码
+  alert('✅ Account created!\n\n🔐 Your Rescue Code:\n'+rc+'\n\nSAVE THIS CODE!\nYou need it to recover your account ($5 fee).');
   show('main');
 }
 
