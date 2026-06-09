@@ -442,6 +442,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 <input type="file" id="imgIn" accept="image/*" style="display:none" onchange="onImg(event)">
 <input type="file" id="vidIn" accept="video/*" style="display:none" onchange="onVid()">
 
+<script src="i18n.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var G={
@@ -496,6 +497,7 @@ async function joinRoom(name){
 }
 
 window.onload=function(){
+  applyLang();
   // 检查是否首次使用
   if(!lg("registered")){
     show("register-screen");
@@ -743,3 +745,34 @@ function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 </script>
 </body>
 </html>
+<div id="lang-picker" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:none;align-items:flex-end;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 44px;width:100%;max-height:80vh;overflow-y:auto;">
+    <div style="width:36px;height:4px;background:#e5e5ea;border-radius:2px;margin:0 auto 20px;"></div>
+    <div style="font-size:20px;font-weight:700;text-align:center;margin-bottom:16px;">选择语言 / Language</div>
+    <div id="langList"></div>
+  </div>
+</div>
+<script>
+function showLangPicker(){
+  var list=document.getElementById('langList');
+  list.innerHTML=Object.keys(LANGS).map(function(code){
+    var l=LANGS[code];
+    var sel=code===curLang;
+    return '<div onclick="pickLang(\''+code+'\')" style="display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);cursor:pointer;background:'+(sel?'#f0f7ff':'#fff')+'">'
+      +'<span style="font-size:24px;margin-right:12px;">'+l.flag+'</span>'
+      +'<span style="font-size:16px;flex:1;">'+l.name+'</span>'
+      +(sel?'<span style="color:#007aff;font-size:18px;">✓</span>':'')
+      +'</div>';
+  }).join('');
+  document.getElementById('lang-picker').style.display='flex';
+}
+function pickLang(code){
+  setLang(code);
+  document.getElementById('lang-picker').style.display='none';
+  var el=document.getElementById('curLangName');
+  if(el)el.textContent=LANGS[code].name;
+}
+document.getElementById('lang-picker').addEventListener('click',function(e){
+  if(e.target===this)this.style.display='none';
+});
+</script>
