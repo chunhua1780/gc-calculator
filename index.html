@@ -148,6 +148,23 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 </head>
 <body>
 
+<!-- 注册界面 -->
+<div id="register-screen" class="screen active">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;">
+    <div style="font-size:48px;margin-bottom:16px;">🔐</div>
+    <div style="font-size:28px;font-weight:700;margin-bottom:8px;">私聊</div>
+    <div style="font-size:15px;color:var(--text3);margin-bottom:40px;text-align:center;line-height:1.6;">私密 · 加密 · 无痕<br>你的秘密只属于你</div>
+    <div style="width:100%;max-width:320px;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">设置昵称</div>
+      <input id="regName" style="background:#fff;border:0.5px solid var(--sep);border-radius:12px;padding:14px 16px;color:var(--text);font-size:17px;width:100%;outline:none;margin-bottom:16px;font-family:inherit;" placeholder="输入你的昵称" maxlength="20">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">设置密码</div>
+      <input id="regPin" type="password" style="background:#fff;border:0.5px solid var(--sep);border-radius:12px;padding:14px 16px;color:var(--text);font-size:17px;width:100%;outline:none;margin-bottom:8px;font-family:inherit;letter-spacing:4px;text-align:center;" placeholder="4-8位密码" maxlength="8">
+      <input id="regPin2" type="password" style="background:#fff;border:0.5px solid var(--sep);border-radius:12px;padding:14px 16px;color:var(--text);font-size:17px;width:100%;outline:none;margin-bottom:24px;font-family:inherit;letter-spacing:4px;text-align:center;" placeholder="确认密码" maxlength="8">
+      <button onclick="doRegister()" style="background:var(--blue);border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;">开始使用</button>
+    </div>
+  </div>
+</div>
+
 <!-- 主界面 -->
 <div id="main" class="screen active">
   <div class="nav nav-lg" style="padding-top:60px;"><div class="title">私聊</div></div>
@@ -479,6 +496,11 @@ async function joinRoom(name){
 }
 
 window.onload=function(){
+  // 检查是否首次使用
+  if(!lg("registered")){
+    show("register-screen");
+    return;
+  }
   var dm={flashlight:'dis-fl',calculator:'dis-calc',clock:'dis-clk',note:'dis-note',syssettings:'dis-sys'};
   if(G.hide)show(dm[G.dis]||'dis-fl');
   else show('main');
@@ -700,6 +722,22 @@ function addMsg(m){
   if(!m.sent) sendNotif('新消息');
 }
 
+function doRegister(){
+  var name=document.getElementById("regName").value.trim();
+  var pin=document.getElementById("regPin").value;
+  var pin2=document.getElementById("regPin2").value;
+  if(!name){alert("请输入昵称");return;}
+  if(pin.length<4){alert("密码至少4位");return;}
+  if(pin!==pin2){alert("两次密码不一致");return;}
+  G.pin=pin;
+  ls("pin",pin);
+  ls("myName",name);
+  ls("registered","true");
+  G.pin=pin;
+  var si=document.getElementById("myIdShow");
+  if(si)si.textContent="ID: "+myId+"  昵称: "+name;
+  show("main");
+}
 function gt(){var d=new Date();return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();}
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 </script>
