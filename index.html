@@ -105,13 +105,13 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
         <input id="regName" class="field" placeholder="Nickname" maxlength="20">
         <input id="regPin" type="password" class="field" placeholder="Password (4-8 digits)" maxlength="8" style="letter-spacing:4px;text-align:center;">
         <input id="regPin2" type="password" class="field" placeholder="Confirm password" maxlength="8" style="letter-spacing:4px;text-align:center;">
-        <button class="btn-blue" onclick="doRegister()">Create Account</button>
+        <button class="btn-blue" id="reg-btn" onclick="doRegister()">Create Account</button>
         <div style="text-align:center;margin-top:10px;font-size:14px;color:#8e8e93;">Already have account? <span style="color:#007aff;cursor:pointer;" onclick="switchTo('login')">Login</span></div>
       </div>
       <div id="login-form" style="display:none;">
         <div style="font-size:18px;font-weight:600;margin-bottom:20px;text-align:center;" id="welcome-name">Welcome back!</div>
         <input id="loginPin" type="password" class="field" placeholder="Password" maxlength="8" style="letter-spacing:4px;text-align:center;">
-        <button class="btn-blue" onclick="doLogin()">Login</button>
+        <button class="btn-blue" id="login-btn" onclick="doLogin()">Login</button>
         <div style="text-align:center;margin-top:10px;font-size:14px;color:#8e8e93;">New user? <span style="color:#007aff;cursor:pointer;" onclick="switchTo('reg')">Register</span></div>
         <div style="text-align:center;margin-top:12px;"><span style="font-size:13px;color:#8e8e93;cursor:pointer;" onclick="switchTo('recovery')">Forgot password?</span></div>
       </div>
@@ -192,15 +192,15 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
   <div style="display:flex;gap:32px;">
     <div style="text-align:center;cursor:pointer;" onclick="toggleMic()">
       <div id="micBtn" style="width:68px;height:68px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center;font-size:28px;">🎤</div>
-      <div style="font-size:12px;color:#8e8e93;margin-top:8px;">Mute</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:8px;" id="mute-lbl">Mute</div>
     </div>
     <div style="text-align:center;cursor:pointer;" onclick="endCall()">
       <div style="width:68px;height:68px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:28px;">📵</div>
-      <div style="font-size:12px;color:#ff3b30;margin-top:8px;">End</div>
+      <div style="font-size:12px;color:#ff3b30;margin-top:8px;" id="end-lbl">End</div>
     </div>
     <div style="text-align:center;cursor:pointer;">
       <div style="width:68px;height:68px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center;font-size:28px;">🔊</div>
-      <div style="font-size:12px;color:#8e8e93;margin-top:8px;">Speaker</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:8px;" id="spk-lbl">Speaker</div>
     </div>
   </div>
 </div>
@@ -229,11 +229,11 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
     <div style="display:flex;gap:56px;justify-content:center;">
       <div style="text-align:center;cursor:pointer;" onclick="rejectCall()">
         <div style="width:72px;height:72px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:30px;">📵</div>
-        <div style="color:#ff3b30;font-size:13px;margin-top:10px;">Decline</div>
+        <div style="color:#ff3b30;font-size:13px;margin-top:10px;" id="decline-lbl">Decline</div>
       </div>
       <div style="text-align:center;cursor:pointer;" onclick="acceptCall()">
         <div style="width:72px;height:72px;border-radius:50%;background:#34c759;display:flex;align-items:center;justify-content:center;font-size:30px;">📞</div>
-        <div style="color:#34c759;font-size:13px;margin-top:10px;">Accept</div>
+        <div style="color:#34c759;font-size:13px;margin-top:10px;" id="accept-lbl">Accept</div>
       </div>
     </div>
   </div>
@@ -281,7 +281,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
         <div class="tog on" onclick="this.classList.toggle('on')"><div class="td"></div></div>
       </div>
     </div>
-    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Language</div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-lang-hd">Language</div>
     <div class="card">
       <div class="row" onclick="show('lang-set')">
         <div class="si" style="background:#007aff;">🌐</div>
@@ -289,7 +289,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
     </div>
-    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Subscription</div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-sub-hd">Subscription</div>
     <div class="card">
       <div class="row">
         <div class="si" style="background:#ff9f0a;">💰</div>
@@ -297,11 +297,11 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
     </div>
-    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Account</div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-acct">Account</div>
     <div class="card">
       <div class="row" onclick="doLogout()">
         <div class="si" style="background:#ff3b30;">🚪</div>
-        <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;">Logout</div></div>
+        <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;" id="set-logout">Logout</div></div>
       </div>
     </div>
     <div style="height:30px;"></div>
@@ -320,10 +320,10 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
     <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">App will completely disguise as another app. Only you know how to unlock it.</p>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Disguise Shell</div>
     <div class="og">
-      <div class="oc on" id="od-flas" onclick="selD('flashlight')"><div style="font-size:36px;margin-bottom:8px;">🔦</div><div style="font-size:14px;font-weight:500;">Flashlight</div></div>
-      <div class="oc" id="od-calc" onclick="selD('calculator')"><div style="font-size:36px;margin-bottom:8px;">🧮</div><div style="font-size:14px;font-weight:500;">Calculator</div></div>
-      <div class="oc" id="od-cloc" onclick="selD('clock')"><div style="font-size:36px;margin-bottom:8px;">🕐</div><div style="font-size:14px;font-weight:500;">Clock</div></div>
-      <div class="oc" id="od-note" onclick="selD('note')"><div style="font-size:36px;margin-bottom:8px;">📝</div><div style="font-size:14px;font-weight:500;">Notes</div></div>
+      <div class="oc on" id="od-flas" onclick="selD('flashlight')"><div style="font-size:36px;margin-bottom:8px;">🔦</div><div style="font-size:14px;font-weight:500;" id="d-fl-name">Flashlight</div></div>
+      <div class="oc" id="od-calc" onclick="selD('calculator')"><div style="font-size:36px;margin-bottom:8px;">🧮</div><div style="font-size:14px;font-weight:500;" id="d-calc-name">Calculator</div></div>
+      <div class="oc" id="od-cloc" onclick="selD('clock')"><div style="font-size:36px;margin-bottom:8px;">🕐</div><div style="font-size:14px;font-weight:500;" id="d-clk-name">Clock</div></div>
+      <div class="oc" id="od-note" onclick="selD('note')"><div style="font-size:36px;margin-bottom:8px;">📝</div><div style="font-size:14px;font-weight:500;" id="d-note-name">Notes</div></div>
     </div>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Activation Method</div>
     <div class="tr2 on" id="tr-pin" onclick="selT('pin')"><div style="font-size:22px;width:36px;text-align:center;">🔢</div><div><div style="font-size:15px;font-weight:500;">Password activation</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Enter password to unlock</div></div></div>
@@ -332,8 +332,8 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
     <div class="tr2" id="tr-shake" onclick="selT('shake')"><div style="font-size:22px;width:36px;text-align:center;">📳</div><div><div style="font-size:15px;font-weight:500;">Shake to activate</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Shake phone to activate</div></div></div>
     <div style="font-size:13px;color:#8e8e93;margin:16px 0 12px;text-transform:uppercase;letter-spacing:.3px;">Entry Password</div>
     <input id="hidePin" type="password" class="field" placeholder="4-8 digits" maxlength="8" style="letter-spacing:4px;text-align:center;">
-    <button class="btn-blue" onclick="saveHide()">Enable Hide Mode</button>
-    <button class="btn-red" style="margin-top:10px;" onclick="offHide()">Disable Hide Mode</button>
+    <button class="btn-blue" id="enable-hide-btn" onclick="saveHide()">Enable Hide Mode</button>
+    <button class="btn-red" id="disable-hide-btn" style="margin-top:10px;" onclick="offHide()">Disable Hide Mode</button>
     <div style="height:30px;"></div>
   </div>
 </div>
