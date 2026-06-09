@@ -690,7 +690,14 @@ window.onload=function(){
     }).join('');
   }
   applyLang();
-  if(!lg('registered'))show('reg');
+  if(!lg('registered')){
+    var randName='User'+Math.random().toString(36).substr(2,5).toUpperCase();
+    ls('myName',randName);
+    ls('pin','1234');
+    G.pin='1234';
+    ls('registered','true');
+  }
+  show('main');
   else{
     var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote',syssettings:'dsys'};
     if(G.hide)show(dm[G.dis]||'dfl');
