@@ -6,30 +6,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup Java
-      uses: actions/setup-java@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-    - name: Setup Node
-      uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
         node-version: '18'
     - name: Install Cordova
       run: npm install -g cordova
-    - name: Create Cordova project
+    - name: Build project
       run: |
         cordova create app com.ghostchat.app GhostChat
         cp index.html app/www/index.html
         cd app
         cordova platform add android
-    - name: Build APK
-      run: |
-        cd app
         cordova build android
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v4
       with:
         name: GhostChat-APK
         path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
