@@ -673,6 +673,21 @@ function listenForCalls(){
     }).subscribe();
 }
 
+// ═══ 工具函数（必须最先定义）═══
+function lg(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function ls(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function generateRescueCode(){
+  var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code='';
+  for(var i=0;i<12;i++){
+    if(i>0&&i%4===0)code+='-';
+    code+=chars[Math.floor(Math.random()*chars.length)];
+  }
+  return code;
+}
+function gt(){var d=new Date();return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
 // ═══ 主状态 ═══
 var G={
   chat:'',msgs:{},
@@ -968,13 +983,7 @@ function updDots(err){
   if(err){var ds=document.getElementById('pinDots');ds.style.animation='shake 0.4s';setTimeout(function(){ds.style.animation='';},400);}
 }
 
-function generateRescueCode(){
-  var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  var code='';
-  for(var i=0;i<12;i++){
-    if(i>0&&i%4===0)code+='-';
-    code+=chars[Math.floor(Math.random()*chars.length)];
-  }
+
   return code;
 }
 
@@ -1009,8 +1018,8 @@ function verifyRescue(){
   }
 }
 
-function gt(){var d=new Date();return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();}
-function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </body>
