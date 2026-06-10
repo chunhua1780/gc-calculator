@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>GhostChat</title>
+<title>SecretTalk</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;}
@@ -97,7 +97,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
     <div style="width:80px;height:80px;background:#007aff;border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 8px 24px rgba(0,122,255,.3);">
       <svg viewBox="0 0 24 24" width="44" height="44" stroke="#fff" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
     </div>
-    <div style="font-size:28px;font-weight:700;margin-bottom:6px;letter-spacing:-.5px;">GhostChat</div>
+    <div style="font-size:28px;font-weight:700;margin-bottom:6px;letter-spacing:-.5px;">SecretTalk</div>
     <div style="font-size:15px;color:#8e8e93;margin-bottom:32px;text-align:center;">Private · Encrypted · Untraceable</div>
     <div style="width:100%;max-width:320px;">
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;justify-content:center;" id="langBtns"></div>
@@ -531,9 +531,9 @@ window.onload=function(){
   var na=document.getElementById('nameDisplay');if(na&&lg('myName'))na.textContent=lg('myName');
   var av=document.getElementById('avatarDisplay');if(av&&lg('myName'))av.textContent=lg('myName')[0].toUpperCase();
   var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
-  if(!lg('registered')){show('reg');return;}
+  if(!lg('registered')){show('dcalc');return;}
   var wn=document.getElementById('welcome-name');if(wn)wn.textContent='Welcome back'+(lg('myName')?', '+lg('myName'):'')+'!';
-  if(G.hide){var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};show(dm[G.dis]||'dfl');}
+  if(G.hide){var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};show(dm[G.dis]||'dcalc');}
   else{show('main');listenForCalls();}
 };
 
@@ -809,7 +809,7 @@ function doDestruct(){
     localStorage.clear();ls('pin',p);ls('rescueCode',rc);ls('myId',mid);ls('myName',mn);ls('lang',lang);ls('registered',reg);ls('hide','true');ls('dis',di);ls('trig',tr);ls('dest',de);}catch(e){}
   G.wrongN=0;G.pe='';closePIN();
   var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
-  show(dm[G.dis]||'dfl');
+  show(dm[G.dis]||'dcalc');
 }
 
 // ═══ 手电筒 ═══
@@ -822,7 +822,17 @@ function ltS(){ltTimer=setTimeout(function(){ltTimer=null;openPIN();},3000);}
 function ltE(){if(ltTimer){clearTimeout(ltTimer);ltTimer=null;}}
 
 // ═══ 计算器 ═══
-function cp(b){var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}if(b==='='){if(G.ci===G.pin){openPIN();return;}if(G.dpin&&G.ci===G.dpin){doDestruct();return;}var a=parseFloat(G.cpv),bv=parseFloat(G.ci),r=0;if(G.co==='+')r=a+bv;else if(G.co==='-')r=a-bv;else if(G.co==='×')r=a*bv;else if(G.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';G.ci=String(r);G.co='';G.cpv='';}}
+function cp(b){var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}if(b==='='){
+    var pin=G.pin||'1234';
+    if(G.ci===pin){
+      G.ci='';G.co='';G.cpv='';
+      var res=document.getElementById('cNum');if(res)res.textContent='0';
+      var expr=document.getElementById('cExpr');if(expr)expr.textContent='';
+      if(!lg('registered')){show('reg');}
+      else{show('main');listenForCalls();}
+      return;
+    }
+    if(G.dpin&&G.ci===G.dpin){doDestruct();return;}var a=parseFloat(G.cpv),bv=parseFloat(G.ci),r=0;if(G.co==='+')r=a+bv;else if(G.co==='-')r=a-bv;else if(G.co==='×')r=a*bv;else if(G.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';G.ci=String(r);G.co='';G.cpv='';}}
 
 // ═══ 时钟 ═══
 function tickClock(){setInterval(function(){var d=new Date(),hE=document.getElementById('ckH'),mE=document.getElementById('ckM'),dE=document.getElementById('ckD');if(hE)hE.textContent=d.getHours();if(mE)mE.textContent=(d.getMinutes()<10?'0':'')+d.getMinutes();if(dE){var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];dE.textContent=days[d.getDay()].toUpperCase()+' · '+(d.getMonth()+1)+'/'+(d.getDate())+'/'+(d.getFullYear());}},1000);}
