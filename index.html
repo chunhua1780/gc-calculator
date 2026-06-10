@@ -620,6 +620,13 @@ function showQR(){
   }
 }
 
+function playVoice(el,src){
+  var audio=new Audio(src);
+  audio.play();
+  el.textContent='⏸ Playing...';
+  audio.onended=function(){el.innerHTML='▶️ '+(el.textContent.split(' ')[1]||'');};
+}
+
 function doLogout(){if(confirm('Logout?')){show('reg');switchTo('login');}}
 function doRecovery(){
   var input=document.getElementById('rescueInput').value.replace(/-/g,'').toUpperCase();
@@ -718,8 +725,8 @@ async function joinRoom(name){
       if(String(m.sender)===String(myId))return;
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
       if(m.type==='image')msg.src=m.content;
-      if(m.type==='voice'){msg.dur=m.content.replace('[Voice ','').replace('s]','');}
-      if(m.type==='location'){var pts=m.content.split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
+      if(m.type==='voice'){msg.src=m.content;msg.dur=m.duration||'?';}
+      if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
       var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
       if(!already){addMsg(msg);sendNotif();}
       var lastEl=document.getElementById('last-'+String(m.sender));
@@ -875,7 +882,11 @@ function renderMsgs(){
       else if(m.src.length>100){b='<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';}
       else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
-      b='<div style="display:flex;align-items:center;gap:8px;">🎤 '+(m.dur||'?')+'s</div>';
+      if(m.src&&m.src.length>100){
+        b='<div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="playVoice(this,''+m.src+'')">▶️ '+(m.dur||'?')+'s</div>';
+      }else{
+        b='<div style="display:flex;align-items:center;gap:8px;">🎤 '+(m.dur||'?')+'s</div>';
+      }
     }else if(m.type==='location'){
       var mapUrl=m.mapUrl||('https://maps.google.com/?q='+(m.addr||''));
       b='<div>📍 <a href="'+mapUrl+'" target="_blank" style="color:inherit;text-decoration:underline;">'+(m.addr||'Location')+'</a></div>';
@@ -957,48 +968,33 @@ function doImg(){document.getElementById('imgIn').removeAttribute('capture');doc
 async function onImg(e){
   var f=e.target.files[0];if(!f)return;
   document.getElementById('xpanel').classList.remove('on');
-  addMsg({type:'image',src:'loading',sent:true,t:gt(),loading:true});
   try{
-    // 压缩图片
-    var dataUrl=await new Promise(function(resolve){
+    var dataUrl=await new Promise(function(resolve,reject){
       var reader=new FileReader();
       reader.onload=function(ev){
         var img=new Image();
         img.onload=function(){
           var canvas=document.createElement('canvas');
-          var max=1200,w=img.width,h=img.height;
+          var max=800,w=img.width,h=img.height;
           if(w>max){h=Math.round(h*max/w);w=max;}
           if(h>max){w=Math.round(w*max/h);h=max;}
           canvas.width=w;canvas.height=h;
           canvas.getContext('2d').drawImage(img,0,0,w,h);
-          resolve(canvas.toDataURL('image/jpeg',0.75));
+          resolve(canvas.toDataURL('image/jpeg',0.6));
         };
+        img.onerror=reject;
         img.src=ev.target.result;
       };
+      reader.onerror=reject;
       reader.readAsDataURL(f);
     });
-    // 转为blob上传
-    var res=await fetch(dataUrl);
-    var blob=await res.blob();
-    var fname='img_'+Date.now()+'_'+Math.random().toString(36).substr(2,6)+'.jpg';
-    var upload=await _sb.storage.from('media').upload(fname,blob,{contentType:'image/jpeg',upsert:true});
-    var url;
-    if(upload.error){
-      // 上传失败用base64
-      url=dataUrl;
-    } else {
-      var pub=_sb.storage.from('media').getPublicUrl(fname);
-      url=pub.data.publicUrl;
+    addMsg({type:'image',src:dataUrl,sent:true,t:gt()});
+    if(currentRoom){
+      var res=await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:dataUrl,type:'image'});
+      if(res.error)console.log('img send error:',res.error);
     }
-    // 更新最后一条消息
-    if(G.msgs[G.chat]){
-      var last=G.msgs[G.chat][G.msgs[G.chat].length-1];
-      if(last&&last.loading){last.src=url;last.loading=false;}
-    }
-    renderMsgs();
-    if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'image'});
   }catch(err){
-    alert('Failed to send image: '+err.message);
+    alert('Image error: '+err.message);
   }
 }
 function doVid(){document.getElementById('vidIn').click();}
@@ -1018,14 +1014,44 @@ function doLoc(){
 }
 function doFile(){alert('File sharing coming soon');}
 function doBurn(){var t=prompt('Self-destruct after (seconds):','10');if(t)alert('Set: messages will disappear after '+t+'s');}
-function recStart(e){if(e)e.preventDefault();G.recOn=true;G.recS=0;document.getElementById('recHud').classList.add('on');G.recI=setInterval(function(){G.recS++;var m=Math.floor(G.recS/60),s=G.recS%60;document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;},1000);}
+var _mediaRec=null,_recChunks=[];
+function recStart(e){
+  if(e)e.preventDefault();
+  if(G.recOn)return;
+  G.recOn=true;G.recS=0;_recChunks=[];
+  document.getElementById('recHud').classList.add('on');
+  G.recI=setInterval(function(){G.recS++;var m=Math.floor(G.recS/60),s=G.recS%60;document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;},1000);
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    _mediaRec=new MediaRecorder(stream);
+    _mediaRec.ondataavailable=function(e){if(e.data.size>0)_recChunks.push(e.data);};
+    _mediaRec.start();
+  }).catch(function(err){
+    G.recOn=false;clearInterval(G.recI);
+    document.getElementById('recHud').classList.remove('on');
+    alert('Microphone error: '+err.message);
+  });
+}
 function recStop(){
   if(!G.recOn)return;
   G.recOn=false;clearInterval(G.recI);
   document.getElementById('recHud').classList.remove('on');
-  if(G.recS>0){
-    addMsg({type:'voice',dur:G.recS,sent:true,t:gt()});
-    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:'[Voice '+G.recS+'s]',type:'voice'});
+  var dur=G.recS;
+  if(_mediaRec&&_mediaRec.state!=='inactive'){
+    _mediaRec.onstop=function(){
+      var blob=new Blob(_recChunks,{type:'audio/webm'});
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        var b64=ev.target.result;
+        addMsg({type:'voice',dur:dur,src:b64,sent:true,t:gt()});
+        if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:b64,type:'voice',duration:dur});
+      };
+      reader.readAsDataURL(blob);
+      _mediaRec.stream.getTracks().forEach(function(t){t.stop();});
+    };
+    _mediaRec.stop();
+  } else if(dur>0){
+    addMsg({type:'voice',dur:dur,sent:true,t:gt()});
+    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:'[Voice '+dur+'s]',type:'voice'});
   }
 }
 
