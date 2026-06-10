@@ -742,7 +742,18 @@ async function joinRoom(name){
     }
   },3000);
   var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).order('created_at',{ascending:true}).limit(50);
-  if(res.data&&res.data.length>0){G.msgs[name]=res.data.map(function(m){return{text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:gt()};});renderMsgs();}
+  if(res.data&&res.data.length>0){
+    G.msgs[name]=res.data.map(function(m){
+      var msg={id:m.id,text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:gt()};
+      if(m.type==='image')msg.src=m.content;
+      if(m.type==='voice'){msg.dur=m.content.replace('[Voice ','').replace('s]','');}
+      if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
+      // 过滤掉异常长的text消息
+      if(msg.type==='text'&&msg.text&&msg.text.length>2000)msg.text='[Message]';
+      return msg;
+    });
+    renderMsgs();
+  }
 }
 
 // ═══ WebRTC ═══
