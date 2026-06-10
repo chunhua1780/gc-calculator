@@ -963,97 +963,163 @@ async function showNewChat(){
   openChat(String(res.data.id),res.data.name[0].toUpperCase(),'#007aff',res.data.name);
 }
 function togXP(){document.getElementById('xpanel').classList.toggle('on');}
-function doPhoto(){document.getElementById('imgIn').setAttribute('capture','camera');document.getElementById('imgIn').click();}
-function doImg(){document.getElementById('imgIn').removeAttribute('capture');document.getElementById('imgIn').click();}
-async function onImg(e){
-  var f=e.target.files[0];if(!f)return;
-  document.getElementById('xpanel').classList.remove('on');
-  try{
-    var dataUrl=await new Promise(function(resolve,reject){
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        var img=new Image();
-        img.onload=function(){
-          var canvas=document.createElement('canvas');
-          var max=800,w=img.width,h=img.height;
-          if(w>max){h=Math.round(h*max/w);w=max;}
-          if(h>max){w=Math.round(w*max/h);h=max;}
-          canvas.width=w;canvas.height=h;
-          canvas.getContext('2d').drawImage(img,0,0,w,h);
-          resolve(canvas.toDataURL('image/jpeg',0.6));
-        };
-        img.onerror=reject;
-        img.src=ev.target.result;
-      };
-      reader.onerror=reject;
-      reader.readAsDataURL(f);
-    });
-    addMsg({type:'image',src:dataUrl,sent:true,t:gt()});
-    if(currentRoom){
-      var res=await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:dataUrl,type:'image'});
-      if(res.error)console.log('img send error:',res.error);
-    }
-  }catch(err){
-    alert('Image error: '+err.message);
-  }
+
+function doPhoto(){
+  document.getElementById('imgIn').setAttribute('capture','camera');
+  document.getElementById('imgIn').click();
 }
-function doVid(){document.getElementById('vidIn').click();}
-function onVid(){addMsg({type:'video',sent:true,t:gt()});document.getElementById('xpanel').classList.remove('on');}
+
+function doImg(){
+  document.getElementById('imgIn').removeAttribute('capture');
+  document.getElementById('imgIn').click();
+}
+
+function onImg(e){
+  var f=e.target.files[0];
+  if(!f){return;}
+  document.getElementById('xpanel').classList.remove('on');
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      var max=600;
+      var w=img.width,h=img.height;
+      if(w>max){h=Math.round(h*max/w);w=max;}
+      if(h>max){w=Math.round(w*max/h);h=max;}
+      canvas.width=w;
+      canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      var data=canvas.toDataURL('image/jpeg',0.5);
+      addMsg({type:'image',src:data,sent:true,t:gt()});
+      if(currentRoom){
+        _sb.from('messages').insert({
+          room_id:currentRoom,
+          sender:String(myId),
+          content:data,
+          type:'image'
+        }).then(function(r){
+          if(r.error)console.log('img err:',r.error.message);
+        });
+      }
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(f);
+  e.target.value='';
+}
+
+function doVid(){
+  document.getElementById('vidIn').click();
+}
+
+function onVid(){
+  addMsg({type:'video',sent:true,t:gt()});
+  document.getElementById('xpanel').classList.remove('on');
+}
+
 function doLoc(){
   document.getElementById('xpanel').classList.remove('on');
-  if(!navigator.geolocation){addMsg({type:'location',addr:'Location unavailable',sent:true,t:gt()});return;}
-  navigator.geolocation.getCurrentPosition(function(p){
-    var lat=p.coords.latitude.toFixed(6),lng=p.coords.longitude.toFixed(6);
-    var addr=lat+','+lng;
-    var mapUrl='https://maps.google.com/?q='+lat+','+lng;
-    addMsg({type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt()});
-    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:addr+'|'+mapUrl,type:'location'});
-  },function(){
-    addMsg({type:'location',addr:'Location denied',sent:true,t:gt()});
-  },{enableHighAccuracy:true,timeout:10000});
+  if(!navigator.geolocation){
+    alert('Location not supported');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      var lat=pos.coords.latitude.toFixed(5);
+      var lng=pos.coords.longitude.toFixed(5);
+      var addr=lat+','+lng;
+      var mapUrl='https://maps.google.com/?q='+lat+','+lng;
+      addMsg({type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt()});
+      if(currentRoom){
+        _sb.from('messages').insert({
+          room_id:currentRoom,
+          sender:String(myId),
+          content:addr+'|'+mapUrl,
+          type:'location'
+        });
+      }
+    },
+    function(err){
+      alert('Location error: '+err.message);
+    },
+    {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
+  );
 }
-function doFile(){alert('File sharing coming soon');}
-function doBurn(){var t=prompt('Self-destruct after (seconds):','10');if(t)alert('Set: messages will disappear after '+t+'s');}
-var _mediaRec=null,_recChunks=[];
+
+function doFile(){alert('Coming soon');}
+function doBurn(){alert('Coming soon');}
+
+var _mediaRec=null;
+var _recChunks=[];
+
 function recStart(e){
-  if(e)e.preventDefault();
+  if(e&&e.preventDefault)e.preventDefault();
   if(G.recOn)return;
-  G.recOn=true;G.recS=0;_recChunks=[];
+  G.recOn=true;
+  G.recS=0;
+  _recChunks=[];
   document.getElementById('recHud').classList.add('on');
-  G.recI=setInterval(function(){G.recS++;var m=Math.floor(G.recS/60),s=G.recS%60;document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;},1000);
+  G.recI=setInterval(function(){
+    G.recS++;
+    var m=Math.floor(G.recS/60),s=G.recS%60;
+    document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;
+  },1000);
   navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-    _mediaRec=new MediaRecorder(stream);
-    _mediaRec.ondataavailable=function(e){if(e.data.size>0)_recChunks.push(e.data);};
-    _mediaRec.start();
+    var opts={};
+    if(MediaRecorder.isTypeSupported('audio/webm')){opts={mimeType:'audio/webm'};}
+    _mediaRec=new MediaRecorder(stream,opts);
+    _mediaRec.ondataavailable=function(e){
+      if(e.data&&e.data.size>0)_recChunks.push(e.data);
+    };
+    _mediaRec.start(100);
   }).catch(function(err){
-    G.recOn=false;clearInterval(G.recI);
+    G.recOn=false;
+    clearInterval(G.recI);
     document.getElementById('recHud').classList.remove('on');
-    alert('Microphone error: '+err.message);
+    alert('Mic error: '+err.message);
   });
 }
+
 function recStop(){
   if(!G.recOn)return;
-  G.recOn=false;clearInterval(G.recI);
+  G.recOn=false;
+  clearInterval(G.recI);
   document.getElementById('recHud').classList.remove('on');
   var dur=G.recS;
   if(_mediaRec&&_mediaRec.state!=='inactive'){
     _mediaRec.onstop=function(){
-      var blob=new Blob(_recChunks,{type:'audio/webm'});
+      var mime=_mediaRec.mimeType||'audio/webm';
+      var blob=new Blob(_recChunks,{type:mime});
       var reader=new FileReader();
       reader.onload=function(ev){
         var b64=ev.target.result;
         addMsg({type:'voice',dur:dur,src:b64,sent:true,t:gt()});
-        if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:b64,type:'voice',duration:dur});
+        if(currentRoom){
+          _sb.from('messages').insert({
+            room_id:currentRoom,
+            sender:String(myId),
+            content:b64,
+            type:'voice'
+          }).then(function(r){
+            if(r.error)console.log('voice err:',r.error.message);
+          });
+        }
       };
       reader.readAsDataURL(blob);
       _mediaRec.stream.getTracks().forEach(function(t){t.stop();});
     };
     _mediaRec.stop();
-  } else if(dur>0){
-    addMsg({type:'voice',dur:dur,sent:true,t:gt()});
-    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:'[Voice '+dur+'s]',type:'voice'});
   }
 }
+
+function playAudio(el){
+  var src=el.getAttribute('data-src');
+  if(!src)return;
+  var audio=new Audio(src);
+  audio.play().catch(function(e){alert('Cannot play: '+e.message);});
+}
+
 
 // ═══ 通知 ═══
 function sendNotif(){
