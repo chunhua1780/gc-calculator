@@ -827,6 +827,7 @@ function listenForAllMessages(){
       if(parts.indexOf(mid)<0)return;
       if(String(m.sender)===mid)return;
       var senderId=parts[0]===mid?parts[1]:parts[0];
+      console.log('MSG RECEIVED type:',m.type,'content:',m.content?m.content.substr(0,50):'null');
       if(G.chat===senderId){
         var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
         if(m.type==='image')msg.src=m.content;
