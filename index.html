@@ -844,15 +844,24 @@ function renderMsgs(){
   var c=document.getElementById('chatMsgs');
   c.innerHTML=(G.msgs[G.chat]||[]).map(function(m){
     var s=m.sent;
-    var b=m.type==='image'?(m.loading?'<div style="padding:8px;color:rgba(255,255,255,.7);">Sending...</div>':'<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\'><text y=\'20\'>Failed</text></svg>'">') 
-      :m.type==='voice'?'<div style="display:flex;align-items:center;gap:8px;min-width:120px;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg><div style="flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+m.dur+'″</span></div>'
-      :m.type==='location'?'<div style="display:flex;align-items:center;gap:6px;">📍 <a href="'+(m.mapUrl||'https://maps.google.com/?q='+m.addr)+'" target="_blank" style="color:inherit;text-decoration:underline;">'+m.addr+'</a></div>'
-      :m.type==='video'?'<div style="display:flex;align-items:center;gap:8px;">🎬 <span>Video clip</span></div>'
-      :esc(m.text);
+    var b;
+    if(m.type==='image'){
+      b=m.loading?'<div style="padding:8px;opacity:.6;">Sending...</div>':'<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';
+    }else if(m.type==='voice'){
+      b='<div style="display:flex;align-items:center;gap:8px;min-width:120px;">🎤 <div style="flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+m.dur+'s</span></div>';
+    }else if(m.type==='location'){
+      var mapUrl=m.mapUrl||('https://maps.google.com/?q='+m.addr);
+      b='<div>📍 <a href="'+mapUrl+'" target="_blank" style="color:inherit;text-decoration:underline;">'+m.addr+'</a></div>';
+    }else if(m.type==='video'){
+      b='<div>🎬 Video clip</div>';
+    }else{
+      b=esc(m.text||'');
+    }
     return '<div class="mr '+(s?'s':'r')+'"><div class="bub">'+b+'</div><div class="mt">'+m.t+'</div></div>';
   }).join('');
   c.scrollTop=c.scrollHeight;
 }
+
 function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];G.msgs[G.chat].push(m);renderMsgs();}
 async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
