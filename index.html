@@ -976,7 +976,8 @@ function doImg(){
 
 function onImg(e){
   var f=e.target.files[0];
-  if(!f){return;}
+  console.log('onImg called, file:', f, 'currentRoom:', currentRoom, 'myId:', myId);
+  if(!f){console.log('no file');return;}
   document.getElementById('xpanel').classList.remove('on');
   var reader=new FileReader();
   reader.onload=function(ev){
