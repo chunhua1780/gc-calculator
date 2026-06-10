@@ -499,13 +499,7 @@ var LANGS={'en':{name:'English',flag:'🇺🇸'},'zh-CN':{name:'中文简体',fl
 var curLang=lg('lang')||'en';
 
 // ═══ 状态 ═══
-var myId=lg('myId')||genId();
-function genId(){
-  var adj=['cool','fast','dark','blue','red','gold','star','moon','sun','fire','ice','zen'];
-  var a=adj[Math.floor(Math.random()*adj.length)];
-  var n=Math.floor(1000+Math.random()*9000);
-  return a+n;
-}
+var myId=lg('myId')||'';
 ls('myId',myId);
 var G={
   chat:'',msgs:{},
@@ -555,48 +549,41 @@ async function doRegister(){
   if(pin.length<4){alert('Password must be at least 4 digits');return;}
   if(pin!==pin2){alert('Passwords do not match');return;}
 
-  // 处理自定义ID
-  var customId=document.getElementById('regIdCustom')?document.getElementById('regIdCustom').value.trim().replace(/[^a-zA-Z0-9]/g,''):'';
-  if(customId.length>=3){myId=customId.toLowerCase();ls('myId',myId);}
-
-  // 检查这台设备是否已注册
   var deviceId=lg('deviceId')||('dev_'+Math.random().toString(36).substr(2,16));
   ls('deviceId',deviceId);
 
-  try{
-    // 检查device_id是否已存在
-    var check=await _sb.from('users').select('id,name').eq('device_id',deviceId).single();
-    if(check.data){
-      alert('This device already has an account!\nID: '+check.data.id+'\nName: '+check.data.name+'\n\nPlease use Login instead.');
-      switchTo('login');
-      return;
-    }
-  }catch(e){}
+  // 检查设备是否已注册
+  var check=await _sb.from('users').select('id,name').eq('device_id',deviceId).single();
+  if(check.data){
+    alert('This device already has an account!\nYour ID: '+check.data.id+'\nName: '+check.data.name+'\n\nPlease login instead.');
+    myId=String(check.data.id);
+    ls('myId',myId);
+    ls('myName',check.data.name);
+    ls('registered','true');
+    G.pin=lg('pin')||pin;
+    switchTo('login');
+    return;
+  }
 
-  // 检查ID是否被占用
-  try{
-    var idCheck=await _sb.from('users').select('id').eq('id',myId).single();
-    if(idCheck.data){
-      myId=myId+Math.floor(100+Math.random()*900);
-      ls('myId',myId);
-    }
-  }catch(e){}
-
-  // 注册到数据库
+  // 注册到数据库，获取自增ID
   var rc=makeRC();
   G.pin=pin;
-  ls('pin',pin);ls('myName',name);ls('registered','true');ls('rescueCode',rc);
+  ls('pin',pin);ls('myName',name);ls('rescueCode',rc);
 
-  try{
-    await _sb.from('users').insert({id:myId,name:name,device_id:deviceId});
-  }catch(e){console.log('DB insert error:',e);}
+  var res=await _sb.from('users').insert({name:name,device_id:deviceId}).select().single();
+  if(res.error){alert('Registration failed: '+res.error.message);return;}
+
+  myId=String(res.data.id);
+  ls('myId',myId);
+  ls('registered','true');
 
   var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId+' · '+name;
   var na=document.getElementById('nameDisplay');if(na)na.textContent=name;
   var av=document.getElementById('avatarDisplay');if(av)av.textContent=name[0].toUpperCase();
-  alert('\u2705 Account created!\n\nYour ID: '+myId+'\n\n\U0001f510 RESCUE CODE:\n'+rc+'\n\nSave this screenshot!');
+  alert('\u2705 Registered!\n\nYour ID: '+myId+'\n\nShare this ID with friends to chat!\n\n\U0001f510 Rescue Code: '+rc+'\nSave this!');
   show('main');listenForCalls();
 }
+
 function doLogin(){
   var pin=document.getElementById('loginPin').value;
   if(!pin){alert('Enter password');return;}
@@ -789,7 +776,7 @@ function listenForCalls(){
 }
 
 // ═══ 聊天 ═══
-function openChat(name,ini,color){
+function openChat(name,ini,color,displayName){
   G.chat=name;document.getElementById('chatName').textContent=name;
   document.getElementById('callAv').textContent=ini||name[0];document.getElementById('callAv').style.background=color||'#007aff';
   document.getElementById('callNm').textContent=name;document.getElementById('vidNm').textContent=name;
@@ -818,15 +805,14 @@ async function sendMsg(){
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 async function showNewChat(){
-  var n=prompt('Enter contact ID (e.g. jack123):');
+  var n=prompt('Enter contact ID (number, e.g. 1, 2, 3):');
   if(!n||!n.trim())return;
-  n=n.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
-  if(!n){alert('Invalid ID');return;}
+  n=n.trim().replace(/[^0-9]/g,'');
+  if(!n){alert('Please enter a valid number ID');return;}
   if(n===myId){alert('Cannot chat with yourself');return;}
-  // 验证对方ID存在
-  var res=await _sb.from('users').select('id,name').eq('id',n).single();
-  if(!res.data){alert('User not found: '+n+'\nPlease check the ID and try again.');return;}
-  openChat(n,n[0].toUpperCase(),'#007aff');
+  var res=await _sb.from('users').select('id,name').eq('id',parseInt(n)).single();
+  if(!res.data){alert('User #'+n+' not found.\nPlease check the ID.');return;}
+  openChat(String(res.data.id),res.data.name[0].toUpperCase(),'#007aff',res.data.name);
 }
 function togXP(){document.getElementById('xpanel').classList.toggle('on');}
 function doPhoto(){document.getElementById('imgIn').setAttribute('capture','camera');document.getElementById('imgIn').click();}
