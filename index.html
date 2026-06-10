@@ -855,7 +855,7 @@ async function loadContacts(){
   });
 }
 
-function showNewChat(){
+async function showNewChat(){
   var n=prompt('Enter contact ID (number, e.g. 1, 2, 3):');
   if(!n||!n.trim())return;
   n=n.trim().replace(/[^0-9]/g,'');
