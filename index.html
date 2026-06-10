@@ -846,23 +846,33 @@ function openChat(name,ini,color,displayName){
 }
 function renderMsgs(){
   var c=document.getElementById('chatMsgs');
-  c.innerHTML=(G.msgs[G.chat]||[]).map(function(m){
+  if(!c)return;
+  var msgs=G.msgs[G.chat]||[];
+  var html='';
+  for(var i=0;i<msgs.length;i++){
+    var m=msgs[i];
     var s=m.sent;
-    var b;
-    if(m.type==='image'){
-      b=m.loading?'<div style="padding:8px;opacity:.6;">Sending...</div>':'<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';
+    var b='';
+    if(m.type==='image'&&m.src){
+      if(m.loading){b='<div style="opacity:.6;font-size:13px;">Sending...</div>';}
+      else if(m.src.length>100){b='<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';}
+      else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
-      b='<div style="display:flex;align-items:center;gap:8px;min-width:120px;">🎤 <div style="flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+m.dur+'s</span></div>';
+      b='<div style="display:flex;align-items:center;gap:8px;">🎤 '+(m.dur||'?')+'s</div>';
     }else if(m.type==='location'){
-      var mapUrl=m.mapUrl||('https://maps.google.com/?q='+m.addr);
-      b='<div>📍 <a href="'+mapUrl+'" target="_blank" style="color:inherit;text-decoration:underline;">'+m.addr+'</a></div>';
+      var mapUrl=m.mapUrl||('https://maps.google.com/?q='+(m.addr||''));
+      b='<div>📍 <a href="'+mapUrl+'" target="_blank" style="color:inherit;text-decoration:underline;">'+(m.addr||'Location')+'</a></div>';
     }else if(m.type==='video'){
-      b='<div>🎬 Video clip</div>';
+      b='<div>🎬 Video</div>';
     }else{
-      b=esc(m.text||'');
+      var txt=m.text||m.content||'';
+      // 防止base64显示
+      if(txt.length>500)txt='[Message]';
+      b=esc(txt);
     }
-    return '<div class="mr '+(s?'s':'r')+'"><div class="bub">'+b+'</div><div class="mt">'+m.t+'</div></div>';
-  }).join('');
+    html+='<div class="mr '+(s?'s':'r')+'"><div class="bub">'+b+'</div><div class="mt">'+m.t+'</div></div>';
+  }
+  c.innerHTML=html;
   c.scrollTop=c.scrollHeight;
 }
 
