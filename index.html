@@ -1103,13 +1103,22 @@ function recStop(){
 }
 
 function playAudio(el){
+  // 找data-src，可能在自身或子元素
   var src=el.getAttribute('data-src');
-  if(!src){alert('No audio');return;}
+  if(!src){
+    var child=el.querySelector('[data-src]');
+    if(child)src=child.getAttribute('data-src');
+  }
+  if(!src){alert('No audio source');return;}
+  var btn=el.querySelector('span')||el;
   var audio=new Audio(src);
-  el.textContent='⏸';
-  audio.play().catch(function(e){alert('Cannot play: '+e.message);});
-  audio.onended=function(){el.textContent='▶️';};
-  audio.onerror=function(){alert('Audio error');el.textContent='▶️';};
+  btn.textContent='⏸';
+  audio.play().catch(function(e){
+    btn.textContent='▶️';
+    alert('Cannot play audio: '+e.message);
+  });
+  audio.onended=function(){btn.textContent='▶️';};
+  audio.onerror=function(){btn.textContent='▶️';alert('Audio load error');};
 }
 
 
