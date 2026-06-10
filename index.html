@@ -690,13 +690,15 @@ function pickLang(code){
 var _sb=supabase.createClient('https://mztoenhgfuomzrashrqk.supabase.co','sb_publishable_pOM3IfVWYiscQ-cz9vAwvA_F2Ht6zg1');
 var currentRoom=null,realtimeSub=null;
 async function joinRoom(name){
-  var ids=[myId,name].sort();currentRoom=ids.join('_');
+  var a=parseInt(myId)||myId, b=parseInt(name)||name;
+  var ids=[String(a),String(b)].sort(function(x,y){return (parseInt(x)||0)-(parseInt(y)||0)||x.localeCompare(y);});
+  currentRoom=ids.join('_');
   if(realtimeSub)realtimeSub.unsubscribe();
   if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}}
   realtimeSub=_sb.channel('room:'+currentRoom)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
       var m=p.new;
-      if(m.sender!==myId){addMsg({text:m.content,type:m.type||'text',sent:false,t:gt()});sendNotif();}
+      if(String(m.sender)!==String(myId)){addMsg({text:m.content,type:m.type||'text',sent:false,t:gt()});sendNotif();}
     }).subscribe(function(status){
       console.log('Realtime status:',status);
       if(status==='SUBSCRIBED')console.log('Listening on room:'+currentRoom);
@@ -712,7 +714,7 @@ async function joinRoom(name){
     }
   },3000);
   var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).order('created_at',{ascending:true}).limit(50);
-  if(res.data&&res.data.length>0){G.msgs[name]=res.data.map(function(m){return{text:m.content,type:m.type||'text',sent:m.sender===myId,t:gt()};});renderMsgs();}
+  if(res.data&&res.data.length>0){G.msgs[name]=res.data.map(function(m){return{text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:gt()};});renderMsgs();}
 }
 
 // ═══ WebRTC ═══
@@ -801,7 +803,7 @@ function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];G.msgs[G.chat].push(m);r
 async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
   addMsg({text:t,sent:true,t:gt()});inp.value='';
-  if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:myId,content:t,type:'text'});
+  if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'});
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 async function showNewChat(){
