@@ -103,6 +103,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;justify-content:center;" id="langBtns"></div>
       <div id="reg-form">
         <input id="regName" class="field" placeholder="Nickname" maxlength="20">
+        <input id="regIdCustom" class="field" placeholder="Custom ID (e.g. john123) optional" maxlength="20" style="letter-spacing:1px;">
         <input id="regPin" type="password" class="field" placeholder="Password (4-8 digits)" maxlength="8" style="letter-spacing:4px;text-align:center;">
         <input id="regPin2" type="password" class="field" placeholder="Confirm password" maxlength="8" style="letter-spacing:4px;text-align:center;">
         <button class="btn-blue" id="reg-btn" onclick="doRegister()">Create Account</button>
@@ -250,6 +251,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
         <div style="flex:1;margin-left:4px;">
           <div style="font-size:17px;font-weight:600;" id="nameDisplay">My Account</div>
           <div style="font-size:13px;color:#8e8e93;margin-top:2px;" id="myIdShow">ID: ...</div>
+      <div style="margin-top:8px;"><button onclick="showQR()" style="background:#007aff;border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">Show QR Code</button></div>
         </div>
       </div>
     </div>
@@ -440,6 +442,17 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
   </div>
 </div>
 
+<!-- 二维码弹窗 -->
+<div id="qrModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;text-align:center;width:280px;">
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px;" id="qrName">My QR Code</div>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:16px;" id="qrIdTxt"></div>
+    <canvas id="qrCanvas" style="border-radius:12px;"></canvas>
+    <div style="font-size:12px;color:#8e8e93;margin-top:12px;">Scan to add me on GhostChat</div>
+    <button onclick="document.getElementById('qrModal').style.display='none'" style="margin-top:16px;background:#f2f2f7;border:none;padding:10px 32px;border-radius:12px;font-size:16px;cursor:pointer;">Close</button>
+  </div>
+</div>
+
 <!-- PIN解锁 -->
 <div class="pov" id="pinOv">
   <div class="psh">
@@ -472,6 +485,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
 <input type="file" id="vidIn" accept="video/*" style="display:none" onchange="onVid()">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 // ═══ 工具函数 ═══
 function lg(k){try{return localStorage.getItem(k);}catch(e){return null;}}
@@ -485,7 +499,13 @@ var LANGS={'en':{name:'English',flag:'🇺🇸'},'zh-CN':{name:'中文简体',fl
 var curLang=lg('lang')||'en';
 
 // ═══ 状态 ═══
-var myId=lg('myId')||('gc_'+Math.random().toString(36).substr(2,10));
+var myId=lg('myId')||genId();
+function genId(){
+  var adj=['cool','fast','dark','blue','red','gold','star','moon','sun','fire','ice','zen'];
+  var a=adj[Math.floor(Math.random()*adj.length)];
+  var n=Math.floor(1000+Math.random()*9000);
+  return a+n;
+}
 ls('myId',myId);
 var G={
   chat:'',msgs:{},
@@ -531,12 +551,23 @@ function doRegister(){
   if(!name){alert('Please enter a nickname');return;}
   if(pin.length<4){alert('Password must be at least 4 digits');return;}
   if(pin!==pin2){alert('Passwords do not match');return;}
+  var customId=document.getElementById('regIdCustom')?document.getElementById('regIdCustom').value.trim().replace(/[^a-zA-Z0-9]/g,''):'';
+  if(customId.length>=3){myId=customId.toLowerCase();ls('myId',myId);}
   var rc=makeRC();
-  G.pin=pin;ls('pin',pin);ls('myName',name);ls('registered','true');ls('rescueCode',rc);
-  var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId;
+  G.pin=pin;
+  ls('pin',pin);ls('myName',name);ls('registered','true');ls('rescueCode',rc);
+  var si=document.getElementById('myIdShow');
+  if(si)si.textContent='ID: '+myId+' · '+name;
   var na=document.getElementById('nameDisplay');if(na)na.textContent=name;
   var av=document.getElementById('avatarDisplay');if(av)av.textContent=name[0].toUpperCase();
-  alert('✅ Account created!\n\n🔐 RESCUE CODE:\n'+rc+'\n\nSave this screenshot!\nNeeded to recover account ($5 fee).');
+  alert('✅ Account created!
+
+Your ID: '+myId+'
+
+🔐 RESCUE CODE:
+'+rc+'
+
+Save this!');
   show('main');listenForCalls();
 }
 function doLogin(){
@@ -545,6 +576,19 @@ function doLogin(){
   if(pin===lg('pin')){show('main');listenForCalls();}
   else alert('Wrong password');
 }
+function showQR(){
+  var modal=document.getElementById('qrModal');
+  var canvas=document.getElementById('qrCanvas');
+  var nm=document.getElementById('qrName');
+  var idtxt=document.getElementById('qrIdTxt');
+  if(nm)nm.textContent=lg('myName')||'My QR Code';
+  if(idtxt)idtxt.textContent='ID: '+myId;
+  modal.style.display='flex';
+  if(window.QRCode&&canvas){
+    QRCode.toCanvas(canvas,'ghostchat://add/'+myId,{width:200,margin:2},function(err){});
+  }
+}
+
 function doLogout(){if(confirm('Logout?')){show('reg');switchTo('login');}}
 function doRecovery(){
   var input=document.getElementById('rescueInput').value.replace(/-/g,'').toUpperCase();
