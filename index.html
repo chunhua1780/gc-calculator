@@ -983,12 +983,7 @@ function onImg(e){
     var data=ev.target.result;
     addMsg({type:'image',src:data,sent:true,t:gt()});
     if(currentRoom){
-      _sb.from('messages').insert({
-        room_id:currentRoom,
-        sender:String(myId),
-        content:data,
-        type:'image'
-      }).then(function(r){
+      _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:data,type:'image'}).then(function(r){
         if(r.error)alert('Send failed: '+r.error.message);
       });
     }
@@ -996,10 +991,6 @@ function onImg(e){
   reader.onerror=function(){alert('File read error');};
   reader.readAsDataURL(f);
   e.target.value='';
-}
-
-function doVid(){
-  document.getElementById('vidIn').click();
 }
 
 function onVid(){
