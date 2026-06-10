@@ -533,8 +533,9 @@ window.onload=function(){
   var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
   if(!lg('registered')){show('dcalc');return;}
   var wn=document.getElementById('welcome-name');if(wn)wn.textContent='Welcome back'+(lg('myName')?', '+lg('myName'):'')+'!';
-  if(G.hide){var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};show(dm[G.dis]||'dcalc');}
-  else{show('main');listenForCalls();}
+  var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
+  show(dm[G.dis]||'dcalc');
+  if(!G.hide){show('main');listenForCalls();}
 };
 
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
