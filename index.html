@@ -883,8 +883,8 @@ function renderMsgs(){
       else if(m.src.length>100){b='<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';}
       else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
-      if(m.src&&m.src.length>100){
-        b='<div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="playAudio(this)" data-src="'+m.src+'">▶️ '+(m.dur||'?')+'s</div>';
+      if(m.src&&(m.src.startsWith('http')||m.src.startsWith('blob')||m.src.startsWith('data'))){
+        b='<div style="display:flex;align-items:center;gap:8px;cursor:pointer;"><span onclick="playAudio(this.parentNode)" data-src="'+m.src+'" style="font-size:20px;">▶️</span><div style="flex:1;height:3px;background:rgba(255,255,255,.4);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+(m.dur||'?')+'s</span></div>';
       }else{
         b='<div style="display:flex;align-items:center;gap:8px;">🎤 '+(m.dur||'?')+'s</div>';
       }
@@ -1104,9 +1104,12 @@ function recStop(){
 
 function playAudio(el){
   var src=el.getAttribute('data-src');
-  if(!src)return;
+  if(!src){alert('No audio');return;}
   var audio=new Audio(src);
+  el.textContent='⏸';
   audio.play().catch(function(e){alert('Cannot play: '+e.message);});
+  audio.onended=function(){el.textContent='▶️';};
+  audio.onerror=function(){alert('Audio error');el.textContent='▶️';};
 }
 
 
