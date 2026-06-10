@@ -525,17 +525,19 @@ var G={
 // ═══ 启动 ═══
 window.onload=function(){
   buildLangBtns();buildLangList();
+  applyLang();
   updHide();updDest();updNotif();
   tickClock();
   var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId;
   var na=document.getElementById('nameDisplay');if(na&&lg('myName'))na.textContent=lg('myName');
   var av=document.getElementById('avatarDisplay');if(av&&lg('myName'))av.textContent=lg('myName')[0].toUpperCase();
   var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
-  if(!lg('registered')){show('dcalc');return;}
-  var wn=document.getElementById('welcome-name');if(wn)wn.textContent='Welcome back'+(lg('myName')?', '+lg('myName'):'')+'!';
+  var wn=document.getElementById('welcome-name');if(wn&&lg('myName'))wn.textContent='Welcome back, '+lg('myName')+'!';
+  // 永远从计算器界面启动
   var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
   show(dm[G.dis]||'dcalc');
-  if(!G.hide){show('main');listenForCalls();}
+  // 后台监听来电
+  if(lg('registered'))listenForCalls();
 };
 
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
