@@ -587,11 +587,21 @@ async function doRegister(){
   show('main');listenForCalls();listenForAllMessages();
 }
 
-function doLogin(){
+async function doLogin(){
+  var idInput=document.getElementById('loginId')?document.getElementById('loginId').value.trim():'';
   var pin=document.getElementById('loginPin').value;
+  if(!idInput){alert('Enter your ID');return;}
   if(!pin){alert('Enter password');return;}
-  if(pin===lg('pin')){show('main');listenForCalls();listenForAllMessages();}
-  else alert('Wrong password');
+  if(idInput===String(lg('myId'))&&pin===lg('pin')){
+    show('main');listenForCalls();listenForAllMessages();loadContacts();return;
+  }
+  var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
+  if(!res.data){alert('ID '+idInput+' not found');return;}
+  var savedPin=lg('pin_'+idInput)||lg('pin');
+  if(pin!==savedPin){alert('Wrong password');return;}
+  myId=String(res.data.id);
+  ls('myId',myId);ls('myName',res.data.name);ls('registered','true');
+  show('main');listenForCalls();listenForAllMessages();loadContacts();
 }
 function showQR(){
   var modal=document.getElementById('qrModal');
