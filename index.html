@@ -817,7 +817,17 @@ async function sendMsg(){
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:myId,content:t,type:'text'});
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
-function showNewChat(){var n=prompt('Enter contact ID (e.g. jack123):');if(!n||!n.trim())return;n=n.trim().toLowerCase().replace(/[^a-z0-9]/g,'');if(!n){alert('Invalid ID');return;}if(n===myId){alert('Cannot chat with yourself');return;}openChat(n,n[0].toUpperCase(),'#007aff');}
+async function showNewChat(){
+  var n=prompt('Enter contact ID (e.g. jack123):');
+  if(!n||!n.trim())return;
+  n=n.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  if(!n){alert('Invalid ID');return;}
+  if(n===myId){alert('Cannot chat with yourself');return;}
+  // 验证对方ID存在
+  var res=await _sb.from('users').select('id,name').eq('id',n).single();
+  if(!res.data){alert('User not found: '+n+'\nPlease check the ID and try again.');return;}
+  openChat(n,n[0].toUpperCase(),'#007aff');
+}
 function togXP(){document.getElementById('xpanel').classList.toggle('on');}
 function doPhoto(){document.getElementById('imgIn').setAttribute('capture','camera');document.getElementById('imgIn').click();}
 function doImg(){document.getElementById('imgIn').removeAttribute('capture');document.getElementById('imgIn').click();}
