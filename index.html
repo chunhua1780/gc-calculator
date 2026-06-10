@@ -725,7 +725,7 @@ async function joinRoom(name){
       if(String(m.sender)===String(myId))return;
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
       if(m.type==='image')msg.src=m.content;
-      if(m.type==='voice'){msg.src=m.content;msg.dur=m.duration||'?';}
+      if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?';}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
       var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
       if(!already){addMsg(msg);sendNotif();}
@@ -1017,30 +1017,24 @@ function onVid(){
 function doLoc(){
   document.getElementById('xpanel').classList.remove('on');
   if(!navigator.geolocation){
-    alert('Location not supported');
+    alert('Location not available on this device');
     return;
   }
-  navigator.geolocation.getCurrentPosition(
-    function(pos){
-      var lat=pos.coords.latitude.toFixed(5);
-      var lng=pos.coords.longitude.toFixed(5);
-      var addr=lat+','+lng;
-      var mapUrl='https://maps.google.com/?q='+lat+','+lng;
-      addMsg({type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt()});
-      if(currentRoom){
-        _sb.from('messages').insert({
-          room_id:currentRoom,
-          sender:String(myId),
-          content:addr+'|'+mapUrl,
-          type:'location'
-        });
-      }
-    },
-    function(err){
-      alert('Location error: '+err.message);
-    },
-    {enableHighAccuracy:false,timeout:15000,maximumAge:60000}
-  );
+  alert('Getting location...');
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=pos.coords.latitude.toFixed(5);
+    var lng=pos.coords.longitude.toFixed(5);
+    var addr=lat+','+lng;
+    var mapUrl='https://maps.google.com/?q='+lat+','+lng;
+    addMsg({type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt()});
+    if(currentRoom){
+      _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:addr+'|'+mapUrl,type:'location'}).then(function(r){
+        if(r.error)alert('Location send error: '+r.error.message);
+      });
+    }
+  },function(err){
+    alert('Location denied. Please allow location in browser settings. Error: '+err.message);
+  },{enableHighAccuracy:false,timeout:30000,maximumAge:300000});
 }
 
 function doFile(){alert('Coming soon');}
@@ -1087,22 +1081,21 @@ function recStop(){
     _mediaRec.onstop=function(){
       var mime=_mediaRec.mimeType||'audio/webm';
       var blob=new Blob(_recChunks,{type:mime});
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        var b64=ev.target.result;
-        addMsg({type:'voice',dur:dur,src:b64,sent:true,t:gt()});
-        if(currentRoom){
-          _sb.from('messages').insert({
-            room_id:currentRoom,
-            sender:String(myId),
-            content:b64,
-            type:'voice'
-          }).then(function(r){
-            if(r.error)console.log('voice err:',r.error.message);
-          });
+      var fname='voice_'+Date.now()+'.webm';
+      // 先本地显示
+      var localUrl=URL.createObjectURL(blob);
+      addMsg({type:'voice',dur:dur,src:localUrl,sent:true,t:gt()});
+      // 上传Storage
+      _sb.storage.from('media').upload(fname,blob,{contentType:mime,upsert:true}).then(function(up){
+        var url;
+        if(up.error){
+          // 失败就只发时长
+          url='[Voice '+dur+'s]';
+        } else {
+          url=_sb.storage.from('media').getPublicUrl(fname).data.publicUrl;
         }
-      };
-      reader.readAsDataURL(blob);
+        if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'voice',duration:dur});
+      });
       _mediaRec.stream.getTracks().forEach(function(t){t.stop();});
     };
     _mediaRec.stop();
