@@ -814,7 +814,7 @@ async function sendMsg(){
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'});
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
-async async function loadContacts(){
+async function loadContacts(){
   // 从数据库加载最近聊天记录
   var res=await _sb.from('messages').select('room_id,sender,content,created_at').or('room_id.like.'+String(myId)+'_%,room_id.like.%_'+String(myId)).order('created_at',{ascending:false}).limit(100);
   if(!res.data||res.data.length===0)return;
