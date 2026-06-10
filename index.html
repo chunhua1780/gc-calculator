@@ -725,8 +725,6 @@ async function joinRoom(name){
       var lastEl=document.getElementById('last-'+String(m.sender));
       if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
     }).subscribe(function(status){console.log('Realtime:',status);});
-      if(status==='SUBSCRIBED')console.log('Listening on room:'+currentRoom);
-    });
   // 备用轮询 每3秒检查新消息
   if(window._pollTimer)clearInterval(window._pollTimer);
   var lastCheck=new Date().toISOString();
