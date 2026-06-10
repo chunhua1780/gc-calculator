@@ -715,9 +715,16 @@ async function joinRoom(name){
   realtimeSub=_sb.channel('room:'+currentRoom)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
       var m=p.new;
-      if(String(m.sender)!==String(myId)){addMsg({text:m.content,type:m.type||'text',sent:false,t:gt()});sendNotif();}
-    }).subscribe(function(status){
-      console.log('Realtime status:',status);
+      if(String(m.sender)===String(myId))return;
+      var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
+      if(m.type==='image')msg.src=m.content;
+      if(m.type==='voice'){msg.dur=m.content.replace('[Voice ','').replace('s]','');}
+      if(m.type==='location'){var pts=m.content.split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
+      var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
+      if(!already){addMsg(msg);sendNotif();}
+      var lastEl=document.getElementById('last-'+String(m.sender));
+      if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
+    }).subscribe(function(status){console.log('Realtime:',status);});
       if(status==='SUBSCRIBED')console.log('Listening on room:'+currentRoom);
     });
   // 备用轮询 每3秒检查新消息
