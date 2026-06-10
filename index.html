@@ -820,12 +820,13 @@ function listenForAllMessages(){
       if(parts.indexOf(mid)<0)return;
       if(String(m.sender)===mid)return;
       var senderId=parts[0]===mid?parts[1]:parts[0];
-      // 如果当前在聊天页面且是这个人
       if(G.chat===senderId){
-        var msg={text:m.content,type:m.type||'text',sent:false,t:gt()};
+        var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
         if(m.type==='image')msg.src=m.content;
-        if(m.type==='location')msg.addr=m.content;
-        addMsg(msg);
+        if(m.type==='voice'){msg.dur=m.content.replace('[Voice ','').replace('s]','');}
+        if(m.type==='location'){var pts=m.content.split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
+        var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
+        if(!already)addMsg(msg);
       } else {
         // 更新联系人列表未读提示
         var lastEl=document.getElementById('last-'+senderId);
