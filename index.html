@@ -844,9 +844,9 @@ function renderMsgs(){
   var c=document.getElementById('chatMsgs');
   c.innerHTML=(G.msgs[G.chat]||[]).map(function(m){
     var s=m.sent;
-    var b=m.type==='image'?'<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">'
+    var b=m.type==='image'?(m.loading?'<div style="padding:8px;color:rgba(255,255,255,.7);">Sending...</div>':'<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\'><text y=\'20\'>Failed</text></svg>'">') 
       :m.type==='voice'?'<div style="display:flex;align-items:center;gap:8px;min-width:120px;"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg><div style="flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+m.dur+'″</span></div>'
-      :m.type==='location'?'<div style="display:flex;align-items:center;gap:6px;">📍 <span>'+m.addr+'</span></div>'
+      :m.type==='location'?'<div style="display:flex;align-items:center;gap:6px;">📍 <a href="'+(m.mapUrl||'https://maps.google.com/?q='+m.addr)+'" target="_blank" style="color:inherit;text-decoration:underline;">'+m.addr+'</a></div>'
       :m.type==='video'?'<div style="display:flex;align-items:center;gap:8px;">🎬 <span>Video clip</span></div>'
       :esc(m.text);
     return '<div class="mr '+(s?'s':'r')+'"><div class="bub">'+b+'</div><div class="mt">'+m.t+'</div></div>';
@@ -914,33 +914,68 @@ async function showNewChat(){
 function togXP(){document.getElementById('xpanel').classList.toggle('on');}
 function doPhoto(){document.getElementById('imgIn').setAttribute('capture','camera');document.getElementById('imgIn').click();}
 function doImg(){document.getElementById('imgIn').removeAttribute('capture');document.getElementById('imgIn').click();}
-function onImg(e){
+async function onImg(e){
   var f=e.target.files[0];if(!f)return;
-  // 压缩图片
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    var img=new Image();
-    img.onload=function(){
-      var canvas=document.createElement('canvas');
-      var max=800;
-      var w=img.width,h=img.height;
-      if(w>max){h=h*max/w;w=max;}
-      if(h>max){w=w*max/h;h=max;}
-      canvas.width=w;canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      var data=canvas.toDataURL('image/jpeg',0.7);
-      addMsg({type:'image',src:data,sent:true,t:gt()});
-      // 发送到数据库
-      if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:data,type:'image'});
-    };
-    img.src=ev.target.result;
-  };
-  reader.readAsDataURL(f);
   document.getElementById('xpanel').classList.remove('on');
+  addMsg({type:'image',src:'loading',sent:true,t:gt(),loading:true});
+  try{
+    // 压缩图片
+    var dataUrl=await new Promise(function(resolve){
+      var reader=new FileReader();
+      reader.onload=function(ev){
+        var img=new Image();
+        img.onload=function(){
+          var canvas=document.createElement('canvas');
+          var max=1200,w=img.width,h=img.height;
+          if(w>max){h=Math.round(h*max/w);w=max;}
+          if(h>max){w=Math.round(w*max/h);h=max;}
+          canvas.width=w;canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          resolve(canvas.toDataURL('image/jpeg',0.75));
+        };
+        img.src=ev.target.result;
+      };
+      reader.readAsDataURL(f);
+    });
+    // 转为blob上传
+    var res=await fetch(dataUrl);
+    var blob=await res.blob();
+    var fname='img_'+Date.now()+'_'+Math.random().toString(36).substr(2,6)+'.jpg';
+    var upload=await _sb.storage.from('media').upload(fname,blob,{contentType:'image/jpeg',upsert:true});
+    var url;
+    if(upload.error){
+      // 上传失败用base64
+      url=dataUrl;
+    } else {
+      var pub=_sb.storage.from('media').getPublicUrl(fname);
+      url=pub.data.publicUrl;
+    }
+    // 更新最后一条消息
+    if(G.msgs[G.chat]){
+      var last=G.msgs[G.chat][G.msgs[G.chat].length-1];
+      if(last&&last.loading){last.src=url;last.loading=false;}
+    }
+    renderMsgs();
+    if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'image'});
+  }catch(err){
+    alert('Failed to send image: '+err.message);
+  }
 }
 function doVid(){document.getElementById('vidIn').click();}
 function onVid(){addMsg({type:'video',sent:true,t:gt()});document.getElementById('xpanel').classList.remove('on');}
-function doLoc(){navigator.geolocation?navigator.geolocation.getCurrentPosition(function(p){addMsg({type:'location',addr:'('+p.coords.latitude.toFixed(4)+', '+p.coords.longitude.toFixed(4)+')',sent:true,t:gt()});},function(){addMsg({type:'location',addr:'Current location',sent:true,t:gt()});}):addMsg({type:'location',addr:'Location unavailable',sent:true,t:gt()});document.getElementById('xpanel').classList.remove('on');}
+function doLoc(){
+  document.getElementById('xpanel').classList.remove('on');
+  if(!navigator.geolocation){addMsg({type:'location',addr:'Location unavailable',sent:true,t:gt()});return;}
+  navigator.geolocation.getCurrentPosition(function(p){
+    var lat=p.coords.latitude.toFixed(6),lng=p.coords.longitude.toFixed(6);
+    var addr=lat+','+lng;
+    var mapUrl='https://maps.google.com/?q='+lat+','+lng;
+    addMsg({type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt()});
+    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:addr+'|'+mapUrl,type:'location'});
+  },function(){
+    addMsg({type:'location',addr:'Location denied',sent:true,t:gt()});
+  },{enableHighAccuracy:true,timeout:10000});
+}
 function doFile(){alert('File sharing coming soon');}
 function doBurn(){var t=prompt('Self-destruct after (seconds):','10');if(t)alert('Set: messages will disappear after '+t+'s');}
 function recStart(e){if(e)e.preventDefault();G.recOn=true;G.recS=0;document.getElementById('recHud').classList.add('on');G.recI=setInterval(function(){G.recS++;var m=Math.floor(G.recS/60),s=G.recS%60;document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;},1000);}
