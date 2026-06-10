@@ -705,7 +705,25 @@ var currentRoom=null,realtimeSub=null;
 async function joinRoom(name){
   var ids=[myId,name].sort();currentRoom=ids.join('_');
   if(realtimeSub)realtimeSub.unsubscribe();
-  realtimeSub=_sb.channel('room:'+currentRoom).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){var m=p.new;if(m.sender!==myId){addMsg({text:m.content,type:m.type||'text',sent:false,t:gt()});sendNotif();}}).subscribe();
+  if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}}
+  realtimeSub=_sb.channel('room:'+currentRoom)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
+      var m=p.new;
+      if(m.sender!==myId){addMsg({text:m.content,type:m.type||'text',sent:false,t:gt()});sendNotif();}
+    }).subscribe(function(status){
+      console.log('Realtime status:',status);
+      if(status==='SUBSCRIBED')console.log('Listening on room:'+currentRoom);
+    });
+  // 备用轮询 每3秒检查新消息
+  if(window._pollTimer)clearInterval(window._pollTimer);
+  var lastCheck=new Date().toISOString();
+  window._pollTimer=setInterval(async function(){
+    var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).gt('created_at',lastCheck).order('created_at',{ascending:true});
+    if(res.data&&res.data.length>0){
+      res.data.forEach(function(m){if(m.sender!==myId)addMsg({text:m.content,type:m.type||'text',sent:false,t:gt()});});
+      lastCheck=res.data[res.data.length-1].created_at;
+    }
+  },3000);
   var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).order('created_at',{ascending:true}).limit(50);
   if(res.data&&res.data.length>0){G.msgs[name]=res.data.map(function(m){return{text:m.content,type:m.type||'text',sent:m.sender===myId,t:gt()};});renderMsgs();}
 }
@@ -760,7 +778,15 @@ function startCall(){if(G.chat)initiateCall(G.chat,false);}
 function startVideo(){if(G.chat)initiateCall(G.chat,true);}
 function toggleMic(){if(RTC.localStream)RTC.localStream.getAudioTracks().forEach(function(t){t.enabled=!t.enabled;});var b=document.getElementById('micBtn');if(b)b.textContent=b.textContent==='🎤'?'🔇':'🎤';}
 function toggleCam(){if(RTC.localStream)RTC.localStream.getVideoTracks().forEach(function(t){t.enabled=!t.enabled;});}
-function listenForCalls(){_sb.channel('inc:'+myId).on('postgres_changes',{event:'INSERT',schema:'public',table:'calls'},function(p){var msg=p.new;if(msg.sender!==myId&&msg.type==='offer'&&msg.room_id.includes(myId))showIncoming(msg.sender,JSON.parse(msg.data));}).subscribe();}
+var _callSub=null;
+function listenForCalls(){
+  if(_callSub)return;
+  _callSub=_sb.channel('inc:'+myId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'calls'},function(p){
+      var msg=p.new;
+      if(msg.sender!==myId&&msg.type==='offer'&&msg.room_id.includes(myId))showIncoming(msg.sender,JSON.parse(msg.data));
+    }).subscribe();
+}
 
 // ═══ 聊天 ═══
 function openChat(name,ini,color){
