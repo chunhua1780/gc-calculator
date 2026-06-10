@@ -883,7 +883,7 @@ function renderMsgs(){
       else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
       if(m.src&&m.src.length>100){
-        b='<div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="playVoice(this,''+m.src+'')">▶️ '+(m.dur||'?')+'s</div>';
+        b='<div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="playAudio(this)" data-src="'+m.src+'">▶️ '+(m.dur||'?')+'s</div>';
       }else{
         b='<div style="display:flex;align-items:center;gap:8px;">🎤 '+(m.dur||'?')+'s</div>';
       }
