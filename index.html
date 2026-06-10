@@ -981,15 +981,30 @@ function onImg(e){
   document.getElementById('xpanel').classList.remove('on');
   var reader=new FileReader();
   reader.onload=function(ev){
-    var data=ev.target.result;
-    addMsg({type:'image',src:data,sent:true,t:gt()});
-    if(currentRoom){
-      _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:data,type:'image'}).then(function(r){
-        if(r.error)alert('Send failed: '+r.error.message);
-      });
-    }
+    var b64=ev.target.result;
+    // 先本地显示
+    addMsg({type:'image',src:b64,sent:true,t:gt()});
+    // 上传到Storage
+    var fname='img_'+Date.now()+'.jpg';
+    fetch(b64).then(function(r){return r.blob();}).then(function(blob){
+      return _sb.storage.from('media').upload(fname,blob,{contentType:'image/jpeg',upsert:true});
+    }).then(function(up){
+      if(up.error){
+        // Storage失败，用base64存数据库（截断）
+        var short=b64.length>50000?b64.substr(0,50000):b64;
+        if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:short,type:'image'});
+        return;
+      }
+      var url=_sb.storage.from('media').getPublicUrl(fname).data.publicUrl;
+      // 更新本地消息的src为URL
+      var msgs=G.msgs[G.chat]||[];
+      if(msgs.length>0)msgs[msgs.length-1].src=url;
+      if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'image'});
+    }).catch(function(err){
+      console.log('upload err:',err);
+      if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:b64.substr(0,50000),type:'image'});
+    });
   };
-  reader.onerror=function(){alert('File read error');};
   reader.readAsDataURL(f);
   e.target.value='';
 }
