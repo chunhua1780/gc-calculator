@@ -111,6 +111,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
       </div>
       <div id="login-form" style="display:none;">
         <div style="font-size:18px;font-weight:600;margin-bottom:20px;text-align:center;" id="welcome-name">Welcome back!</div>
+        <input id="loginId" class="field" placeholder="Your ID (e.g. 1, 2, 3)" maxlength="20" style="text-align:center;">
         <input id="loginPin" type="password" class="field" placeholder="Password" maxlength="8" style="letter-spacing:4px;text-align:center;">
         <button class="btn-blue" id="login-btn" onclick="doLogin()">Login</button>
         <div style="text-align:center;margin-top:10px;font-size:14px;color:#8e8e93;">New user? <span style="color:#007aff;cursor:pointer;" onclick="switchTo('reg')">Register</span></div>
