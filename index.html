@@ -527,6 +527,8 @@ window.onload=function(){
   var av=document.getElementById('avatarDisplay');if(av&&lg('myName'))av.textContent=lg('myName')[0].toUpperCase();
   var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
   var wn=document.getElementById('welcome-name');if(wn&&lg('myName'))wn.textContent='Welcome back, '+lg('myName')+'!';
+  // 加载联系人列表
+  if(lg('registered'))loadContacts();
   // 永远从计算器界面启动
   var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
   show(dm[G.dis]||'dcalc');
@@ -709,7 +711,13 @@ async function joinRoom(name){
   window._pollTimer=setInterval(async function(){
     var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).gt('created_at',lastCheck).order('created_at',{ascending:true});
     if(res.data&&res.data.length>0){
-      res.data.forEach(function(m){if(m.sender!==myId)addMsg({text:m.content,type:m.type||'text',sent:false,t:gt()});});
+      res.data.forEach(function(m){
+      if(String(m.sender)!==String(myId)){
+        var msg={text:m.content,type:m.type||'text',sent:false,t:gt()};
+        if(m.type==='image')msg.src=m.content;
+        addMsg(msg);
+      }
+    });
       lastCheck=res.data[res.data.length-1].created_at;
     }
   },3000);
@@ -806,7 +814,46 @@ async function sendMsg(){
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'});
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
-async function showNewChat(){
+async async function loadContacts(){
+  // 从数据库加载最近聊天记录
+  var res=await _sb.from('messages').select('room_id,sender,content,created_at').or('room_id.like.'+String(myId)+'_%,room_id.like.%_'+String(myId)).order('created_at',{ascending:false}).limit(100);
+  if(!res.data||res.data.length===0)return;
+  
+  // 找出所有聊天过的用户
+  var contacts={};
+  res.data.forEach(function(m){
+    var parts=m.room_id.split('_');
+    var otherId=parts[0]===String(myId)?parts[1]:parts[0];
+    if(!contacts[otherId]){
+      contacts[otherId]={lastMsg:m.content,time:m.created_at};
+    }
+  });
+  
+  // 获取用户信息
+  var ids=Object.keys(contacts);
+  if(ids.length===0)return;
+  
+  var users=await _sb.from('users').select('id,name').in('id',ids.map(function(i){return parseInt(i)||i;}));
+  if(!users.data)return;
+  
+  // 更新聊天列表
+  var list=document.getElementById('chatList');
+  if(!list)return;
+  list.innerHTML='';
+  users.data.forEach(function(u){
+    var sid=String(u.id);
+    var c=contacts[sid]||{};
+    var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
+    var color=colors[parseInt(sid)%colors.length];
+    var div=document.createElement('div');
+    div.className='row';
+    div.onclick=function(){openChat(sid,u.name[0].toUpperCase(),color,u.name);};
+    div.innerHTML='<div class="av" style="background:'+color+'">'+u.name[0].toUpperCase()+'</div><div style="flex:1;"><div style="font-size:17px;">'+u.name+'</div><div style="font-size:14px;color:#8e8e93;margin-top:2px;" id="last-'+sid+'">'+(c.lastMsg||'Tap to chat')+'</div></div><span style="color:#c7c7cc;font-size:18px;">›</span>';
+    list.appendChild(div);
+  });
+}
+
+function showNewChat(){
   var n=prompt('Enter contact ID (number, e.g. 1, 2, 3):');
   if(!n||!n.trim())return;
   n=n.trim().replace(/[^0-9]/g,'');
@@ -819,14 +866,45 @@ async function showNewChat(){
 function togXP(){document.getElementById('xpanel').classList.toggle('on');}
 function doPhoto(){document.getElementById('imgIn').setAttribute('capture','camera');document.getElementById('imgIn').click();}
 function doImg(){document.getElementById('imgIn').removeAttribute('capture');document.getElementById('imgIn').click();}
-function onImg(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){addMsg({type:'image',src:ev.target.result,sent:true,t:gt()});};r.readAsDataURL(f);document.getElementById('xpanel').classList.remove('on');}
+function onImg(e){
+  var f=e.target.files[0];if(!f)return;
+  // 压缩图片
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      var max=800;
+      var w=img.width,h=img.height;
+      if(w>max){h=h*max/w;w=max;}
+      if(h>max){w=w*max/h;h=max;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      var data=canvas.toDataURL('image/jpeg',0.7);
+      addMsg({type:'image',src:data,sent:true,t:gt()});
+      // 发送到数据库
+      if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:data,type:'image'});
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(f);
+  document.getElementById('xpanel').classList.remove('on');
+}
 function doVid(){document.getElementById('vidIn').click();}
 function onVid(){addMsg({type:'video',sent:true,t:gt()});document.getElementById('xpanel').classList.remove('on');}
 function doLoc(){navigator.geolocation?navigator.geolocation.getCurrentPosition(function(p){addMsg({type:'location',addr:'('+p.coords.latitude.toFixed(4)+', '+p.coords.longitude.toFixed(4)+')',sent:true,t:gt()});},function(){addMsg({type:'location',addr:'Current location',sent:true,t:gt()});}):addMsg({type:'location',addr:'Location unavailable',sent:true,t:gt()});document.getElementById('xpanel').classList.remove('on');}
 function doFile(){alert('File sharing coming soon');}
 function doBurn(){var t=prompt('Self-destruct after (seconds):','10');if(t)alert('Set: messages will disappear after '+t+'s');}
 function recStart(e){if(e)e.preventDefault();G.recOn=true;G.recS=0;document.getElementById('recHud').classList.add('on');G.recI=setInterval(function(){G.recS++;var m=Math.floor(G.recS/60),s=G.recS%60;document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;},1000);}
-function recStop(){if(!G.recOn)return;G.recOn=false;clearInterval(G.recI);document.getElementById('recHud').classList.remove('on');if(G.recS>0)addMsg({type:'voice',dur:G.recS,sent:true,t:gt()});}
+function recStop(){
+  if(!G.recOn)return;
+  G.recOn=false;clearInterval(G.recI);
+  document.getElementById('recHud').classList.remove('on');
+  if(G.recS>0){
+    addMsg({type:'voice',dur:G.recS,sent:true,t:gt()});
+    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:'[Voice '+G.recS+'s]',type:'voice'});
+  }
+}
 
 // ═══ 通知 ═══
 function sendNotif(){
