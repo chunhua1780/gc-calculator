@@ -976,36 +976,24 @@ function doImg(){
 
 function onImg(e){
   var f=e.target.files[0];
-  console.log('onImg called, file:', f, 'currentRoom:', currentRoom, 'myId:', myId);
-  if(!f){console.log('no file');return;}
+  if(!f)return;
   document.getElementById('xpanel').classList.remove('on');
   var reader=new FileReader();
   reader.onload=function(ev){
-    var img=new Image();
-    img.onload=function(){
-      var canvas=document.createElement('canvas');
-      var max=600;
-      var w=img.width,h=img.height;
-      if(w>max){h=Math.round(h*max/w);w=max;}
-      if(h>max){w=Math.round(w*max/h);h=max;}
-      canvas.width=w;
-      canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      var data=canvas.toDataURL('image/jpeg',0.5);
-      addMsg({type:'image',src:data,sent:true,t:gt()});
-      if(currentRoom){
-        _sb.from('messages').insert({
-          room_id:currentRoom,
-          sender:String(myId),
-          content:data,
-          type:'image'
-        }).then(function(r){
-          if(r.error)console.log('img err:',r.error.message);
-        });
-      }
-    };
-    img.src=ev.target.result;
+    var data=ev.target.result;
+    addMsg({type:'image',src:data,sent:true,t:gt()});
+    if(currentRoom){
+      _sb.from('messages').insert({
+        room_id:currentRoom,
+        sender:String(myId),
+        content:data,
+        type:'image'
+      }).then(function(r){
+        if(r.error)alert('Send failed: '+r.error.message);
+      });
+    }
   };
+  reader.onerror=function(){alert('File read error');};
   reader.readAsDataURL(f);
   e.target.value='';
 }
