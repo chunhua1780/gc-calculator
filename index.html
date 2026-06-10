@@ -447,7 +447,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
   <div style="background:#fff;border-radius:20px;padding:28px 24px;text-align:center;width:280px;">
     <div style="font-size:18px;font-weight:700;margin-bottom:4px;" id="qrName">My QR Code</div>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:16px;" id="qrIdTxt"></div>
-    <canvas id="qrCanvas" style="border-radius:12px;"></canvas>
+    <img id="qrImg" style="border-radius:12px;width:200px;height:200px;" src="">
     <div style="font-size:12px;color:#8e8e93;margin-top:12px;">Scan to add me on GhostChat</div>
     <button onclick="document.getElementById('qrModal').style.display='none'" style="margin-top:16px;background:#f2f2f7;border:none;padding:10px 32px;border-radius:12px;font-size:16px;cursor:pointer;">Close</button>
   </div>
@@ -791,7 +791,7 @@ async function sendMsg(){
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:myId,content:t,type:'text'});
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
-function showNewChat(){var n=prompt('Enter contact ID or name:');if(n&&n.trim())openChat(n.trim(),n[0],'#007aff');}
+function showNewChat(){var n=prompt('Enter contact ID (e.g. jack123):');if(!n||!n.trim())return;n=n.trim().toLowerCase().replace(/[^a-z0-9]/g,'');if(!n){alert('Invalid ID');return;}if(n===myId){alert('Cannot chat with yourself');return;}openChat(n,n[0].toUpperCase(),'#007aff');}
 function togXP(){document.getElementById('xpanel').classList.toggle('on');}
 function doPhoto(){document.getElementById('imgIn').setAttribute('capture','camera');document.getElementById('imgIn').click();}
 function doImg(){document.getElementById('imgIn').removeAttribute('capture');document.getElementById('imgIn').click();}
