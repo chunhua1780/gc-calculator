@@ -1455,7 +1455,12 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 });
 
-function cp(b){var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}if(b==='='){
+function cp(b){
+  // 防抖：300ms内不重复触发
+  var now=Date.now();
+  if(cp._last&&now-cp._last<300&&cp._lastB===b)return;
+  cp._last=now;cp._lastB=b;
+  var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}if(b==='='){
     var pin=G.pin||'1234';
     var enteredPin=G.ci;
     if(enteredPin===pin){
