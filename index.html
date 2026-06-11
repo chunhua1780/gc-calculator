@@ -990,6 +990,37 @@ function toggleCam(){
   if(RTC.localStream)RTC.localStream.getVideoTracks().forEach(function(t){t.enabled=!t.enabled;});
 }
 
+var _msgSub=null;
+function listenForAllMessages(){
+  if(_msgSub)return;
+  var mid=String(myId);
+  _msgSub=_sb.channel('all_msgs_'+mid+'_'+Date.now())
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},function(p){
+      var m=p.new;
+      if(!m||!m.room_id)return;
+      var parts=m.room_id.split('_');
+      if(parts.indexOf(mid)<0)return;
+      if(String(m.sender)===mid)return;
+      var senderId=parts[0]===mid?parts[1]:parts[0];
+      var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:new Date(m.created_at).getHours()+':'+(new Date(m.created_at).getMinutes()<10?'0':'')+new Date(m.created_at).getMinutes()};
+      if(m.type==='image')msg.src=m.content;
+      if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||'?';}
+      if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
+      // 加入消息队列
+      if(!G.msgs[senderId])G.msgs[senderId]=[];
+      var already=G.msgs[senderId].some(function(x){return x.id===m.id;});
+      if(!already){
+        G.msgs[senderId].push(msg);
+        // 如果当前在和这个人聊天，显示消息
+        if(G.chat===senderId){renderMsgs();}
+        // 自动加入联系人列表
+        autoAddContact(senderId,msg);
+        addUnread(senderId);
+        sendNotif();
+      }
+    }).subscribe(function(s){console.log('All msgs sub:',s);});
+}
+
 function listenForCalls(){
   if(_callSub)return;
   _callSub=_sb.channel('inc:'+myId+'_'+Date.now())
