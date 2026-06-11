@@ -1455,23 +1455,94 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 });
 
+// ═══ 计算器 ═══
+var CALC={buf:'',op:'',prev:'',locked:false};
+
+function calcUpdate(){
+  var el=document.getElementById('cNum');
+  if(el)el.textContent=CALC.buf||'0';
+}
+
 function cp(b){
-  // 防抖：300ms内不重复触发
-  var now=Date.now();
-  if(cp._last&&now-cp._last<300&&cp._lastB===b)return;
-  cp._last=now;cp._lastB=b;
-  var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}if(b==='='){
+  // 防重复触发
+  if(CALC.locked)return;
+  CALC.locked=true;
+  setTimeout(function(){CALC.locked=false;},250);
+
+  var expr=document.getElementById('cExpr');
+
+  if(b==='AC'){
+    CALC.buf='';CALC.op='';CALC.prev='';
+    var el=document.getElementById('cNum');if(el)el.textContent='0';
+    if(expr)expr.textContent='';
+    return;
+  }
+
+  if(b==='+/-'){
+    if(CALC.buf){CALC.buf=CALC.buf.charAt(0)==='-'?CALC.buf.slice(1):'-'+CALC.buf;calcUpdate();}
+    return;
+  }
+
+  if(b==='%'){
+    if(CALC.buf){CALC.buf=String(parseFloat(CALC.buf)/100);calcUpdate();}
+    return;
+  }
+
+  if('0123456789.'.indexOf(b)>=0){
+    if(b==='.'&&CALC.buf.indexOf('.')>=0)return;
+    if(CALC.buf.length>=10)return;
+    CALC.buf+=b;
+    calcUpdate();
+    return;
+  }
+
+  if('+-×÷'.indexOf(b)>=0){
+    if(CALC.buf){
+      CALC.prev=CALC.buf;
+      CALC.op=b;
+      CALC.buf='';
+      if(expr)expr.textContent=CALC.prev+b;
+    }
+    return;
+  }
+
+  if(b==='='){
+    var entered=CALC.buf;
     var pin=G.pin||'1234';
-    var enteredPin=G.ci;
-    if(enteredPin===pin){
-      G.ci='';G.co='';G.cpv='';
-      var res=document.getElementById('cNum');if(res)res.textContent='0';
-      var expr=document.getElementById('cExpr');if(expr)expr.textContent='';
+
+    // 密码检查
+    if(entered===pin){
+      CALC.buf='';CALC.op='';CALC.prev='';
+      var el=document.getElementById('cNum');if(el)el.textContent='0';
+      if(expr)expr.textContent='';
       if(!lg('registered')){show('reg');}
       else{show('main');listenForCalls();listenForAllMessages();loadContacts();}
       return;
     }
-    if(G.dpin&&enteredPin===G.dpin){doDestruct();return;}var a=parseFloat(G.cpv),bv=parseFloat(G.ci),r=0;if(G.co==='+')r=a+bv;else if(G.co==='-')r=a-bv;else if(G.co==='×')r=a*bv;else if(G.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';G.ci=String(r);G.co='';G.cpv='';}}
+
+    // 销毁密码检查
+    if(G.dpin&&entered===G.dpin){doDestruct();return;}
+
+    // 正常计算
+    if(CALC.prev&&CALC.buf&&CALC.op){
+      var a=parseFloat(CALC.prev),bv=parseFloat(CALC.buf),r=0;
+      if(CALC.op==='+')r=a+bv;
+      else if(CALC.op==='-')r=a-bv;
+      else if(CALC.op==='×')r=a*bv;
+      else if(CALC.op==='÷')r=bv?a/bv:0;
+      var rs=parseFloat(r.toFixed(8));
+      CALC.buf=String(rs);CALC.op='';CALC.prev='';
+      calcUpdate();
+      if(expr)expr.textContent='';
+    } else {
+      CALC.buf='';CALC.op='';CALC.prev='';
+      var el=document.getElementById('cNum');if(el)el.textContent='0';
+      if(expr)expr.textContent='';
+    }
+    return;
+  }
+}
+
 
 // ═══ 时钟 ═══
 function tickClock(){setInterval(function(){var d=new Date(),hE=document.getElementById('ckH'),mE=document.getElementById('ckM'),dE=document.getElementById('ckD');if(hE)hE.textContent=d.getHours();if(mE)mE.textContent=(d.getMinutes()<10?'0':'')+d.getMinutes();if(dE){var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];dE.textContent=days[d.getDay()].toUpperCase()+' · '+(d.getMonth()+1)+'/'+(d.getDate())+'/'+(d.getFullYear());}},1000);}
