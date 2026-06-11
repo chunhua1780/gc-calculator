@@ -615,8 +615,10 @@ async function doRegister(){
   var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId+' · '+name;
   var na=document.getElementById('nameDisplay');if(na)na.textContent=name;
   var av=document.getElementById('avatarDisplay');if(av)av.textContent=name[0].toUpperCase();
-  alert('\u2705 Registered!\n\nYour ID: '+myId+'\n\nShare this ID with friends to chat!\n\n\U0001f510 Rescue Code: '+rc+'\nSave this!');
-  show('main');listenForCalls();listenForAllMessages();
+  alert('\u2705 Registered!\n\nYour ID: '+myId+'\n\nShare this ID with friends!\n\n\U0001f510 Rescue Code: '+rc+'\nSave this!');
+  listenForCalls();listenForAllMessages();
+  var dm2={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
+  show(dm2[G.dis]||'dcalc');
 }
 
 async function doLogin(){
