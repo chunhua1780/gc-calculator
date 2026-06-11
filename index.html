@@ -412,7 +412,7 @@ html,body{height:100%;margin:0;padding:0;}
     <div id="cExpr" style="color:#636366;font-size:22px;min-height:28px;"></div>
     <div id="cNum" style="font-size:76px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1.1;"></div>
   </div>
-  <div class="cg">
+  <div class="cg" id="calcGrid">
     <div class="ck fn" onclick="cp('AC')" data-val="AC">AC</div><div class="ck fn" onclick="cp('+/-')" data-val="+/-">+/-</div><div class="ck fn" onclick="cp('%')" data-val="%">%</div><div class="ck op" onclick="cp('÷')" data-val="÷">÷</div>
     <div class="ck num" onclick="cp('7')" data-val="7">7</div><div class="ck num" onclick="cp('8')" data-val="8">8</div><div class="ck num" onclick="cp('9')" data-val="9">9</div><div class="ck op" onclick="cp('×')" data-val="×">×</div>
     <div class="ck num" onclick="cp('4')" data-val="4">4</div><div class="ck num" onclick="cp('5')" data-val="5">5</div><div class="ck num" onclick="cp('6')" data-val="6">6</div><div class="ck op" onclick="cp('-')" data-val="-">−</div>
@@ -557,6 +557,23 @@ if(window.visualViewport){
 window.addEventListener('orientationchange',function(){setTimeout(setAppHeight,300);});
 
 window.onload=function(){
+  // 计算器全局事件
+  setTimeout(function(){
+    var grid=document.getElementById('calcGrid');
+    if(!grid)return;
+    function handleCalc(e){
+      var btn=e.target;
+      while(btn&&!btn.getAttribute('data-val')){btn=btn.parentElement;}
+      if(!btn)return;
+      e.preventDefault();
+      if(CALC.locked)return;
+      CALC.locked=true;
+      setTimeout(function(){CALC.locked=false;},300);
+      cp(btn.getAttribute('data-val'));
+    }
+    grid.addEventListener('touchend',handleCalc,{passive:false});
+    grid.addEventListener('click',handleCalc,false);
+  },500);
   // Safari iOS fix: 用touchend替代onclick
   document.querySelectorAll('.ck').forEach(function(el){
     el.addEventListener('touchend',function(e){
