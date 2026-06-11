@@ -673,6 +673,8 @@ async function doLogin(){
   ls('myId',myId);
   ls('myName',res.data.name);
   ls('pin',pin);
+  // 立即更新G.pin确保内存和localStorage一致
+  G.pin=pin;
   ls('registered','true');
   show('main');listenForCalls();listenForAllMessages();loadContacts();loadContacts();
 }
