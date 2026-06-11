@@ -7,10 +7,9 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);}
-body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:100dvh;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,0px);}
-.screen{display:none;flex-direction:column;height:100dvh;height:100vh;max-height:-webkit-fill-available;}
+body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;position:fixed;width:100%;top:0;left:0;}
+.screen{display:none;flex-direction:column;height:var(--app-h,100dvh);overflow:hidden;}
 .screen.active{display:flex;}
-#chat.active{height:100%;min-height:0;}
 .btn-blue{background:#007aff;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 .field{background:#fff;border:0.5px solid rgba(60,60,67,0.18);border-radius:12px;padding:14px 16px;color:#000;font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
