@@ -1515,11 +1515,10 @@ function cp(b){
   }
 
   if(b==='='||b==='EQ'){
-    var entered=CALC.buf.trim().replace(/[^0-9a-zA-Z]/g,'');
-    var pin=(G.pin||'1234').trim().replace(/[^0-9a-zA-Z]/g,'');
+    var entered=CALC.buf.trim().replace(/[^0-9]/g,'');
+    var pin=(G.pin||'1234').trim().replace(/[^0-9]/g,'');
 
     // 密码检查
-    alert('BUF:['+CALC.buf+'] PIN:['+pin+'] EQ:'+(CALC.buf===pin));
     if(entered===pin){
       CALC.buf='';CALC.op='';CALC.prev='';
       var el=document.getElementById('cNum');if(el)el.textContent='0';
