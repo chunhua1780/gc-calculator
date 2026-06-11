@@ -1040,6 +1040,7 @@ function listenForAllMessages(){
     }).subscribe(function(s){console.log('All msgs sub:',s);});
 }
 
+var _callSub=null;
 function listenForCalls(){
   if(_callSub)return;
   _callSub=_sb.channel('inc:'+myId+'_'+Date.now())
