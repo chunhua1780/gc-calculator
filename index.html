@@ -1106,7 +1106,15 @@ function listenForAllMessages(){
         addUnread(senderId);
         sendNotif();
       }
-    }).subscribe(function(s){console.log('All msgs sub:',s);});
+    }).subscribe(function(s){
+      console.log('All msgs sub:',s);
+      if(s==='CLOSED'||s==='CHANNEL_ERROR'){
+        // 断线重连
+        console.log('Reconnecting messages...');
+        _msgSub=null;
+        setTimeout(function(){listenForAllMessages();},3000);
+      }
+    });
 }
 
 var _callSub=null;
