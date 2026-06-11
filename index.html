@@ -1097,7 +1097,7 @@ async function loadContacts(){
   });
 }
 
-async async function autoAddContact(senderId,lastMsg){
+async function autoAddContact(senderId,lastMsg){
   // 自动获取发送者信息并加入联系人列表
   var res=await _sb.from('users').select('id,name').eq('id',parseInt(senderId)||senderId).single();
   var name=res.data?res.data.name:senderId;
