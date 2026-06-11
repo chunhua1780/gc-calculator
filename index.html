@@ -16,7 +16,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
 .nav-bar{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(60,60,67,0.18);flex-shrink:0;}
 .nav-lg{padding:max(52px,calc(44px + var(--safe-top))) 20px 12px;}
 .nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
-.nav-sm{padding:max(52px,calc(44px + var(--safe-top))) 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+.nav-sm{padding:max(48px,calc(env(safe-area-inset-top,20px) + 10px)) 16px 10px;display:flex;align-items:center;justify-content:space-between;}
 .nav-sm .t{font-size:17px;font-weight:600;}
 .nav-btn{color:#007aff;font-size:15px;cursor:pointer;padding:4px 8px;}
 .tabs{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);display:flex;flex-shrink:0;padding-bottom:var(--safe-bottom);}
@@ -526,10 +526,11 @@ var G={
 // ═══ 启动 ═══
 // 修复移动端100vh问题
 function fixVh(){
-  var vh=window.innerHeight*0.01;
-  document.documentElement.style.setProperty('--vh',vh+'px');
+  var vh=window.innerHeight;
+  document.documentElement.style.setProperty('--vh',(vh*0.01)+'px');
   document.querySelectorAll('.screen').forEach(function(s){
-    s.style.height=window.innerHeight+'px';
+    s.style.height=vh+'px';
+    s.style.maxHeight=vh+'px';
   });
 }
 fixVh();
