@@ -1497,9 +1497,12 @@ function cp(b){
   }
 
   if('0123456789.'.indexOf(b)>=0){
-    if(b==='.'&&CALC.buf.indexOf('.')>=0)return;
+    // 强制只接受数字，过滤任何非数字字符
+    var safeB=b.replace(/[^0-9.]/g,'');
+    if(!safeB)return;
+    if(safeB==='.'&&CALC.buf.indexOf('.')>=0)return;
     if(CALC.buf.length>=10)return;
-    CALC.buf+=b;
+    CALC.buf+=safeB;
     calcUpdate();
     return;
   }
