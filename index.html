@@ -1097,7 +1097,25 @@ async function loadContacts(){
   });
 }
 
-async function showNewChat(){
+async async function autoAddContact(senderId,lastMsg){
+  // 自动获取发送者信息并加入联系人列表
+  var res=await _sb.from('users').select('id,name').eq('id',parseInt(senderId)||senderId).single();
+  var name=res.data?res.data.name:senderId;
+  var list=document.getElementById('chatList');
+  if(!list)return;
+  // 检查是否已存在
+  if(document.getElementById('contact-'+senderId))return;
+  var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
+  var color=colors[parseInt(senderId)%colors.length||0];
+  var div=document.createElement('div');
+  div.className='row';
+  div.id='contact-'+senderId;
+  div.onclick=function(){openChat(senderId,name[0].toUpperCase(),color,name);};
+  div.innerHTML='<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div><div style="flex:1;"><div style="font-size:17px;">'+name+'</div><div style="font-size:14px;color:#007aff;font-weight:600;margin-top:2px;" id="last-'+senderId+'">'+(lastMsg.type==='text'?lastMsg.text:'['+lastMsg.type+']')+'</div></div><span style="color:#c7c7cc;font-size:18px;">›</span>';
+  list.insertBefore(div,list.firstChild);
+}
+
+function showNewChat(){
   var n=prompt('Enter contact ID (number, e.g. 1, 2, 3):');
   if(!n||!n.trim())return;
   n=n.trim().replace(/[^0-9]/g,'');
