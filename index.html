@@ -1436,6 +1436,25 @@ function ltS(){ltTimer=setTimeout(function(){ltTimer=null;openPIN();},3000);}
 function ltE(){if(ltTimer){clearTimeout(ltTimer);ltTimer=null;}}
 
 // ═══ 计算器 ═══
+// 计算器全局点击处理 - 兼容所有浏览器
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('.ck').forEach(function(el){
+    ['touchstart','mousedown'].forEach(function(evt){
+      el.addEventListener(evt,function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var val=el.getAttribute('data-val')||el.innerText||el.textContent;
+        val=val.trim();
+        // 映射显示字符到实际值
+        if(val==='−')val='-';
+        if(val==='×')val='×';
+        if(val==='÷')val='÷';
+        cp(val);
+      },{passive:false});
+    });
+  });
+});
+
 function cp(b){var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}if(b==='='){
     var pin=G.pin||'1234';
     var enteredPin=G.ci;
