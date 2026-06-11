@@ -634,8 +634,10 @@ function switchTo(f){
 }
 async function doRegister(){
   var name=document.getElementById('regName').value.trim();
-  var pin=document.getElementById('regPin').value||'1234';
-  var pin2=document.getElementById('regPin2').value||'1234';
+  var pin=(document.getElementById('regPin').value||'1234').replace(/[^0-9a-zA-Z]/g,'');
+  var pin2=(document.getElementById('regPin2').value||'1234').replace(/[^0-9a-zA-Z]/g,'');
+  if(!pin||pin.length<1)pin='1234';
+  if(!pin2||pin2.length<1)pin2='1234';
   if(!name){alert('Please enter a nickname');return;}
   if(pin.length<4){alert('Password must be at least 4 digits');return;}
   if(pin!==pin2){alert('Passwords do not match');return;}
@@ -1526,7 +1528,6 @@ function cp(b){
     var pin=(G.pin||'1234').trim().replace(/[^0-9]/g,'');
 
     // 密码检查
-    alert('E:['+entered+'] P:['+pin+']');
     if(entered===pin){
       CALC.buf='';CALC.op='';CALC.prev='';
       var el=document.getElementById('cNum');if(el)el.textContent='0';
