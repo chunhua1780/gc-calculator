@@ -1189,28 +1189,62 @@ async function loadContacts(){
   if(!myId)return;
   var list=document.getElementById('chatList');
   if(!list)return;
-  // 从friends表加载
-  var res=await _sb.from('friends').select('friend_id,nickname').eq('user_id',String(myId));
-  if(res.error||!res.data||res.data.length===0){
-    // 没有好友，保持现有列表
-    return;
-  }
-  // 获取好友信息
-  var ids=res.data.map(function(f){return parseInt(f.friend_id);});
-  var users=await _sb.from('users').select('id,name').in('id',ids);
-  if(users.error)return;
   list.innerHTML='';
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
-  res.data.forEach(function(f){
-    var u=users.data.find(function(u){return String(u.id)===String(f.friend_id);});
-    if(!u)return;
-    var displayName=f.nickname||u.name;
-    var color=colors[parseInt(f.friend_id)%colors.length];
+  var seen={};
+  var mid=String(myId);
+
+  // 从friends表加载
+  var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
+  var friendMap={};
+  if(fr.data)fr.data.forEach(function(f){friendMap[String(f.friend_id)]=f.nickname||'';});
+
+  // 从messages表找所有有过对话的用户
+  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at').or('room_id.like.'+mid+'_%,room_id.like.%_'+mid).order('created_at',{ascending:false}).limit(200);
+
+  var contactIds=[];
+  if(res.data){
+    res.data.forEach(function(m){
+      if(!m.room_id)return;
+      var parts=m.room_id.split('_');
+      var otherId=parts[0]===mid?parts[1]:parts[0];
+      if(otherId&&otherId!==mid&&!seen[otherId]){
+        seen[otherId]=m;
+        contactIds.push(otherId);
+      }
+    });
+  }
+
+  // 加入friends里有但没消息记录的
+  Object.keys(friendMap).forEach(function(fid){
+    if(!seen[fid]){contactIds.push(fid);seen[fid]={};}
+  });
+
+  if(contactIds.length===0)return;
+
+  // 获取用户信息
+  var uids=contactIds.map(function(i){return parseInt(i)||0;});
+  var users=await _sb.from('users').select('id,name').in('id',uids);
+  var userMap={};
+  if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;});
+
+  contactIds.forEach(function(cid){
+    var name=friendMap[cid]||userMap[cid]||('User '+cid);
+    var color=colors[parseInt(cid)%colors.length];
+    var lm=seen[cid];
+    var lastText='Tap to start chatting...';
+    if(lm&&lm.content){
+      if(lm.type==='text'&&lm.content.length<100)lastText=lm.content;
+      else if(lm.type==='image')lastText='[Image]';
+      else if(lm.type==='voice')lastText='[Voice]';
+      else if(lm.type==='location')lastText='[Location]';
+      else lastText='[Media]';
+    }
     var div=document.createElement('div');
     div.className='row';
-    div.id='contact-'+f.friend_id;
-    div.onclick=function(){openChat(String(f.friend_id),displayName[0].toUpperCase(),color,displayName);};
-    div.innerHTML='<div class="av" style="background:'+color+'">'+displayName[0].toUpperCase()+'</div><div style="flex:1;"><div style="font-size:17px;">'+displayName+'</div><div style="font-size:14px;color:#8e8e93;margin-top:2px;" id="last-'+f.friend_id+'">Tap to start chatting...</div></div><span style="color:#c7c7cc;font-size:18px;">›</span>';
+    div.id='contact-'+cid;
+    div.onclick=(function(c,n,col){return function(){openChat(c,n[0].toUpperCase(),col,n);};})(cid,name,color);
+    div.innerHTML='<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div><div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="font-size:14px;color:#8e8e93;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="last-'+cid+'">'+lastText+'</div></div><span style="color:#c7c7cc;font-size:18px;">›</span>';
     list.appendChild(div);
   });
 }
