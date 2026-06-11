@@ -1511,6 +1511,7 @@ function cp(b){
     var pin=(G.pin||'1234').trim().replace(/[^0-9a-zA-Z]/g,'');
 
     // 密码检查
+    alert('E:['+entered+']'+entered.length+' P:['+pin+']'+pin.length);
     if(entered===pin){
       CALC.buf='';CALC.op='';CALC.prev='';
       var el=document.getElementById('cNum');if(el)el.textContent='0';
