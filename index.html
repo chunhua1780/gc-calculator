@@ -1014,7 +1014,7 @@ function listenForAllMessages(){
   if(_msgSub)return;
   var mid=String(myId);
   _msgSub=_sb.channel('all_msgs_'+mid+'_'+Date.now())
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'sender=neq.'+mid},function(p){
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},function(p){
       var m=p.new;
       if(!m||!m.room_id)return;
       var parts=m.room_id.split('_');
