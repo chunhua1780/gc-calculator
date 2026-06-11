@@ -1507,11 +1507,10 @@ function cp(b){
   }
 
   if(b==='='){
-    var entered=CALC.buf;
-    var pin=G.pin||'1234';
+    var entered=CALC.buf.trim().replace(/[^0-9a-zA-Z]/g,'');
+    var pin=(G.pin||'1234').trim().replace(/[^0-9a-zA-Z]/g,'');
 
     // 密码检查
-    alert('Input:'+entered+' Pin:'+pin+' Match:'+(entered===pin));
     if(entered===pin){
       CALC.buf='';CALC.op='';CALC.prev='';
       var el=document.getElementById('cNum');if(el)el.textContent='0';
