@@ -899,10 +899,10 @@ function renderMsgs(){
       else if(m.src.length>100){b='<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';}
       else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
-      if(m.src&&(m.src.startsWith('http')||m.src.startsWith('blob')||m.src.startsWith('data'))){
-        b='<div style="display:flex;align-items:center;gap:8px;"><span onclick="playAudio(this)" data-src="'+m.src+'" style="font-size:22px;cursor:pointer;">▶️</span><div style="flex:1;height:4px;background:rgba(255,255,255,.3);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+(m.dur||'?')+'s</span></div>';
-      }else{
-        b='<div style="display:flex;align-items:center;gap:8px;">🎤 '+(m.dur||'?')+'s</div>';
+      if(m.src&&(m.src.startsWith('http')||m.src.startsWith('blob'))){
+        var vdur=m.dur||'?';
+        var barW=Math.min(120,Math.max(40,parseInt(vdur)*8||40));
+        b='<div onclick="playAudio(this)" data-src="'+m.src+'" style="display:flex;align-items:center;gap:8px;cursor:pointer;min-width:'+(barW+60)+'px;"><span class="play-icon" style="font-size:18px;">▶️</span><div style="flex:1;height:3px;background:rgba(255,255,255,.4);border-radius:2px;min-width:'+barW+'px;"></div><span style="font-size:12px;opacity:.8;">'+vdur+'″</span></div>';
       }
     }else if(m.type==='location'){
       var mapUrl=m.mapUrl||('https://maps.google.com/?q='+(m.addr||''));
@@ -1075,7 +1075,7 @@ function recStart(e){
     _mediaRec=new MediaRecorder(stream,{mimeType:mimeType});
     _mediaRec.ondataavailable=function(e){if(e.data&&e.data.size>0)_recChunks.push(e.data);};
     _mediaRec.start(200);
-    G.recOn=true;G.recS=0;
+    G.recOn=true;G.recS=0;document.getElementById('recTm').textContent='0:00';
     document.getElementById('recHud').classList.add('on');
     G.recI=setInterval(function(){
       G.recS++;
@@ -1107,7 +1107,6 @@ function recStop(){
     _sb.storage.from('media').upload(fname,blob,{contentType:mime,upsert:true}).then(function(up){
       if(up.error){
         console.log('Upload error:',up.error.message);
-        if(roomAtStop)_sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:'[Voice '+dur+'s]',type:'voice',duration:dur}).then(function(r){console.log('insert fallback:',r.error?r.error.message:'OK');});
         return;
       }
       var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
