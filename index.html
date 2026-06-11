@@ -6,19 +6,20 @@
 <title>SecretTalk</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;}
-.screen{display:none;flex-direction:column;height:100vh;}
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);}
+body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:100dvh;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,0px);}
+.screen{display:none;flex-direction:column;height:100dvh;height:100vh;max-height:-webkit-fill-available;}
 .screen.active{display:flex;}
 .btn-blue{background:#007aff;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 .field{background:#fff;border:0.5px solid rgba(60,60,67,0.18);border-radius:12px;padding:14px 16px;color:#000;font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
 .nav-bar{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(60,60,67,0.18);flex-shrink:0;}
-.nav-lg{padding:52px 20px 12px;}
+.nav-lg{padding:max(52px,calc(44px + var(--safe-top))) 20px 12px;}
 .nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
-.nav-sm{padding:52px 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+.nav-sm{padding:max(52px,calc(44px + var(--safe-top))) 16px 10px;display:flex;align-items:center;justify-content:space-between;}
 .nav-sm .t{font-size:17px;font-weight:600;}
 .nav-btn{color:#007aff;font-size:15px;cursor:pointer;padding:4px 8px;}
-.tabs{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);display:flex;flex-shrink:0;}
+.tabs{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);display:flex;flex-shrink:0;padding-bottom:var(--safe-bottom);}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:#007aff;}
 .tab svg{width:24px;height:24px;}
@@ -41,7 +42,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
 .mr.r .bub{background:#fff;color:#000;border-bottom-left-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.08);}
 .mt{font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;}
 .msg-img{max-width:220px;border-radius:16px;display:block;}
-.ibar{background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);flex-shrink:0;}
+.ibar{background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);flex-shrink:0;padding-bottom:var(--safe-bottom);}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
 .ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#007aff;flex-shrink:0;}
 .ibtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -65,7 +66,7 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
 .tr2.on{border-color:#007aff;}
 .pov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:flex-end;}
 .pov.on{display:flex;}
-.psh{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 44px;width:100%;}
+.psh{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px max(44px,calc(24px + var(--safe-bottom)));width:100%;}
 .ph{width:36px;height:4px;background:#e5e5ea;border-radius:2px;margin:0 auto 20px;}
 .pkb{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .pk{height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;font-weight:300;cursor:pointer;font-family:inherit;}
@@ -74,11 +75,11 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
 .rh.on{display:block;}
 .inc{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;}
 .inc.on{display:flex;}
-#dfl{background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;}
+#dfl{background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;padding:var(--safe-top) 0 var(--safe-bottom);}
 .flr{width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:64px;}
 .flr.on{background:#fffce8;border-color:#ffd700;box-shadow:0 0 80px rgba(255,215,0,.5);}
 #dcalc{background:#1c1c1e;flex-direction:column;}
-.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;}
+.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;padding-bottom:var(--safe-bottom);}
 .ck{height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;color:#fff;}
 .ck:active{opacity:.7;}
 .ck.fn{background:#2c2c2e;font-size:22px;}
@@ -523,6 +524,18 @@ var G={
 };
 
 // ═══ 启动 ═══
+// 修复移动端100vh问题
+function fixVh(){
+  var vh=window.innerHeight*0.01;
+  document.documentElement.style.setProperty('--vh',vh+'px');
+  document.querySelectorAll('.screen').forEach(function(s){
+    s.style.height=window.innerHeight+'px';
+  });
+}
+fixVh();
+window.addEventListener('resize',fixVh);
+window.addEventListener('orientationchange',function(){setTimeout(fixVh,100);});
+
 window.onload=function(){
   // 用addEventListener替代onchange避免浏览器兼容问题
   var imgInput=document.getElementById('imgIn');
