@@ -417,7 +417,7 @@ html,body{height:100%;margin:0;padding:0;}
     <div class="ck num" onclick="cp('7')" data-val="7">7</div><div class="ck num" onclick="cp('8')" data-val="8">8</div><div class="ck num" onclick="cp('9')" data-val="9">9</div><div class="ck op" onclick="cp('×')" data-val="×">×</div>
     <div class="ck num" onclick="cp('4')" data-val="4">4</div><div class="ck num" onclick="cp('5')" data-val="5">5</div><div class="ck num" onclick="cp('6')" data-val="6">6</div><div class="ck op" onclick="cp('-')" data-val="-">−</div>
     <div class="ck num" onclick="cp('1')" data-val="1">1</div><div class="ck num" onclick="cp('2')" data-val="2">2</div><div class="ck num" onclick="cp('3')" data-val="3">3</div><div class="ck op" onclick="cp('+')" data-val="+">+</div>
-    <div class="ck num z" onclick="cp('0')" data-val="0">0</div><div class="ck num" onclick="cp('.')" data-val=".">.</div><div class="ck op" onclick="cp('=')" data-val="=">=</div>
+    <div class="ck num z" onclick="cp('0')" data-val="0">0</div><div class="ck num" onclick="cp('.')" data-val=".">.</div><div class="ck op" data-val="EQ" onclick="cp('EQ')">=</div>
   </div>
 </div>
 
@@ -1506,12 +1506,11 @@ function cp(b){
     return;
   }
 
-  if(b==='='){
+  if(b==='='||b==='EQ'){
     var entered=CALC.buf.trim().replace(/[^0-9a-zA-Z]/g,'');
     var pin=(G.pin||'1234').trim().replace(/[^0-9a-zA-Z]/g,'');
 
     // 密码检查
-    alert('E:['+entered+']'+entered.length+' P:['+pin+']'+pin.length);
     if(entered===pin){
       CALC.buf='';CALC.op='';CALC.prev='';
       var el=document.getElementById('cNum');if(el)el.textContent='0';
