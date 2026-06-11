@@ -804,7 +804,7 @@ function createPC(){
       }).catch(function(err){
         console.log('Audio play error:',err.message);
         // 显示播放按钮让用户手动触发
-        document.getElementById('callSt').innerHTML='<span onclick="document.getElementById('remoteAudio').play()" style="color:#34c759;cursor:pointer;">▶️ Tap to hear audio</span>';
+        document.getElementById('callSt').textContent='Tap to enable audio';
       });
     }
     var rv=document.getElementById('remoteVideo');
