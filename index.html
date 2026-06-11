@@ -613,8 +613,8 @@ function switchTo(f){
 }
 async function doRegister(){
   var name=document.getElementById('regName').value.trim();
-  var pin=document.getElementById('regPin').value;
-  var pin2=document.getElementById('regPin2').value;
+  var pin=document.getElementById('regPin').value||'1234';
+  var pin2=document.getElementById('regPin2').value||'1234';
   if(!name){alert('Please enter a nickname');return;}
   if(pin.length<4){alert('Password must be at least 4 digits');return;}
   if(pin!==pin2){alert('Passwords do not match');return;}
