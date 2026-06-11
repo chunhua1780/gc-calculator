@@ -81,7 +81,7 @@ html,body{height:100%;margin:0;padding:0;}
 .flr.on{background:#fffce8;border-color:#ffd700;box-shadow:0 0 80px rgba(255,215,0,.5);}
 #dcalc{background:#1c1c1e;flex-direction:column;}
 .cg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;padding-bottom:var(--safe-bottom);}
-.ck{height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;color:#fff;}
+.ck{height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;color:#fff;border:none;outline:none;-webkit-appearance:none;}
 .ck:active{opacity:.7;}
 .ck.fn{background:#2c2c2e;font-size:22px;}
 .ck.op{background:#ff9f0a;font-size:32px;}
@@ -413,11 +413,11 @@ html,body{height:100%;margin:0;padding:0;}
     <div id="cNum" style="font-size:76px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1.1;">0</div>
   </div>
   <div class="cg">
-    <div class="ck fn" onclick="cp('AC')">AC</div><div class="ck fn" onclick="cp('+/-')">+/-</div><div class="ck fn" onclick="cp('%')">%</div><div class="ck op" onclick="cp('÷')">÷</div>
-    <div class="ck num" onclick="cp('7')">7</div><div class="ck num" onclick="cp('8')">8</div><div class="ck num" onclick="cp('9')">9</div><div class="ck op" onclick="cp('×')">×</div>
-    <div class="ck num" onclick="cp('4')">4</div><div class="ck num" onclick="cp('5')">5</div><div class="ck num" onclick="cp('6')">6</div><div class="ck op" onclick="cp('-')">−</div>
-    <div class="ck num" onclick="cp('1')">1</div><div class="ck num" onclick="cp('2')">2</div><div class="ck num" onclick="cp('3')">3</div><div class="ck op" onclick="cp('+')">+</div>
-    <div class="ck num z" onclick="cp('0')">0</div><div class="ck num" onclick="cp('.')">.</div><div class="ck op" onclick="cp('=')">=</div>
+    <button class="ck fn" type="button" onclick="cp('AC')">AC</button><button class="ck fn" type="button" onclick="cp('+/-')" >+/-</div><button class="ck fn" type="button" onclick="cp('%')">%</button><button class="ck op" type="button" onclick="cp('÷')">÷</button>
+    <button class="ck num" type="button" onclick="cp('7')">7</button><button class="ck num" type="button" onclick="cp('8')">8</button><button class="ck num" type="button" onclick="cp('9')">9</button><button class="ck op" type="button" onclick="cp('×')">×</button>
+    <button class="ck num" type="button" onclick="cp('4')">4</button><button class="ck num" type="button" onclick="cp('5')">5</button><button class="ck num" type="button" onclick="cp('6')">6</button><button class="ck op" type="button" onclick="cp('-')">−</button>
+    <button class="ck num" type="button" onclick="cp('1')">1</button><button class="ck num" type="button" onclick="cp('2')">2</button><button class="ck num" type="button" onclick="cp('3')">3</button><button class="ck op" type="button" onclick="cp('+')">+</button>
+    <button class="ck num z" type="button" onclick="cp('0')">0</button><button class="ck num" type="button" onclick="cp('.')">.</button><button class="ck op" type="button" onclick="cp('=')">=</button>
   </div>
 </div>
 
