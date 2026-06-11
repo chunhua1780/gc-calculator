@@ -741,7 +741,7 @@ async function joinRoom(name){
       if(String(m.sender)===String(myId))return;
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
       if(m.type==='image')msg.src=m.content;
-      if(m.type==='voice'){msg.src=m.content&&(m.content.startsWith('http')||m.content.startsWith('blob'))?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
+      if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
       var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
       if(!already){addMsg(msg);sendNotif();}
@@ -1107,7 +1107,7 @@ function recStop(){
     _sb.storage.from('media').upload(fname,blob,{contentType:mime,upsert:true}).then(function(up){
       if(up.error){
         console.log('Upload error:',up.error.message);
-        if(roomAtStop)_sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:'[Voice '+dur+'s]',type:'voice'}).then(function(r){console.log('insert fallback:',r.error?r.error.message:'OK');});
+        if(roomAtStop)_sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:'[Voice '+dur+'s]',type:'voice',duration:dur}).then(function(r){console.log('insert fallback:',r.error?r.error.message:'OK');});
         return;
       }
       var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
@@ -1118,7 +1118,7 @@ function recStop(){
       }
       renderMsgs();
       if(roomAtStop){
-        _sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:url,type:'voice'}).then(function(r){
+        _sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:url,type:'voice',duration:dur}).then(function(r){
           console.log('Voice insert:',r.error?r.error.message:'OK');
         });
       } else {
