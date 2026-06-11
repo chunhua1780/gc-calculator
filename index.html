@@ -560,12 +560,20 @@ window.onload=function(){
   var wn=document.getElementById('welcome-name');if(wn&&lg('myName'))wn.textContent='Welcome back, '+lg('myName')+'!';
   // 加载联系人列表
   if(lg('registered')){loadContacts();listenForCalls();listenForAllMessages();}
-  // 启动逻辑 - 永远先显示伪装界面
-  var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
-  if(!lg('registered')){
+  // 启动逻辑
+  var _dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
+  var _reg=lg('registered');
+  var _pin=lg('pin');
+  if(!_reg||!_pin){
+    // 未注册 → 注册界面
     show('reg');
   } else {
-    show(dm[G.dis]||'dcalc');
+    // 已注册 → 计算器界面（输密码进入）
+    show(_dm[G.dis]||'dcalc');
+    // 后台监听消息
+    listenForCalls();
+    listenForAllMessages();
+    loadContacts();
   }
 };
 
