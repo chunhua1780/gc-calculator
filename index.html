@@ -766,7 +766,15 @@ async function joinRoom(name){
 
 // ═══ WebRTC ═══
 var RTC={pc:null,localStream:null,isCaller:false,callRoom:null,pendingOffer:null,pendingFrom:null};
-var ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]};
+var ICE={iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'stun:stun2.l.google.com:19302'},
+  {urls:'stun:stun3.l.google.com:19302'},
+  {urls:'stun:stun4.l.google.com:19302'},
+  {urls:'stun:global.stun.twilio.com:3478'},
+  {urls:'stun:stun.cloudflare.com:3478'}
+]};
 async function initiateCall(name,isVideo){
   RTC.isCaller=true;RTC.callRoom=[myId,name].sort().join('_call');
   try{
