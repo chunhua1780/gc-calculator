@@ -922,8 +922,15 @@ async function handleCallSig(payload){
   }
   if(msg.type==='offer'){showIncoming(msg.sender,JSON.parse(msg.data));}
   if(msg.type==='hangup'){
-    console.log('Remote hangup received');
-    endCall();
+    console.log('Remote hangup received at:',msg.created_at);
+    // 忽略超过30秒的旧hangup信号
+    var msgTime=new Date(msg.created_at).getTime();
+    var now=Date.now();
+    if(now-msgTime<30000){
+      endCall();
+    } else {
+      console.log('Ignoring old hangup signal');
+    }
   }
 }
 
