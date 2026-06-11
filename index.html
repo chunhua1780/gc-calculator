@@ -741,7 +741,7 @@ async function joinRoom(name){
       if(String(m.sender)===String(myId))return;
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
       if(m.type==='image')msg.src=m.content;
-      if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?';}
+      if(m.type==='voice'){msg.src=m.content&&(m.content.startsWith('http')||m.content.startsWith('blob'))?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
       var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
       if(!already){addMsg(msg);sendNotif();}
@@ -900,7 +900,7 @@ function renderMsgs(){
       else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
       if(m.src&&(m.src.startsWith('http')||m.src.startsWith('blob')||m.src.startsWith('data'))){
-        b='<div style="display:flex;align-items:center;gap:8px;cursor:pointer;"><span onclick="playAudio(this.parentNode)" data-src="'+m.src+'" style="font-size:20px;">▶️</span><div style="flex:1;height:3px;background:rgba(255,255,255,.4);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+(m.dur||'?')+'s</span></div>';
+        b='<div style="display:flex;align-items:center;gap:8px;"><span onclick="playAudio(this)" data-src="'+m.src+'" style="font-size:22px;cursor:pointer;">▶️</span><div style="flex:1;height:4px;background:rgba(255,255,255,.3);border-radius:2px;"></div><span style="font-size:12px;opacity:.8;">'+(m.dur||'?')+'s</span></div>';
       }else{
         b='<div style="display:flex;align-items:center;gap:8px;">🎤 '+(m.dur||'?')+'s</div>';
       }
@@ -1058,32 +1058,32 @@ function doBurn(){alert('Coming soon');}
 
 var _mediaRec=null;
 var _recChunks=[];
+var _recStream=null;
 
 function recStart(e){
   if(e&&e.preventDefault)e.preventDefault();
   if(G.recOn)return;
-  G.recOn=true;
-  G.recS=0;
-  _recChunks=[];
-  document.getElementById('recHud').classList.add('on');
-  G.recI=setInterval(function(){
-    G.recS++;
-    var m=Math.floor(G.recS/60),s=G.recS%60;
-    document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;
-  },1000);
   navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-    var opts={};
-    if(MediaRecorder.isTypeSupported('audio/webm')){opts={mimeType:'audio/webm'};}
-    _mediaRec=new MediaRecorder(stream,opts);
-    _mediaRec.ondataavailable=function(e){
-      if(e.data&&e.data.size>0)_recChunks.push(e.data);
-    };
-    _mediaRec.start(100);
+    _recStream=stream;
+    _recChunks=[];
+    // 选择最兼容的格式
+    var mimeType='audio/webm';
+    if(!MediaRecorder.isTypeSupported('audio/webm')){
+      if(MediaRecorder.isTypeSupported('audio/mp4'))mimeType='audio/mp4';
+      else if(MediaRecorder.isTypeSupported('audio/ogg'))mimeType='audio/ogg';
+    }
+    _mediaRec=new MediaRecorder(stream,{mimeType:mimeType});
+    _mediaRec.ondataavailable=function(e){if(e.data&&e.data.size>0)_recChunks.push(e.data);};
+    _mediaRec.start(200);
+    G.recOn=true;G.recS=0;
+    document.getElementById('recHud').classList.add('on');
+    G.recI=setInterval(function(){
+      G.recS++;
+      var m=Math.floor(G.recS/60),s=G.recS%60;
+      document.getElementById('recTm').textContent=m+':'+(s<10?'0':'')+s;
+    },1000);
   }).catch(function(err){
-    G.recOn=false;
-    clearInterval(G.recI);
-    document.getElementById('recHud').classList.remove('on');
-    alert('Mic error: '+err.message);
+    alert('Microphone error: '+err.message);
   });
 }
 
@@ -1093,77 +1093,59 @@ function recStop(){
   clearInterval(G.recI);
   document.getElementById('recHud').classList.remove('on');
   var dur=G.recS;
-  if(_mediaRec&&_mediaRec.state!=='inactive'){
-    _mediaRec.onstop=function(){
-      var mime=_mediaRec.mimeType||'audio/webm';
-      var blob=new Blob(_recChunks,{type:mime});
-      var fname='voice_'+Date.now()+'.webm';
-      // 先本地显示
-      var localUrl=URL.createObjectURL(blob);
-      addMsg({type:'voice',dur:dur,src:localUrl,sent:true,t:gt()});
-      // 上传Storage
-      _sb.storage.from('media').upload(fname,blob,{contentType:mime,upsert:true}).then(function(up){
-        var url;
-        if(up.error){
-          // 失败就只发时长
-          url='[Voice '+dur+'s]';
-        } else {
-          url=_sb.storage.from('media').getPublicUrl(fname).data.publicUrl;
+  if(!_mediaRec||_mediaRec.state==='inactive'){return;}
+  _mediaRec.onstop=function(){
+    var mime=_mediaRec.mimeType||'audio/webm';
+    var blob=new Blob(_recChunks,{type:mime});
+    var ext=mime.includes('mp4')?'mp4':mime.includes('ogg')?'ogg':'webm';
+    var localUrl=URL.createObjectURL(blob);
+    // 本地先显示可播放
+    addMsg({type:'voice',dur:dur,src:localUrl,sent:true,t:gt()});
+    // 上传Storage
+    var fname='voice_'+Date.now()+'.'+ext;
+    _sb.storage.from('media').upload(fname,blob,{contentType:mime,upsert:true}).then(function(up){
+      if(up.error){
+        console.log('Voice upload error:',up.error.message);
+        // 上传失败也发时长信息
+        if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:'[Voice '+dur+'s]',type:'voice'});
+        return;
+      }
+      var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
+      // 更新本地消息URL
+      var msgs=G.msgs[G.chat]||[];
+      for(var i=msgs.length-1;i>=0;i--){
+        if(msgs[i].type==='voice'&&msgs[i].src===localUrl){
+          msgs[i].src=url;break;
         }
-        if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'voice',duration:dur});
-      });
-      _mediaRec.stream.getTracks().forEach(function(t){t.stop();});
-    };
-    _mediaRec.stop();
-  }
+      }
+      renderMsgs();
+      if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'voice'});
+    });
+    if(_recStream)_recStream.getTracks().forEach(function(t){t.stop();});
+  };
+  _mediaRec.stop();
 }
 
-function sendDirectFile(){
-  var input=document.getElementById('directFile');
-  var f=input.files[0];
-  if(!f){alert('No file selected');return;}
-  var fname='file_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.]/g,'_');
-  var type=f.type.startsWith('image')?'image':f.type.startsWith('audio')?'voice':'image';
-  var localUrl=URL.createObjectURL(f);
-  addMsg({type:type,src:localUrl,sent:true,t:gt(),dur:0});
-  _sb.storage.from('media').upload(fname,f,{contentType:f.type,upsert:true}).then(function(up){
-    if(up.error){alert('Upload error: '+up.error.message);return;}
-    var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
-    console.log('URL:',url);
-    var msgs=G.msgs[G.chat]||[];
-    if(msgs.length>0)msgs[msgs.length-1].src=url;
-    renderMsgs();
-    if(currentRoom){
-      _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:type}).then(function(r){
-        if(r.error)alert('Send error: '+r.error.message);
-      });
-    }
-  });
-}
-
-// 在聊天界面显示直接上传区域
-function toggleDirectUpload(){
-  var el=document.getElementById('directUpload');
-  if(el)el.style.display=el.style.display==='none'?'block':'none';
-}
 
 function playAudio(el){
-  // 找data-src，可能在自身或子元素
   var src=el.getAttribute('data-src');
-  if(!src){
-    var child=el.querySelector('[data-src]');
-    if(child)src=child.getAttribute('data-src');
+  if(!src){alert('No audio');return;}
+  if(el._audio){
+    el._audio.pause();
+    el._audio=null;
+    el.textContent='▶️';
+    return;
   }
-  if(!src){alert('No audio source');return;}
-  var btn=el.querySelector('span')||el;
   var audio=new Audio(src);
-  btn.textContent='⏸';
+  el._audio=audio;
+  el.textContent='⏸';
   audio.play().catch(function(e){
-    btn.textContent='▶️';
-    alert('Cannot play audio: '+e.message);
+    el.textContent='▶️';
+    el._audio=null;
+    alert('Cannot play: '+e.message);
   });
-  audio.onended=function(){btn.textContent='▶️';};
-  audio.onerror=function(){btn.textContent='▶️';alert('Audio load error');};
+  audio.onended=function(){el.textContent='▶️';el._audio=null;};
+  audio.onerror=function(){el.textContent='▶️';el._audio=null;alert('Audio error - format may not be supported');};
 }
 
 
