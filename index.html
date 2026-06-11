@@ -413,11 +413,11 @@ html,body{height:100%;margin:0;padding:0;}
     <div id="cNum" style="font-size:76px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1.1;">0</div>
   </div>
   <div class="cg">
-    <div class="ck fn" onclick="cp('AC')">AC</div><div class="ck fn" onclick="cp('+/-')">+/-</div><div class="ck fn" onclick="cp('%')">%</div><div class="ck op" onclick="cp('÷')">÷</div>
-    <div class="ck num" onclick="cp('7')">7</div><div class="ck num" onclick="cp('8')">8</div><div class="ck num" onclick="cp('9')">9</div><div class="ck op" onclick="cp('×')">×</div>
-    <div class="ck num" onclick="cp('4')">4</div><div class="ck num" onclick="cp('5')">5</div><div class="ck num" onclick="cp('6')">6</div><div class="ck op" onclick="cp('-')">−</div>
-    <div class="ck num" onclick="cp('1')">1</div><div class="ck num" onclick="cp('2')">2</div><div class="ck num" onclick="cp('3')">3</div><div class="ck op" onclick="cp('+')">+</div>
-    <div class="ck num z" onclick="cp('0')">0</div><div class="ck num" onclick="cp('.')">.</div><div class="ck op" onclick="cp('=')">=</div>
+    <div class="ck fn" onclick="cp('AC')" data-val="AC">AC</div><div class="ck fn" onclick="cp('+/-')" data-val="+/-">+/-</div><div class="ck fn" onclick="cp('%')" data-val="%">%</div><div class="ck op" onclick="cp('÷')" data-val="÷">÷</div>
+    <div class="ck num" onclick="cp('7')" data-val="7">7</div><div class="ck num" onclick="cp('8')" data-val="8">8</div><div class="ck num" onclick="cp('9')" data-val="9">9</div><div class="ck op" onclick="cp('×')" data-val="×">×</div>
+    <div class="ck num" onclick="cp('4')" data-val="4">4</div><div class="ck num" onclick="cp('5')" data-val="5">5</div><div class="ck num" onclick="cp('6')" data-val="6">6</div><div class="ck op" onclick="cp('-')" data-val="-">−</div>
+    <div class="ck num" onclick="cp('1')" data-val="1">1</div><div class="ck num" onclick="cp('2')" data-val="2">2</div><div class="ck num" onclick="cp('3')" data-val="3">3</div><div class="ck op" onclick="cp('+')" data-val="+">+</div>
+    <div class="ck num z" onclick="cp('0')" data-val="0">0</div><div class="ck num" onclick="cp('.')" data-val=".">.</div><div class="ck op" onclick="cp('=')" data-val="=">=</div>
   </div>
 </div>
 
@@ -557,6 +557,14 @@ if(window.visualViewport){
 window.addEventListener('orientationchange',function(){setTimeout(setAppHeight,300);});
 
 window.onload=function(){
+  // Safari iOS fix: 用touchend替代onclick
+  document.querySelectorAll('.ck').forEach(function(el){
+    el.addEventListener('touchend',function(e){
+      e.preventDefault();
+      var b=el.getAttribute('data-val')||el.textContent.trim();
+      cp(b);
+    });
+  });
   // 用addEventListener替代onchange避免浏览器兼容问题
   var imgInput=document.getElementById('imgIn');
   if(imgInput){
