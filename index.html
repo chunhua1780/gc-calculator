@@ -519,6 +519,17 @@ var G={
 
 // ═══ 启动 ═══
 window.onload=function(){
+  // 用addEventListener替代onchange避免浏览器兼容问题
+  var imgInput=document.getElementById('imgIn');
+  if(imgInput){
+    imgInput.removeAttribute('onchange');
+    imgInput.addEventListener('change',function(e){onImg(e);});
+  }
+  var vidInput=document.getElementById('vidIn');
+  if(vidInput){
+    vidInput.removeAttribute('onchange');
+    vidInput.addEventListener('change',function(e){onVid(e);});
+  }
   buildLangBtns();buildLangList();
   applyLang();
   updHide();updDest();updNotif();
