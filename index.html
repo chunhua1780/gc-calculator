@@ -163,7 +163,12 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
   </div>
   <div class="cbg" id="chatMsgs"></div>
   <div class="ibar">
-    <div class="irow">
+    <div style="padding:4px 12px;display:none;" id="directUpload">
+  <input type="file" accept="image/*,audio/*" id="directFile" style="width:100%;font-size:14px;">
+  <button onclick="sendDirectFile()" style="background:#007aff;color:#fff;border:none;padding:6px 12px;border-radius:8px;margin-top:4px;width:100%;">Send File</button>
+</div>
+<div class="irow">
+      <div class="ibtn" onclick="toggleDirectUpload()" title="Upload file">📎</div>
       <div class="ibtn" onclick="togXP()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
       <textarea class="itxt" id="mi" placeholder="Message..." rows="1" onkeydown="hk(event)"></textarea>
       <div class="ibtn" onmousedown="recStart()" onmouseup="recStop()" ontouchstart="recStart(event)" ontouchend="recStop()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg></div>
@@ -1111,6 +1116,34 @@ function recStop(){
     };
     _mediaRec.stop();
   }
+}
+
+function sendDirectFile(){
+  var input=document.getElementById('directFile');
+  var f=input.files[0];
+  if(!f){alert('No file selected');return;}
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var data=ev.target.result;
+    var type=f.type.startsWith('image')?'image':'voice';
+    addMsg({type:type,src:data,sent:true,t:gt(),dur:0});
+    if(currentRoom){
+      _sb.storage.from('media').upload('file_'+Date.now()+'_'+f.name,f,{upsert:true}).then(function(up){
+        var url=up.error?data:_sb.storage.from('media').getPublicUrl('file_'+Date.now()+'_'+f.name).data.publicUrl;
+        _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:type}).then(function(r){
+          if(r.error)alert('Send error: '+r.error.message);
+          else alert('Sent!');
+        });
+      });
+    }
+  };
+  reader.readAsDataURL(f);
+}
+
+// 在聊天界面显示直接上传区域
+function toggleDirectUpload(){
+  var el=document.getElementById('directUpload');
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
 }
 
 function playAudio(el){
