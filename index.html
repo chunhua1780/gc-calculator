@@ -666,7 +666,7 @@ async function doLogin(){
   ls('myName',res.data.name);
   ls('pin',pin);
   ls('registered','true');
-  var _dm2={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};show(_dm2[G.dis]||'dcalc');listenForCalls();listenForAllMessages();loadContacts();
+  show('main');listenForCalls();listenForAllMessages();loadContacts();loadContacts();
 }
 function showQR(){
   var modal=document.getElementById('qrModal');
