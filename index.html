@@ -1006,6 +1006,7 @@ function listenForCalls(){
 
 // ═══ 聊天 ═══
 function openChat(name,ini,color,displayName){
+  clearUnread(name);
   G.chat=name;document.getElementById('chatName').textContent=name;
   document.getElementById('callAv').textContent=ini||name[0];document.getElementById('callAv').style.background=color||'#007aff';
   document.getElementById('callNm').textContent=name;document.getElementById('vidNm').textContent=name;
@@ -1287,6 +1288,24 @@ function playAudio(el){
 
 
 // ═══ 通知 ═══
+var _unread={};
+function updateUnreadBadge(){
+  var total=0;
+  Object.keys(_unread).forEach(function(k){total+=_unread[k]||0;});
+  var badge=document.getElementById('msg-badge');
+  if(!badge){
+    var t=document.querySelector('.tabs .tab:first-child');
+    if(t){badge=document.createElement('span');badge.id='msg-badge';badge.style.cssText='background:#ff3b30;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;display:none;vertical-align:middle;';t.appendChild(badge);}
+  }
+  if(badge){if(total>0){badge.textContent=total>99?'99+':String(total);badge.style.display='inline';}else{badge.style.display='none';}}
+}
+function addUnread(senderId){
+  if(G.chat===senderId&&document.getElementById('chat').classList.contains('active'))return;
+  _unread[senderId]=(_unread[senderId]||0)+1;
+  updateUnreadBadge();
+}
+function clearUnread(senderId){_unread[senderId]=0;updateUnreadBadge();}
+
 function sendNotif(){
   if(!('Notification' in window))return;
   var symMap={dot:'●',line:'|',star:'✦',tri:'▲',dia:'◆',wave:'～',sync:'↻',mail:'✉'};
