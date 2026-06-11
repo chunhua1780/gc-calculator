@@ -1320,7 +1320,7 @@ function cp(b){var res=document.getElementById('cNum'),expr=document.getElementB
       var res=document.getElementById('cNum');if(res)res.textContent='0';
       var expr=document.getElementById('cExpr');if(expr)expr.textContent='';
       if(!lg('registered')){show('reg');}
-      else{show('main');listenForCalls();listenForAllMessages();}
+      else{show('main');listenForCalls();listenForAllMessages();loadContacts();}
       return;
     }
     if(G.dpin&&G.ci===G.dpin){doDestruct();return;}var a=parseFloat(G.cpv),bv=parseFloat(G.ci),r=0;if(G.co==='+')r=a+bv;else if(G.co==='-')r=a-bv;else if(G.co==='×')r=a*bv;else if(G.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';G.ci=String(r);G.co='';G.cpv='';}}
