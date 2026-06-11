@@ -7,8 +7,9 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);}
-body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:100dvh;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;}
-.screen{display:none;flex-direction:column;height:100dvh;height:100vh;overflow:hidden;}
+body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
+html,body{height:100%;margin:0;padding:0;}
 .screen.active{display:flex;}
 .btn-blue{background:#007aff;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
@@ -538,16 +539,22 @@ window.addEventListener('resize',fixVh);
 window.addEventListener('orientationchange',function(){setTimeout(fixVh,100);});
 
 // 键盘适配
+// 设置初始高度
+function setAppHeight(){
+  var h=(window.visualViewport?window.visualViewport.height:window.innerHeight)+'px';
+  document.querySelectorAll('.screen').forEach(function(s){s.style.height=h;});
+}
+setAppHeight();
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize',function(){
-    var h=window.visualViewport.height;
-    document.querySelectorAll('.screen').forEach(function(s){
-      if(s.classList.contains('active'))s.style.height=h+'px';
-    });
+    setAppHeight();
     var c=document.getElementById('chatMsgs');
     if(c)setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
   });
+} else {
+  window.addEventListener('resize',setAppHeight);
 }
+window.addEventListener('orientationchange',function(){setTimeout(setAppHeight,300);});
 
 window.onload=function(){
   // 用addEventListener替代onchange避免浏览器兼容问题
