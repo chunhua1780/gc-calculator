@@ -748,22 +748,7 @@ async function joinRoom(name){
       var lastEl=document.getElementById('last-'+String(m.sender));
       if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
     }).subscribe(function(status){console.log('Realtime:',status);});
-  // 备用轮询 每3秒检查新消息
-  if(window._pollTimer)clearInterval(window._pollTimer);
-  var lastCheck=new Date().toISOString();
-  window._pollTimer=setInterval(async function(){
-    var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).gt('created_at',lastCheck).order('created_at',{ascending:true});
-    if(res.data&&res.data.length>0){
-      res.data.forEach(function(m){
-      if(String(m.sender)!==String(myId)){
-        var msg={text:m.content,type:m.type||'text',sent:false,t:gt()};
-        if(m.type==='image')msg.src=m.content;
-        addMsg(msg);
-      }
-    });
-      lastCheck=res.data[res.data.length-1].created_at;
-    }
-  },3000);
+
   var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).order('created_at',{ascending:true}).limit(50);
   if(res.data&&res.data.length>0){
     G.msgs[name]=res.data.map(function(m){
