@@ -1094,33 +1094,36 @@ function recStop(){
   document.getElementById('recHud').classList.remove('on');
   var dur=G.recS;
   if(!_mediaRec||_mediaRec.state==='inactive'){return;}
+  var roomAtStop=currentRoom;
+  var chatAtStop=G.chat;
   _mediaRec.onstop=function(){
     var mime=_mediaRec.mimeType||'audio/webm';
     var blob=new Blob(_recChunks,{type:mime});
     var ext=mime.includes('mp4')?'mp4':mime.includes('ogg')?'ogg':'webm';
     var localUrl=URL.createObjectURL(blob);
-    // 本地先显示可播放
     addMsg({type:'voice',dur:dur,src:localUrl,sent:true,t:gt()});
-    // 上传Storage
+    console.log('recStop - room:',roomAtStop,'chat:',chatAtStop);
     var fname='voice_'+Date.now()+'.'+ext;
     _sb.storage.from('media').upload(fname,blob,{contentType:mime,upsert:true}).then(function(up){
       if(up.error){
-        console.log('Voice upload error:',up.error.message);
-        // 上传失败也发时长信息
-        if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:'[Voice '+dur+'s]',type:'voice'});
+        console.log('Upload error:',up.error.message);
+        if(roomAtStop)_sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:'[Voice '+dur+'s]',type:'voice'}).then(function(r){console.log('insert fallback:',r.error?r.error.message:'OK');});
         return;
       }
       var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
-      // 更新本地消息URL
-      var msgs=G.msgs[G.chat]||[];
+      console.log('Uploaded:',url,'inserting to room:',roomAtStop);
+      var msgs=G.msgs[chatAtStop]||[];
       for(var i=msgs.length-1;i>=0;i--){
-        if(msgs[i].type==='voice'&&msgs[i].src===localUrl){
-          msgs[i].src=url;break;
-        }
+        if(msgs[i].type==='voice'&&msgs[i].src===localUrl){msgs[i].src=url;break;}
       }
       renderMsgs();
-      console.log('Inserting voice msg, room:',currentRoom,'url:',url);
-    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'voice'}).then(function(r){console.log('Voice insert result:',r.error?r.error.message:'OK');});
+      if(roomAtStop){
+        _sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:url,type:'voice'}).then(function(r){
+          console.log('Voice insert:',r.error?r.error.message:'OK');
+        });
+      } else {
+        console.log('ERROR: no room!');
+      }
     });
     if(_recStream)_recStream.getTracks().forEach(function(t){t.stop();});
   };
