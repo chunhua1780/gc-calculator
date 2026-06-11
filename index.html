@@ -628,7 +628,7 @@ async function doLogin(){
   if(!pin){alert('Enter password');return;}
   // 本地验证
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
-    show('main');listenForCalls();listenForAllMessages();loadContacts();return;
+    var _dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};show(_dm[G.dis]||'dcalc');listenForCalls();listenForAllMessages();loadContacts();return;
   }
   // 数据库验证用户存在
   var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
@@ -639,7 +639,7 @@ async function doLogin(){
   ls('myName',res.data.name);
   ls('pin',pin);
   ls('registered','true');
-  show('main');listenForCalls();listenForAllMessages();loadContacts();
+  var _dm2={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};show(_dm2[G.dis]||'dcalc');listenForCalls();listenForAllMessages();loadContacts();
 }
 function showQR(){
   var modal=document.getElementById('qrModal');
