@@ -769,7 +769,7 @@ async function joinRoom(name){
     G.msgs[name]=res.data.map(function(m){
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:gt()};
       if(m.type==='image')msg.src=m.content;
-      if(m.type==='voice'){msg.dur=m.content.replace('[Voice ','').replace('s]','');}
+      if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
       // 过滤掉异常长的text消息
       if(msg.type==='text'&&msg.text&&msg.text.length>2000)msg.text='[Message]';
@@ -847,7 +847,7 @@ function listenForAllMessages(){
       if(G.chat===senderId){
         var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
         if(m.type==='image')msg.src=m.content;
-        if(m.type==='voice'){msg.dur=m.content.replace('[Voice ','').replace('s]','');}
+        if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
         if(m.type==='location'){var pts=m.content.split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
         var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
         if(!already)addMsg(msg);
