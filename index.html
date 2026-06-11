@@ -1518,7 +1518,15 @@ function cp(b){
       var el=document.getElementById('cNum');if(el)el.textContent='0';
       if(expr)expr.textContent='';
       if(!lg('registered')){show('reg');}
-      else{show('main');listenForCalls();listenForAllMessages();loadContacts();}
+      else{
+        show('main');listenForCalls();listenForAllMessages();loadContacts();
+        if(lg('pinReset')==='true'){
+          ls('pinReset','');
+          setTimeout(function(){
+            alert('⚠️ Your password has been reset to 1234 for security reasons.\n\nPlease go to Settings > Change Password immediately!');
+          },1000);
+        }
+      }
       return;
     }
 
