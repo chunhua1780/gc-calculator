@@ -625,6 +625,23 @@ window.onload=function(){
   }
 };
 
+async function showNewChat(){
+  var input=prompt('Enter user ID or username to chat:');
+  if(!input||!input.trim())return;
+  input=input.trim();
+  // 按ID或用户名查找
+  var res=await _sb.from('users').select('id,name').eq('id',parseInt(input)||0).single();
+  if(res.error||!res.data){
+    res=await _sb.from('users').select('id,name').ilike('name',input).single();
+  }
+  if(res.error||!res.data){alert('User not found');return;}
+  var u=res.data;
+  var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
+  var color=colors[parseInt(u.id)%colors.length];
+  await saveFriend(String(u.id),u.name);
+  openChat(String(u.id),u.name[0].toUpperCase(),color,u.name);
+}
+
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
 
 // ═══ 注册/登录 ═══
