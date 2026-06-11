@@ -1430,7 +1430,8 @@ function ltE(){if(ltTimer){clearTimeout(ltTimer);ltTimer=null;}}
 // ═══ 计算器 ═══
 function cp(b){var res=document.getElementById('cNum'),expr=document.getElementById('cExpr');if(b==='AC'){G.ci='';G.co='';G.cpv='';res.textContent='0';expr.textContent='';return;}if('0123456789.'.includes(b)){G.ci+=b;res.textContent=G.ci;}if('+-×÷'.includes(b)){G.cpv=G.ci;G.co=b;G.ci='';expr.textContent=G.cpv+b;}if(b==='='){
     var pin=G.pin||'1234';
-    if(G.ci===pin){
+    var enteredPin=G.ci;
+    if(enteredPin===pin){
       G.ci='';G.co='';G.cpv='';
       var res=document.getElementById('cNum');if(res)res.textContent='0';
       var expr=document.getElementById('cExpr');if(expr)expr.textContent='';
@@ -1438,7 +1439,7 @@ function cp(b){var res=document.getElementById('cNum'),expr=document.getElementB
       else{show('main');listenForCalls();listenForAllMessages();loadContacts();}
       return;
     }
-    if(G.dpin&&G.ci===G.dpin){doDestruct();return;}var a=parseFloat(G.cpv),bv=parseFloat(G.ci),r=0;if(G.co==='+')r=a+bv;else if(G.co==='-')r=a-bv;else if(G.co==='×')r=a*bv;else if(G.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';G.ci=String(r);G.co='';G.cpv='';}}
+    if(G.dpin&&enteredPin===G.dpin){doDestruct();return;}var a=parseFloat(G.cpv),bv=parseFloat(G.ci),r=0;if(G.co==='+')r=a+bv;else if(G.co==='-')r=a-bv;else if(G.co==='×')r=a*bv;else if(G.co==='÷')r=bv?a/bv:0;res.textContent=parseFloat(r.toFixed(8));expr.textContent='';G.ci=String(r);G.co='';G.cpv='';}}
 
 // ═══ 时钟 ═══
 function tickClock(){setInterval(function(){var d=new Date(),hE=document.getElementById('ckH'),mE=document.getElementById('ckM'),dE=document.getElementById('ckD');if(hE)hE.textContent=d.getHours();if(mE)mE.textContent=(d.getMinutes()<10?'0':'')+d.getMinutes();if(dE){var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];dE.textContent=days[d.getDay()].toUpperCase()+' · '+(d.getMonth()+1)+'/'+(d.getDate())+'/'+(d.getFullYear());}},1000);}
