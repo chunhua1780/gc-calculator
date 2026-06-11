@@ -1122,22 +1122,20 @@ function sendDirectFile(){
   var input=document.getElementById('directFile');
   var f=input.files[0];
   if(!f){alert('No file selected');return;}
-  var fname='file_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);
+  var fname='file_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.]/g,'_');
   var type=f.type.startsWith('image')?'image':f.type.startsWith('audio')?'voice':'image';
-  addMsg({type:type,src:URL.createObjectURL(f),sent:true,t:gt(),dur:0});
+  var localUrl=URL.createObjectURL(f);
+  addMsg({type:type,src:localUrl,sent:true,t:gt(),dur:0});
   _sb.storage.from('media').upload(fname,f,{contentType:f.type,upsert:true}).then(function(up){
     if(up.error){alert('Upload error: '+up.error.message);return;}
-    var url=_sb.storage.from('media').getPublicUrl(fname).data.publicUrl;
-    console.log('Uploaded URL:',url);
+    var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
+    console.log('URL:',url);
+    var msgs=G.msgs[G.chat]||[];
+    if(msgs.length>0)msgs[msgs.length-1].src=url;
+    renderMsgs();
     if(currentRoom){
       _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:type}).then(function(r){
         if(r.error)alert('Send error: '+r.error.message);
-        else{
-          var msgs=G.msgs[G.chat]||[];
-          if(msgs.length>0)msgs[msgs.length-1].src=url;
-          renderMsgs();
-          alert('Sent OK!');
-        }
       });
     }
   });
