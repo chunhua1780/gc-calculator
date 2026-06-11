@@ -791,7 +791,13 @@ async function initiateCall(name,isVideo){
     if(isVideo){document.getElementById('vidNm').textContent=name;show('vidscr');}else show('callscr');
   }catch(e){alert('Cannot access mic/camera:\n'+e.message);}
 }
-function subCallSig(){_sb.channel('call:'+RTC.callRoom).on('postgres_changes',{event:'INSERT',schema:'public',table:'calls',filter:'room_id=eq.'+RTC.callRoom},handleCallSig).subscribe();}
+var _callSigSub=null;
+function subCallSig(){
+  if(_callSigSub){try{_callSigSub.unsubscribe();}catch(e){}}
+  _callSigSub=_sb.channel('call:'+RTC.callRoom+'_'+Date.now())
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'calls',filter:'room_id=eq.'+RTC.callRoom},handleCallSig)
+    .subscribe();
+}
 async function handleCallSig(payload){
   var msg=payload.new;if(msg.sender===myId)return;
   if(msg.type==='answer'&&RTC.pc){await RTC.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(msg.data)));document.getElementById('callSt').textContent='In call 00:00';startCallTimer();}
