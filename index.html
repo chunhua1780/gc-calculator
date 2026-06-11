@@ -778,116 +778,219 @@ async function joinRoom(name){
   }
 }
 
-// ═══ WebRTC ═══
-var RTC={pc:null,localStream:null,isCaller:false,callRoom:null,pendingOffer:null,pendingFrom:null};
+// ═══ WebRTC MODULE v2.0 ═══
+var RTC={pc:null,localStream:null,isCaller:false,callRoom:null,pendingOffer:null,pendingFrom:null,startTime:null,callRecordId:null};
 var ICE={iceServers:[
   {urls:'stun:stun.l.google.com:19302'},
   {urls:'stun:stun1.l.google.com:19302'},
   {urls:'stun:stun2.l.google.com:19302'},
-  {urls:'stun:stun3.l.google.com:19302'},
-  {urls:'stun:stun4.l.google.com:19302'},
   {urls:'stun:global.stun.twilio.com:3478'},
-  {urls:'stun:stun.cloudflare.com:3478'}
+  {urls:'stun:stun.cloudflare.com:3478'},
+  {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
 ]};
-async function initiateCall(name,isVideo){
-  RTC.isCaller=true;RTC.callRoom=[myId,name].sort().join('_call');
-  try{
-    RTC.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:isVideo});
-    if(isVideo){var lv=document.getElementById('localVideo');if(lv)lv.srcObject=RTC.localStream;}
-    RTC.pc=new RTCPeerConnection(ICE);
-    RTC.localStream.getTracks().forEach(function(t){RTC.pc.addTrack(t,RTC.localStream);});
-    RTC.pc.ontrack=function(e){var ra=document.getElementById('remoteAudio');if(ra){ra.srcObject=e.streams[0];ra.play().catch(function(){});}var rv=document.getElementById('remoteVideo');if(rv&&isVideo)rv.srcObject=e.streams[0];};
-    RTC.pc.onicecandidate=function(e){if(e.candidate)_sb.from('calls').insert({room_id:RTC.callRoom,type:'ice',data:JSON.stringify(e.candidate),sender:myId});};
-    var offer=await RTC.pc.createOffer();await RTC.pc.setLocalDescription(offer);
-    await _sb.from('calls').insert({room_id:RTC.callRoom,type:'offer',data:JSON.stringify(offer),sender:myId});
-    subCallSig();
-    document.getElementById('callAv').textContent=name[0];document.getElementById('callNm').textContent=name;document.getElementById('callSt').textContent='Calling...';
-    if(isVideo){document.getElementById('vidNm').textContent=name;show('vidscr');}else show('callscr');
-  }catch(e){alert('Cannot access mic/camera:\n'+e.message);}
+
+function createPC(){
+  var pc=new RTCPeerConnection(ICE);
+  pc.ontrack=function(e){
+    console.log('ontrack fired, streams:',e.streams.length);
+    var ra=document.getElementById('remoteAudio');
+    if(ra&&e.streams[0]){
+      ra.srcObject=e.streams[0];
+      // iOS需要用户手势才能播放
+      ra.play().then(function(){
+        console.log('Audio playing!');
+      }).catch(function(err){
+        console.log('Audio play error:',err.message);
+        // 显示播放按钮让用户手动触发
+        document.getElementById('callSt').innerHTML='<span onclick="document.getElementById('remoteAudio').play()" style="color:#34c759;cursor:pointer;">▶️ Tap to hear audio</span>';
+      });
+    }
+    var rv=document.getElementById('remoteVideo');
+    if(rv&&e.streams[0])rv.srcObject=e.streams[0];
+  };
+  pc.onicecandidate=function(e){
+    if(e.candidate){
+      console.log('ICE candidate:',e.candidate.type);
+      _sb.from('calls').insert({room_id:RTC.callRoom,type:'ice',data:JSON.stringify(e.candidate),sender:myId});
+    }
+  };
+  pc.oniceconnectionstatechange=function(){
+    console.log('ICE state:',pc.iceConnectionState);
+    var st=document.getElementById('callSt');
+    if(st){
+      if(pc.iceConnectionState==='connected'||pc.iceConnectionState==='completed'){
+        st.textContent='Connected';
+        startCallTimer();
+        RTC.startTime=new Date();
+      } else if(pc.iceConnectionState==='failed'){
+        st.textContent='Connection failed';
+      } else if(pc.iceConnectionState==='disconnected'){
+        st.textContent='Disconnected';
+      }
+    }
+  };
+  return pc;
 }
+
+async function initiateCall(name,isVideo){
+  if(RTC.pc){endCall();return;}
+  RTC.isCaller=true;
+  RTC.callRoom=[String(myId),String(name)].sort().join('_call');
+  try{
+    var constraints={audio:{echoCancellation:true,noiseSuppression:true,sampleRate:44100},video:isVideo};
+    RTC.localStream=await navigator.mediaDevices.getUserMedia(constraints);
+    console.log('Local stream tracks:',RTC.localStream.getTracks().length);
+    if(isVideo){var lv=document.getElementById('localVideo');if(lv)lv.srcObject=RTC.localStream;}
+    RTC.pc=createPC();
+    RTC.localStream.getTracks().forEach(function(t){
+      console.log('Adding track:',t.kind);
+      RTC.pc.addTrack(t,RTC.localStream);
+    });
+    var offer=await RTC.pc.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:isVideo});
+    await RTC.pc.setLocalDescription(offer);
+    console.log('Offer created, sending...');
+    await _sb.from('calls').insert({room_id:RTC.callRoom,type:'offer',data:JSON.stringify(offer),sender:String(myId)});
+    subCallSig();
+    document.getElementById('callAv').textContent=name[0]||'?';
+    document.getElementById('callNm').textContent=name;
+    document.getElementById('callSt').textContent='Calling...';
+    if(isVideo){document.getElementById('vidNm').textContent=name;show('vidscr');}
+    else show('callscr');
+  }catch(e){
+    alert('Cannot access mic/camera: '+e.message);
+    console.log('Call error:',e);
+  }
+}
+
 var _callSigSub=null;
 function subCallSig(){
   if(_callSigSub){try{_callSigSub.unsubscribe();}catch(e){}}
   _callSigSub=_sb.channel('call:'+RTC.callRoom+'_'+Date.now())
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'calls',filter:'room_id=eq.'+RTC.callRoom},handleCallSig)
-    .subscribe();
+    .subscribe(function(s){console.log('Call sig channel:',s);});
 }
+
 async function handleCallSig(payload){
-  var msg=payload.new;if(msg.sender===myId)return;
-  if(msg.type==='answer'&&RTC.pc){await RTC.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(msg.data)));document.getElementById('callSt').textContent='In call 00:00';startCallTimer();}
-  if(msg.type==='ice'&&RTC.pc){try{await RTC.pc.addIceCandidate(new RTCIceCandidate(JSON.parse(msg.data)));}catch(e){}}
-  if(msg.type==='offer')showIncoming(msg.sender,JSON.parse(msg.data));
-  if(msg.type==='hangup')endCall();
+  var msg=payload.new;
+  if(!msg||String(msg.sender)===String(myId))return;
+  console.log('Call signal received:',msg.type);
+  if(msg.type==='answer'&&RTC.pc){
+    try{
+      await RTC.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(msg.data)));
+      console.log('Remote description set (answer)');
+    }catch(e){console.log('setRemoteDesc error:',e);}
+  }
+  if(msg.type==='ice'&&RTC.pc){
+    try{
+      var candidate=new RTCIceCandidate(JSON.parse(msg.data));
+      await RTC.pc.addIceCandidate(candidate);
+      console.log('ICE candidate added');
+    }catch(e){console.log('addIceCandidate error:',e);}
+  }
+  if(msg.type==='offer'){showIncoming(msg.sender,JSON.parse(msg.data));}
+  if(msg.type==='hangup'){
+    console.log('Remote hangup received');
+    endCall();
+  }
 }
-function showIncoming(from,offer){RTC.pendingFrom=from;RTC.pendingOffer=offer;document.getElementById('incAv').textContent=from[0];document.getElementById('incNm').textContent=from;document.getElementById('incCall').classList.add('on');}
+
+function showIncoming(from,offer){
+  RTC.pendingFrom=from;RTC.pendingOffer=offer;
+  document.getElementById('incAv').textContent=String(from)[0]||'?';
+  document.getElementById('incNm').textContent=from;
+  document.getElementById('incCall').classList.add('on');
+}
+
 async function acceptCall(){
   document.getElementById('incCall').classList.remove('on');
-  RTC.isCaller=false;RTC.callRoom=[myId,RTC.pendingFrom].sort().join('_call');
+  RTC.isCaller=false;
+  RTC.callRoom=[String(myId),String(RTC.pendingFrom)].sort().join('_call');
   try{
-    RTC.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-    RTC.pc=new RTCPeerConnection(ICE);
-    RTC.localStream.getTracks().forEach(function(t){RTC.pc.addTrack(t,RTC.localStream);});
-    RTC.pc.ontrack=function(e){var ra=document.getElementById('remoteAudio');if(ra){ra.srcObject=e.streams[0];ra.play().catch(function(){});}};
-    RTC.pc.onicecandidate=function(e){if(e.candidate)_sb.from('calls').insert({room_id:RTC.callRoom,type:'ice',data:JSON.stringify(e.candidate),sender:myId});};
+    var constraints={audio:{echoCancellation:true,noiseSuppression:true,sampleRate:44100},video:false};
+    RTC.localStream=await navigator.mediaDevices.getUserMedia(constraints);
+    console.log('Local stream for answer:',RTC.localStream.getTracks().length);
+    RTC.pc=createPC();
+    RTC.localStream.getTracks().forEach(function(t){
+      console.log('Adding track for answer:',t.kind);
+      RTC.pc.addTrack(t,RTC.localStream);
+    });
     await RTC.pc.setRemoteDescription(new RTCSessionDescription(RTC.pendingOffer));
-    var ans=await RTC.pc.createAnswer();await RTC.pc.setLocalDescription(ans);
-    await _sb.from('calls').insert({room_id:RTC.callRoom,type:'answer',data:JSON.stringify(ans),sender:myId});
-    subCallSig();document.getElementById('callAv').textContent=RTC.pendingFrom[0];document.getElementById('callNm').textContent=RTC.pendingFrom;document.getElementById('callSt').textContent='In call';show('callscr');startCallTimer();
-  }catch(e){alert('Cannot answer: '+e.message);}
+    console.log('Remote description set (offer)');
+    var answer=await RTC.pc.createAnswer();
+    await RTC.pc.setLocalDescription(answer);
+    console.log('Answer created, sending...');
+    await _sb.from('calls').insert({room_id:RTC.callRoom,type:'answer',data:JSON.stringify(answer),sender:String(myId)});
+    subCallSig();
+    document.getElementById('callAv').textContent=String(RTC.pendingFrom)[0]||'?';
+    document.getElementById('callNm').textContent=RTC.pendingFrom;
+    document.getElementById('callSt').textContent='Connecting...';
+    show('callscr');
+    RTC.startTime=new Date();
+  }catch(e){
+    alert('Cannot answer: '+e.message);
+    console.log('Answer error:',e);
+  }
 }
-function rejectCall(){document.getElementById('incCall').classList.remove('on');if(RTC.pendingFrom)_sb.from('calls').insert({room_id:[myId,RTC.pendingFrom].sort().join('_call'),type:'hangup',data:'{}',sender:myId});}
-function endCall(){if(RTC.pc){RTC.pc.close();RTC.pc=null;}if(RTC.localStream){RTC.localStream.getTracks().forEach(function(t){t.stop();});RTC.localStream=null;}if(RTC.callRoom)_sb.from('calls').insert({room_id:RTC.callRoom,type:'hangup',data:'{}',sender:myId});clearInterval(G.callI);show('chat');}
-function startCallTimer(){G.callS=0;G.callI=setInterval(function(){G.callS++;var m=Math.floor(G.callS/60),s=G.callS%60;var st=document.getElementById('callSt');if(st)st.textContent='In call '+m+':'+(s<10?'0':'')+s;},1000);}
+
+function rejectCall(){
+  document.getElementById('incCall').classList.remove('on');
+  if(RTC.pendingFrom){
+    var room=[String(myId),String(RTC.pendingFrom)].sort().join('_call');
+    _sb.from('calls').insert({room_id:room,type:'hangup',data:'{}',sender:String(myId)});
+    saveCallRecord(room,RTC.pendingFrom,'rejected',0);
+  }
+}
+
+function endCall(){
+  console.log('endCall called');
+  var dur=RTC.startTime?Math.round((new Date()-RTC.startTime)/1000):0;
+  if(RTC.callRoom){
+    _sb.from('calls').insert({room_id:RTC.callRoom,type:'hangup',data:'{}',sender:String(myId)});
+    saveCallRecord(RTC.callRoom,RTC.isCaller?G.chat:RTC.pendingFrom,'completed',dur);
+  }
+  if(RTC.pc){try{RTC.pc.close();}catch(e){}RTC.pc=null;}
+  if(RTC.localStream){RTC.localStream.getTracks().forEach(function(t){t.stop();});RTC.localStream=null;}
+  if(_callSigSub){try{_callSigSub.unsubscribe();}catch(e){}}_callSigSub=null;
+  clearInterval(G.callI);
+  RTC.callRoom=null;RTC.startTime=null;
+  var ra=document.getElementById('remoteAudio');if(ra){ra.srcObject=null;}
+  show('chat');
+}
+
+function saveCallRecord(room,otherId,status,dur){
+  _sb.from('call_records').insert({
+    caller_id:String(myId),callee_id:String(otherId),
+    room_id:room,duration:dur,status:status,
+    end_time:new Date().toISOString()
+  }).then(function(r){if(r.error)console.log('call record err:',r.error.message);});
+}
+
 function startCall(){if(G.chat)initiateCall(G.chat,false);}
 function startVideo(){if(G.chat)initiateCall(G.chat,true);}
-function toggleMic(){if(RTC.localStream)RTC.localStream.getAudioTracks().forEach(function(t){t.enabled=!t.enabled;});var b=document.getElementById('micBtn');if(b)b.textContent=b.textContent==='🎤'?'🔇':'🎤';}
-function toggleCam(){if(RTC.localStream)RTC.localStream.getVideoTracks().forEach(function(t){t.enabled=!t.enabled;});}
-var _callSub=null;
-var _msgSub=null;
 
-function listenForAllMessages(){
-  if(_msgSub)return;
-  var mid=String(myId);
-  _msgSub=_sb.channel('all_msgs_'+mid)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},function(p){
-      var m=p.new;
-      if(!m.room_id)return;
-      var parts=m.room_id.split('_');
-      if(parts.indexOf(mid)<0)return;
-      if(String(m.sender)===mid)return;
-      var senderId=parts[0]===mid?parts[1]:parts[0];
-      console.log('MSG RECEIVED type:',m.type,'content:',m.content?m.content.substr(0,50):'null');
-      if(G.chat===senderId){
-        var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
-        if(m.type==='image')msg.src=m.content;
-        if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
-        if(m.type==='location'){var pts=m.content.split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
-        var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
-        if(!already)addMsg(msg);
-      } else {
-        // 更新联系人列表未读提示
-        var lastEl=document.getElementById('last-'+senderId);
-        if(lastEl){
-          lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');
-          lastEl.style.color='#007aff';
-          lastEl.style.fontWeight='600';
-        } else {
-          // 新联系人，刷新列表
-          loadContacts();
-        }
-      }
-      sendNotif();
-    }).subscribe();
+function toggleMic(){
+  if(RTC.localStream)RTC.localStream.getAudioTracks().forEach(function(t){t.enabled=!t.enabled;});
+  var b=document.getElementById('micBtn');if(b)b.textContent=b.textContent==='🎤'?'🔇':'🎤';
+}
+function toggleCam(){
+  if(RTC.localStream)RTC.localStream.getVideoTracks().forEach(function(t){t.enabled=!t.enabled;});
 }
 
 function listenForCalls(){
   if(_callSub)return;
-  _callSub=_sb.channel('inc:'+myId)
+  _callSub=_sb.channel('inc:'+myId+'_'+Date.now())
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'calls'},function(p){
       var msg=p.new;
-      if(msg.sender!==myId&&msg.type==='offer'&&msg.room_id.includes(myId))showIncoming(msg.sender,JSON.parse(msg.data));
+      if(!msg||String(msg.sender)===String(myId))return;
+      if(msg.type==='offer'&&msg.room_id&&msg.room_id.includes(String(myId))){
+        console.log('Incoming call from:',msg.sender);
+        showIncoming(msg.sender,JSON.parse(msg.data));
+      }
     }).subscribe();
 }
+
 
 // ═══ 聊天 ═══
 function openChat(name,ini,color,displayName){
