@@ -1119,7 +1119,8 @@ function recStop(){
         }
       }
       renderMsgs();
-      if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'voice'});
+      console.log('Inserting voice msg, room:',currentRoom,'url:',url);
+    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'voice'}).then(function(r){console.log('Voice insert result:',r.error?r.error.message:'OK');});
     });
     if(_recStream)_recStream.getTracks().forEach(function(t){t.stop();});
   };
