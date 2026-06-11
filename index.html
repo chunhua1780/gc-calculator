@@ -537,6 +537,18 @@ fixVh();
 window.addEventListener('resize',fixVh);
 window.addEventListener('orientationchange',function(){setTimeout(fixVh,100);});
 
+// 键盘适配
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',function(){
+    var h=window.visualViewport.height;
+    document.querySelectorAll('.screen').forEach(function(s){
+      if(s.classList.contains('active'))s.style.height=h+'px';
+    });
+    var c=document.getElementById('chatMsgs');
+    if(c)setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
+  });
+}
+
 window.onload=function(){
   // 用addEventListener替代onchange避免浏览器兼容问题
   var imgInput=document.getElementById('imgIn');
