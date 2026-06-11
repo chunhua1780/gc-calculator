@@ -171,8 +171,8 @@ body{background:#f2f2f7;color:#000;font-family:-apple-system,sans-serif;height:1
     </div>
     <div class="xp" id="xpanel">
       <div class="xg">
-        <div class="xi" onclick="doPhoto()"><div class="xib" style="background:#007aff">📷</div><span class="xil">Camera</span></div>
-        <div class="xi" onclick="doImg()"><div class="xib" style="background:#5ac8fa">🖼️</div><span class="xil">Gallery</span></div>
+        <label class="xi" style="cursor:pointer;"><input type="file" accept="image/*" capture="camera" style="display:none" onchange="onImg(event)"><div class="xib" style="background:#007aff">📷</div><span class="xil">Camera</span></label>
+        <label class="xi" style="cursor:pointer;"><input type="file" accept="image/*" style="display:none" onchange="onImg(event)"><div class="xib" style="background:#5ac8fa">🖼️</div><span class="xil">Gallery</span></label>
         <div class="xi" onclick="doVid()"><div class="xib" style="background:#ff3b30">🎬</div><span class="xil">Video</span></div>
         <div class="xi" onclick="doLoc()"><div class="xib" style="background:#34c759">📍</div><span class="xil">Location</span></div>
         <div class="xi" onclick="doFile()"><div class="xib" style="background:#ff9f0a">📁</div><span class="xil">File</span></div>
