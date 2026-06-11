@@ -569,7 +569,11 @@ window.onload=function(){
       if(CALC.locked)return;
       CALC.locked=true;
       setTimeout(function(){CALC.locked=false;},300);
-      cp(btn.getAttribute('data-val'));
+      var rawVal=btn.getAttribute('data-val')||'';
+      // 过滤华为输入法可能插入的非法字符
+      var cleanVal=rawVal.replace(/[^0-9AC+\-×÷%.EQ+\/\-]/g,'');
+      if(!cleanVal)cleanVal=rawVal;
+      cp(cleanVal);
     }
     grid.addEventListener('touchend',handleCalc,{passive:false});
     grid.addEventListener('click',handleCalc,false);
