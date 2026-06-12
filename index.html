@@ -303,6 +303,7 @@ html,body{height:100%;margin:0;padding:0;}
         <div class="xi" onclick="doVid()"><div class="xib" style="background:#ff3b30">🎬</div><span class="xil">Video</span></div>
         <div class="xi" onclick="doLoc()"><div class="xib" style="background:#34c759">📍</div><span class="xil">Location</span></div>
         <div class="xi" onclick="doFile()"><div class="xib" style="background:#ff9f0a">📁</div><span class="xil">File</span></div>
+        <div class="xi" onclick="doContactCard()"><div class="xib" style="background:#5856d6">👤</div><span class="xil">名片</span></div>
         <div class="xi" onclick="doBurn()"><div class="xib" style="background:#ff3b30">💣</div><span class="xil">Burn</span></div>
         <div class="xi" onclick="startCall()"><div class="xib" style="background:#34c759">📞</div><span class="xil">Voice</span></div>
         <div class="xi" onclick="panic()"><div class="xib" style="background:#ff3b30">🚨</div><span class="xil">Destroy</span></div>
@@ -672,9 +673,29 @@ html,body{height:100%;margin:0;padding:0;}
   <div style="background:#fff;border-radius:20px;padding:28px 24px;text-align:center;width:280px;">
     <div style="font-size:18px;font-weight:700;margin-bottom:4px;" id="qrName">My QR Code</div>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:16px;" id="qrIdTxt"></div>
-    <img id="qrImg" style="border-radius:12px;width:200px;height:200px;" src="">
+    <img id="qrImg" style="border-radius:12px;width:200px;height:200px;background:#f2f2f7;" src="">
     <div style="font-size:12px;color:#8e8e93;margin-top:12px;">Scan to add me on GhostChat</div>
-    <button onclick="document.getElementById('qrModal').style.display='none'" style="margin-top:16px;background:#f2f2f7;border:none;padding:10px 32px;border-radius:12px;font-size:16px;cursor:pointer;">Close</button>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="document.getElementById('qrModal').style.display='none'" style="flex:1;background:#f2f2f7;border:none;padding:10px 0;border-radius:12px;font-size:16px;cursor:pointer;">Close</button>
+      <button onclick="openScanner()" style="flex:1;background:#007aff;color:#fff;border:none;padding:10px 0;border-radius:12px;font-size:16px;cursor:pointer;">扫一扫</button>
+    </div>
+  </div>
+</div>
+
+<!-- 扫码弹窗 -->
+<div id="scanModal" style="position:fixed;inset:0;background:#000;z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;">
+  <video id="scanVideo" autoplay playsinline muted style="width:100%;max-width:360px;border-radius:16px;background:#111;"></video>
+  <canvas id="scanCanvas" style="display:none;"></canvas>
+  <div style="color:#fff;margin-top:16px;font-size:14px;">将好友的二维码放入框内</div>
+  <button onclick="closeScanner()" style="margin-top:24px;background:#fff;border:none;padding:10px 32px;border-radius:12px;font-size:16px;cursor:pointer;">取消</button>
+</div>
+
+<!-- 推荐名片选择联系人 -->
+<div id="contactPickerModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:750;display:none;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:480px;max-height:60vh;overflow:auto;padding:16px;">
+    <div style="font-size:17px;font-weight:700;margin-bottom:8px;text-align:center;">推荐给好友</div>
+    <div id="contactPickerList"></div>
+    <button onclick="document.getElementById('contactPickerModal').style.display='none'" style="margin-top:12px;width:100%;background:#f2f2f7;border:none;padding:10px;border-radius:12px;font-size:16px;cursor:pointer;">取消</button>
   </div>
 </div>
 
@@ -710,6 +731,8 @@ html,body{height:100%;margin:0;padding:0;}
 <input type="file" id="vidIn" accept="video/*" style="display:none" onchange="onVid()">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
 <script>
 // ═══ 工具函数 ═══
@@ -1172,15 +1195,115 @@ async function doLogin(){
 }
 function showQR(){
   var modal=document.getElementById('qrModal');
-  var canvas=document.getElementById('qrCanvas');
+  var img=document.getElementById('qrImg');
   var nm=document.getElementById('qrName');
   var idtxt=document.getElementById('qrIdTxt');
   if(nm)nm.textContent=lg('myName')||'My QR Code';
   if(idtxt)idtxt.textContent='ID: '+myId;
   modal.style.display='flex';
-  if(window.QRCode&&canvas){
-    QRCode.toCanvas(canvas,'ghostchat://add/'+myId,{width:200,margin:2},function(err){});
+  if(window.QRCode&&img){
+    QRCode.toDataURL('ghostchat://add/'+myId,{width:200,margin:2},function(err,url){
+      if(!err&&url)img.src=url;
+    });
   }
+}
+
+// ═══ 扫一扫加好友 ═══
+var _scanStream=null,_scanRAF=null;
+function openScanner(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert('当前浏览器不支持摄像头扫码');return;}
+  document.getElementById('qrModal').style.display='none';
+  document.getElementById('scanModal').style.display='flex';
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(stream){
+    _scanStream=stream;
+    var video=document.getElementById('scanVideo');
+    video.srcObject=stream;
+    video.play();
+    _scanRAF=requestAnimationFrame(scanTick);
+  }).catch(function(err){
+    alert('无法打开摄像头: '+err.message);
+    closeScanner();
+  });
+}
+function closeScanner(){
+  if(_scanRAF)cancelAnimationFrame(_scanRAF);_scanRAF=null;
+  if(_scanStream){_scanStream.getTracks().forEach(function(t){t.stop();});_scanStream=null;}
+  var modal=document.getElementById('scanModal');if(modal)modal.style.display='none';
+}
+function scanTick(){
+  var video=document.getElementById('scanVideo');
+  var canvas=document.getElementById('scanCanvas');
+  if(video&&video.readyState===video.HAVE_ENOUGH_DATA&&window.jsQR){
+    canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+    var ctx=canvas.getContext('2d');
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    var imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+    var code=jsQR(imgData.data,imgData.width,imgData.height);
+    if(code&&code.data){
+      handleScanResult(code.data);
+      return;
+    }
+  }
+  _scanRAF=requestAnimationFrame(scanTick);
+}
+async function handleScanResult(text){
+  closeScanner();
+  var m=String(text).match(/ghostchat:\/\/add\/(\d+)/);
+  if(!m){alert('不是有效的 GhostChat 二维码');return;}
+  var uid=m[1];
+  if(String(uid)===String(myId)){alert('这是你自己的二维码');return;}
+  await addFriendAndOpen(uid);
+}
+
+// ═══ 通过ID添加好友并打开聊天 ═══
+async function addFriendAndOpen(uid){
+  var res=await _sb.from('users').select('id,name').eq('id',parseInt(uid)||0).single();
+  if(res.error||!res.data){alert('User not found');return;}
+  var u=res.data;
+  var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
+  var color=colors[parseInt(u.id)%colors.length];
+  var fres=await _sb.from('friends').select('nickname').eq('user_id',String(myId)).eq('friend_id',String(u.id)).maybeSingle();
+  var existingNick=fres.data&&fres.data.nickname;
+  var displayName=existingNick||u.name;
+  if(!existingNick){await saveFriend(String(u.id),u.name);}
+  openChat(String(u.id),displayName[0].toUpperCase(),color,displayName);
+  loadContacts();
+}
+
+// ═══ 推荐名片给好友 ═══
+async function doContactCard(){
+  document.getElementById('xpanel').classList.remove('on');
+  if(!G.chat){alert('请先打开一个聊天');return;}
+  var mid=String(myId);
+  var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
+  var fdata=fr.data||[];
+  var uids=fdata.map(function(f){return parseInt(f.friend_id)||0;});
+  var users=uids.length?await _sb.from('users').select('id,name').in('id',uids):{data:[]};
+  var nameMap={};(users.data||[]).forEach(function(u){nameMap[String(u.id)]=u.name;});
+  var list=fdata.map(function(f){return {id:String(f.friend_id),name:f.nickname||nameMap[String(f.friend_id)]||('User '+f.friend_id)};})
+    .filter(function(f){return f.id!==String(G.chat);});
+  if(list.length===0){alert('暂无其他好友可以推荐');return;}
+  var html=list.map(function(f){
+    return '<div class="row" style="cursor:pointer;padding:12px 4px;border-bottom:1px solid #f0f0f0;" onclick="sendContactCard(\''+f.id+'\')">'+esc(f.name)+'</div>';
+  }).join('');
+  document.getElementById('contactPickerList').innerHTML=html;
+  document.getElementById('contactPickerModal').style.display='flex';
+}
+async function sendContactCard(targetId){
+  document.getElementById('contactPickerModal').style.display='none';
+  var cardId=String(G.chat);
+  var cardName=document.getElementById('chatName').textContent||('User '+cardId);
+  var room=roomIdOf(myId,targetId);
+  var content=JSON.stringify({id:cardId,name:cardName});
+  var r=await _sb.from('messages').insert({room_id:room,sender:String(myId),content:content,type:'contact'});
+  if(r.error){alert('发送失败: '+r.error.message);return;}
+  alert('已推荐给好友');
+}
+async function openContactCard(cid,cname){
+  if(!cid)return;
+  if(String(cid)===String(myId)){alert('这是你自己');return;}
+  if(!confirm(cname+' (ID: '+cid+')\n\n添加为好友并打开聊天？'))return;
+  await addFriendAndOpen(cid);
 }
 
 function playVoice(el,src){
@@ -1293,7 +1416,7 @@ async function joinRoom(name){
       if(m.type==='image')msg.src=m.content;
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
-      var already=(G.msgs[G.chat]||[]).some(function(x){return x.id===m.id;});
+      if(m.type==='contact'){try{var cc1=JSON.parse(m.content);msg.cid=cc1.id;msg.cname=cc1.name;}catch(e){}}
       if(!already){addMsg(msg);sendNotif();}
       var lastEl=document.getElementById('last-'+String(m.sender));
       if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
@@ -1306,6 +1429,7 @@ async function joinRoom(name){
       if(m.type==='image')msg.src=m.content;
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
+      if(m.type==='contact'){try{var cc2=JSON.parse(m.content);msg.cid=cc2.id;msg.cname=cc2.name;}catch(e){}}
       // 过滤掉异常长的text消息
       if(msg.type==='text'&&msg.text&&msg.text.length>2000)msg.text='[Message]';
       return msg;
@@ -1550,6 +1674,7 @@ function listenForAllMessages(){
       if(m.type==='image')msg.src=m.content;
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||'?';}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
+      if(m.type==='contact'){try{var cc3=JSON.parse(m.content);msg.cid=cc3.id;msg.cname=cc3.name;}catch(e){}}
       // 加入消息队列
       if(!G.msgs[senderId])G.msgs[senderId]=[];
       var already=G.msgs[senderId].some(function(x){return x.id===m.id;});
@@ -1629,6 +1754,12 @@ function renderMsgs(){
     }else if(m.type==='location'){
       var mapUrl=m.mapUrl||('https://maps.google.com/?q='+(m.addr||''));
       b='<div>📍 <a href="'+mapUrl+'" target="_blank" style="color:inherit;text-decoration:underline;">'+(m.addr||'Location')+'</a></div>';
+    }else if(m.type==='contact'){
+      var ccName=m.cname||('User '+m.cid);
+      b='<div onclick="openContactCard(\''+esc(String(m.cid||''))+'\',\''+esc(ccName).replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:10px;cursor:pointer;min-width:160px;">'
+        +'<div style="width:40px;height:40px;border-radius:50%;background:#a18cd1;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">'+esc(ccName[0].toUpperCase())+'</div>'
+        +'<div><div style="font-weight:600;">'+esc(ccName)+'</div><div style="font-size:12px;opacity:.7;">名片 · 点击查看</div></div>'
+        +'</div>';
     }else if(m.type==='video'){
       b='<div>🎬 Video</div>';
     }else{
@@ -1947,6 +2078,7 @@ async function loadContacts(){
       else if(lm.type==='image')lastText='[Image]';
       else if(lm.type==='voice')lastText='[Voice]';
       else if(lm.type==='location')lastText='[Location]';
+      else if(lm.type==='contact')lastText='[名片]';
       else lastText='[Media]';
     }
     var hasUnread=(_unread[cid]||0)>0;
