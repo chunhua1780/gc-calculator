@@ -1566,20 +1566,31 @@ async function setRemark(){
   if(name===null)return;
   name=name.trim();
   if(!name){alert('备注不能为空');return;}
-  await saveFriend(G.chat,name);
-  document.getElementById('chatName').textContent=name;
-  alert('备注已保存: '+name);
+  var ok=await saveFriend(G.chat,name);
+  if(ok){
+    document.getElementById('chatName').textContent=name;
+    alert('备注已保存到通讯录: '+name);
+  }
 }
 
 async function saveFriend(friendId,nickname){
   if(!myId||!friendId)return;
-  var res=await _sb.from('friends').upsert({
-    user_id:String(myId),
-    friend_id:String(friendId),
-    nickname:nickname||null
-  },{onConflict:'user_id,friend_id'});
-  if(res.error)console.log('saveFriend error:',res.error.message);
-  else loadContacts();
+  var mid=String(myId);
+  var fid=String(friendId);
+  var existing=await _sb.from('friends').select('id').eq('user_id',mid).eq('friend_id',fid).maybeSingle();
+  var res;
+  if(existing.data&&existing.data.id){
+    res=await _sb.from('friends').update({nickname:nickname||null}).eq('id',existing.data.id);
+  }else{
+    res=await _sb.from('friends').insert({user_id:mid,friend_id:fid,nickname:nickname||null});
+  }
+  if(res.error){
+    console.log('saveFriend error:',res.error.message);
+    alert('保存失败: '+res.error.message);
+    return false;
+  }
+  loadContacts();
+  return true;
 }
 
 async function addContactById(inputId){
