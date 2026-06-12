@@ -1296,6 +1296,10 @@ function listenForAllMessages(){
           lastEl.style.color='#d4537e';
           lastEl.style.fontWeight='600';
         }
+        var hset=getHiddenContacts();
+        if(hset.indexOf(senderId)>=0){
+          setHiddenContacts(hset.filter(function(x){return x!==senderId;}));
+        }
         loadContacts();
         sendNotif();
       }
@@ -1377,6 +1381,51 @@ async function sendMsg(){
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'});
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+function getHiddenContacts(){
+  try{return JSON.parse(lg('hiddenContacts')||'[]');}catch(e){return [];}
+}
+function setHiddenContacts(arr){
+  ls('hiddenContacts',JSON.stringify(arr));
+}
+function hideContact(cid){
+  var h=getHiddenContacts();
+  if(h.indexOf(cid)<0)h.push(cid);
+  setHiddenContacts(h);
+  loadContacts();
+}
+async function deleteContact(cid){
+  if(!confirm('确定要删除这段聊天记录吗？此操作不可恢复。'))return;
+  var mid=String(myId);
+  var ids=[mid,cid].sort();
+  var room=ids.join('_');
+  await _sb.from('messages').delete().eq('room_id',room);
+  await _sb.from('friends').delete().eq('user_id',mid).eq('friend_id',cid);
+  var h=getHiddenContacts();
+  h=h.filter(function(x){return x!==cid;});
+  setHiddenContacts(h);
+  if(G.msgs&&G.msgs[cid])delete G.msgs[cid];
+  loadContacts();
+}
+function attachSwipe(el){
+  var startX=0,curX=0,dragging=false;
+  el.addEventListener('touchstart',function(e){
+    startX=e.touches[0].clientX;curX=0;dragging=true;
+    el.style.transition='none';
+  },{passive:true});
+  el.addEventListener('touchmove',function(e){
+    if(!dragging)return;
+    var dx=e.touches[0].clientX-startX;
+    curX=Math.min(0,Math.max(-140,dx));
+    el.style.transform='translateX('+curX+'px)';
+  },{passive:true});
+  el.addEventListener('touchend',function(){
+    dragging=false;
+    el.style.transition='transform .2s';
+    if(curX<-70){el.style.transform='translateX(-140px)';}
+    else{el.style.transform='translateX(0px)';}
+  });
+}
+
 var _loadingContacts=false;
 async function loadContacts(){
   console.log('loadContacts called, myId=',myId,'_loadingContacts=',_loadingContacts);
@@ -1414,7 +1463,9 @@ async function loadContacts(){
   console.log('users query error:',users.error,'data:',JSON.stringify(users.data));
   var userMap={};
   if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;});
+  var hiddenSet=getHiddenContacts();
   contactIds.forEach(function(cid){
+    if(hiddenSet.indexOf(cid)>=0&&!(_unread[cid]>0))return;
     var name=friendMap[cid]||userMap[cid]||('User '+cid);
     var color=colors[parseInt(cid)%colors.length];
     var lm=seen[cid];
@@ -1426,14 +1477,35 @@ async function loadContacts(){
       else if(lm.type==='location')lastText='[Location]';
       else lastText='[Media]';
     }
+    var hasUnread=(_unread[cid]||0)>0;
+    var lastStyle=hasUnread?'font-size:14px;color:#d4537e;font-weight:600;margin-top:2px;':'font-size:14px;color:#8e8e93;margin-top:2px;';
+
+    var wrap=document.createElement('div');
+    wrap.className='swipe-wrap';
+    wrap.id='wrap-'+cid;
+    wrap.style.cssText='position:relative;overflow:hidden;';
+
+    var actions=document.createElement('div');
+    actions.style.cssText='position:absolute;top:0;right:0;bottom:0;display:flex;';
+    actions.innerHTML='<div onclick="hideContact(\''+cid+'\')" style="background:#a18cd1;color:#fff;display:flex;align-items:center;justify-content:center;width:70px;font-size:14px;cursor:pointer;">隐藏</div><div onclick="deleteContact(\''+cid+'\')" style="background:#ff3b30;color:#fff;display:flex;align-items:center;justify-content:center;width:70px;font-size:14px;cursor:pointer;">删除</div>';
+
     var div=document.createElement('div');
     div.className='row';
     div.id='contact-'+cid;
-    div.onclick=(function(c,n,col){return function(){openChat(c,n[0].toUpperCase(),col,n);};})(cid,name,color);
-    var hasUnread=(_unread[cid]||0)>0;
-    var lastStyle=hasUnread?'font-size:14px;color:#d4537e;font-weight:600;margin-top:2px;':'font-size:14px;color:#8e8e93;margin-top:2px;';
+    div.style.cssText='background:var(--theme-bg,#fdf2f8);position:relative;transition:transform .2s;touch-action:pan-y;';
+    div.dataset.cid=cid;
     div.innerHTML='<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div><div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="'+lastStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="last-'+cid+'">'+lastText+'</div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
-    list.appendChild(div);
+
+    div.onclick=(function(c,n,col){return function(e){
+      if(parseFloat(div.style.transform.replace(/[^-\d.]/g,''))<-5)return;
+      openChat(c,n[0].toUpperCase(),col,n);
+    };})(cid,name,color);
+
+    attachSwipe(div);
+
+    wrap.appendChild(actions);
+    wrap.appendChild(div);
+    list.appendChild(wrap);
   });
 }
 
