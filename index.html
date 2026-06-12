@@ -1570,7 +1570,6 @@ async function loadContacts(){
   setTimeout(function(){_loadingContacts=false;},2000);
   var list=document.getElementById('chatList');
   if(!list)return;
-  list.innerHTML='';
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
   var seen={};
   var mid=String(myId);
@@ -1592,13 +1591,14 @@ async function loadContacts(){
     if(!seen[fid]){contactIds.push(fid);seen[fid]={};}
   });
   console.log('contactIds:',JSON.stringify(contactIds));
-  if(contactIds.length===0)return;
+  if(contactIds.length===0){list.innerHTML='';return;}
   var uids=contactIds.map(function(i){return parseInt(i)||0;});
   var users=await _sb.from('users').select('id,name').in('id',uids);
   console.log('users query error:',users.error,'data:',JSON.stringify(users.data));
   var userMap={};
   if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;});
   var hiddenSet=getHiddenContacts();
+  list.innerHTML='';
   contactIds.forEach(function(cid){
     if(hiddenSet.indexOf(cid)>=0&&!(_unread[cid]>0))return;
     var name=friendMap[cid]||userMap[cid]||('User '+cid);
