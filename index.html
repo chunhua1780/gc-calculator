@@ -1080,7 +1080,7 @@ function toggleCam(){
 
 var _msgSub=null;
 function listenForAllMessages(){
-  if(_msgSub){try{_msgSub.unsubscribe();}catch(e){}}_msgSub=null;
+  if(_msgSub)return;
   var mid=String(myId);
   _msgSub=_sb.channel('all_msgs_'+mid)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},function(p){
@@ -1114,12 +1114,6 @@ function listenForAllMessages(){
       }
     }).subscribe(function(s){
       console.log('All msgs sub:',s);
-      if(s==='CLOSED'||s==='CHANNEL_ERROR'){
-        // 断线重连
-        console.log('Reconnecting messages...');
-        _msgSub=null;
-        setTimeout(function(){listenForAllMessages();},3000);
-      }
     });
 }
 
