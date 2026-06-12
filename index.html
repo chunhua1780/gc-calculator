@@ -1082,7 +1082,7 @@ var _msgSub=null;
 function listenForAllMessages(){
   if(_msgSub){try{_msgSub.unsubscribe();}catch(e){}}_msgSub=null;
   var mid=String(myId);
-  _msgSub=_sb.channel('all_msgs_'+mid+'_'+Date.now())
+  _msgSub=_sb.channel('all_msgs_'+mid)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},function(p){
       var m=p.new;
       if(!m||!m.room_id)return;
