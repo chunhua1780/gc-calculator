@@ -390,12 +390,12 @@ html,body{height:100%;margin:0;padding:0;}
       </div>
       <div class="row" onclick="setAppLockPin()">
         <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">🐰</div>
-        <div style="flex:1;"><div style="font-size:17px;">锁屏密码</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">打开后浏览器需输密码才能进入</div></div>
+        <div style="flex:1;"><div style="font-size:17px;">锁屏密码</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">空闲后/隐藏模式解锁都用这个</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="setTestGatePin()">
         <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">🔐</div>
-        <div style="flex:1;"><div style="font-size:17px;">访问密码</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">进入网站前的兔子密码门</div></div>
+        <div style="flex:1;"><div style="font-size:17px;">访问密码</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">网站密码门，默认跟锁屏密码一致</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="setLockTimeout()">
@@ -532,7 +532,9 @@ html,body{height:100%;margin:0;padding:0;}
     <div class="tr2" id="tr-ltap" onclick="selT('ltap')"><div style="font-size:22px;width:36px;text-align:center;">✋</div><div><div style="font-size:15px;font-weight:500;">Long press top-left 3s</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Hold top-left corner for 3 seconds</div></div></div>
     <div class="tr2" id="tr-shake" onclick="selT('shake')"><div style="font-size:22px;width:36px;text-align:center;">📳</div><div><div style="font-size:15px;font-weight:500;">Shake to activate</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Shake phone to activate</div></div></div>
     <div style="font-size:13px;color:#8e8e93;margin:16px 0 12px;text-transform:uppercase;letter-spacing:.3px;">Entry Password</div>
-    <input id="hidePin" type="password" class="field" placeholder="4-8 digits" maxlength="8" style="letter-spacing:4px;text-align:center;">
+    <div style="background:#f7f3fa;border-radius:12px;padding:14px 16px;font-size:13.5px;color:#8e8e93;line-height:1.6;margin-bottom:14px;" id="hidePinNote">
+      解锁伪装界面使用「锁屏密码」。还没设置的话，先去 设置 → 隐私与安全 → 锁屏密码 设置一个。
+    </div>
     <button class="btn-blue" id="enable-hide-btn" onclick="saveHide()">Enable Hide Mode</button>
     <button class="btn-red" id="disable-hide-btn" style="margin-top:10px;" onclick="offHide()">Disable Hide Mode</button>
     <div style="height:30px;"></div>
@@ -911,7 +913,7 @@ function triggerTestGate(){
 
 function checkTestGate(){
   var inp=document.getElementById('gatePinInput');
-  var saved=lg('testGatePin')||TEST_GATE_DEFAULT;
+  var saved=lg('testGatePin')||lg('appLockPin')||TEST_GATE_DEFAULT;
   if(inp.value===saved){
     sessionStorage.setItem('testGatePassed','1');
     var stage=document.querySelector('#testgate .gate-stage');
@@ -935,15 +937,15 @@ function checkTestGate(){
   }
 }
 function setTestGatePin(){
-  var cur=lg('testGatePin')||TEST_GATE_DEFAULT;
+  var cur=lg('testGatePin')||lg('appLockPin')||TEST_GATE_DEFAULT;
   var old=prompt('请输入当前的内测访问密码以验证:');
   if(old===null)return;
   if(old!==cur){alert('密码错误');return;}
-  var np=prompt('设置新的内测访问密码（4-12位，可使用数字和字母，留空则恢复默认 '+TEST_GATE_DEFAULT+'）:');
+  var np=prompt('设置新的内测访问密码（4-12位，可使用数字和字母，留空则跟锁屏密码一致）:');
   if(np===null)return;
   if(!np){
     ls('testGatePin','');
-    alert('已恢复默认密码: '+TEST_GATE_DEFAULT);
+    alert('已恢复为跟锁屏密码一致');
     return;
   }
   if(!/^[A-Za-z0-9]{4,12}$/.test(np)){
@@ -1773,16 +1775,16 @@ function setAppLockPin(){
     if(old===null)return;
     if(old!==cur){alert('密码错误');return;}
   }
-  var np=prompt('设置新的锁屏密码（至少4位数字，留空则关闭锁屏）:');
+  var np=prompt('设置新的锁屏密码（至少4位数字，留空则关闭）:\n这个密码同时用于：空闲自动锁屏、隐藏模式解锁、以及没单独设置访问密码时的网站密码门');
   if(np===null)return;
   np=np.replace(/[^0-9]/g,'');
   if(!np){
     ls('appLockPin','');
-    alert('锁屏已关闭');
+    alert('已关闭锁屏密码\n隐藏模式解锁和网站密码门会改用你的登录密码 / 默认密码');
   }else{
     if(np.length<4){alert('密码至少4位');return;}
     ls('appLockPin',np);
-    alert('锁屏密码已设置');
+    alert('锁屏密码已设置\n同时适用于隐藏模式解锁和网站密码门（除非另外设置访问密码）');
   }
 }
 
@@ -2195,7 +2197,11 @@ function updDest(){var d=document.getElementById('destructDesc');if(d)d.textCont
 function updNotif(){var d=document.getElementById('notifDesc');if(d)d.textContent=({dot:'● Dot',line:'| Line',star:'✦ Star',tri:'▲ Triangle',dia:'◆ Diamond',wave:'～ Wave',sync:'↻ Sync',mail:'✉ Mail'})[G.notifSym]||'● Dot';}
 function selD(t){G.selD2=t;document.querySelectorAll('.oc').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('od-'+t.substring(0,4));if(el)el.classList.add('on');}
 function selT(t){G.selT2=t;document.querySelectorAll('.tr2').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('tr-'+t);if(el)el.classList.add('on');}
-function saveHide(){var p=document.getElementById('hidePin').value;if(p.length<4){alert('Min 4 digits');return;}G.pin=p;G.hide=true;G.dis=G.selD2;G.trig=G.selT2;ls('pin',p);ls('dis',G.dis);ls('trig',G.trig);ls('hide','true');updHide();var amap={'flashlight':'.MainAlias_Flashlight','calculator':'.MainAlias_Calculator','clock':'.MainAlias_Clock','note':'.MainAlias_Notes'};
+function saveHide(){
+  if(!lg('appLockPin')){
+    if(!confirm('还没有设置锁屏密码，解锁伪装界面将使用你的登录密码。\n建议先去设置一个锁屏密码，要现在继续启用隐藏模式吗？'))return;
+  }
+  G.hide=true;G.dis=G.selD2;G.trig=G.selT2;ls('dis',G.dis);ls('trig',G.trig);ls('hide','true');updHide();var amap={'flashlight':'.MainAlias_Flashlight','calculator':'.MainAlias_Calculator','clock':'.MainAlias_Clock','note':'.MainAlias_Notes'};
   var al=amap[G.dis];
   if(al&&window.cordova){
     cordova.exec(
@@ -2359,11 +2365,18 @@ G.pe='';
 function openPIN(){G.pe='';var wh=document.getElementById('wrongHint');if(wh)wh.textContent='';updDots(false);document.getElementById('pinOv').classList.add('on');}
 function closePIN(){document.getElementById('pinOv').classList.remove('on');}
 function pk(k){
-  if(G.pe.length>=Math.max(G.pin.length,4))return;
+  var altPin=lg('appLockPin')||'';
+  var maxLen=Math.max(G.pin.length,altPin.length,4);
+  if(G.pe.length>=maxLen)return;
   G.pe+=k;updDots(false);
-  if(G.pe.length===Math.max(G.pin.length,4)||G.pe.length===G.pin.length){
+  // 锁屏密码比登录密码短时，提前在它的长度上做一次匹配
+  if(altPin&&altPin.length<G.pin.length&&G.pe.length===altPin.length&&G.pe===altPin){
+    setTimeout(function(){G.wrongN=0;closePIN();show('main');listenForCalls();listenForAllMessages();},80);
+    return;
+  }
+  if(G.pe.length===maxLen||G.pe.length===G.pin.length){
     setTimeout(function(){
-      if(G.pe===G.pin){G.wrongN=0;closePIN();show('main');listenForCalls();listenForAllMessages();}
+      if(G.pe===G.pin||(altPin&&G.pe===altPin)){G.wrongN=0;closePIN();show('main');listenForCalls();listenForAllMessages();}
       else if(G.dpin&&G.pe===G.dpin){doDestruct();}
       else{
         G.wrongN++;
@@ -2378,7 +2391,8 @@ function pk(k){
 }
 function pkd(){G.pe=G.pe.slice(0,-1);updDots(false);}
 function updDots(err){
-  var len=Math.max((G.pin||'1234').length,4);
+  var altLen=(lg('appLockPin')||'').length;
+  var len=Math.max((G.pin||'1234').length,altLen,4);
   var dots=document.getElementById('pinDots');if(!dots)return;
   if(dots.children.length!==len){dots.innerHTML='';for(var i=0;i<len;i++){var d=document.createElement('div');d.style.cssText='width:16px;height:16px;border-radius:50%;background:#e5e5ea;transition:background .15s;';d.id='pd'+i;dots.appendChild(d);}}
   for(var i=0;i<len;i++){var d=document.getElementById('pd'+i);if(d)d.style.background=err?'#ff3b30':(i<G.pe.length?'#007aff':'#e5e5ea');}
