@@ -1237,6 +1237,7 @@ async function sendMsg(){
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 var _loadingContacts=false;
 async function loadContacts(){
+  console.log('loadContacts called, myId=',myId,'_loadingContacts=',_loadingContacts);
   if(!myId)return;
   if(_loadingContacts)return;
   _loadingContacts=true;
@@ -1250,7 +1251,8 @@ async function loadContacts(){
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   var friendMap={};
   if(fr.data)fr.data.forEach(function(f){friendMap[String(f.friend_id)]=f.nickname||'';});
-  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at').or('room_id.like.'+mid+'_%25,room_id.like.%25_'+mid).order('created_at',{ascending:false}).limit(200);
+  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(200);
+  console.log('loadContacts messages query, error:',res.error,'count:',res.data?res.data.length:0);
   var contactIds=[];
   if(res.data){
     res.data.forEach(function(m){
@@ -1263,9 +1265,11 @@ async function loadContacts(){
   Object.keys(friendMap).forEach(function(fid){
     if(!seen[fid]){contactIds.push(fid);seen[fid]={};}
   });
+  console.log('contactIds:',JSON.stringify(contactIds));
   if(contactIds.length===0)return;
   var uids=contactIds.map(function(i){return parseInt(i)||0;});
   var users=await _sb.from('users').select('id,name').in('id',uids);
+  console.log('users query error:',users.error,'data:',JSON.stringify(users.data));
   var userMap={};
   if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;});
   contactIds.forEach(function(cid){
