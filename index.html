@@ -1106,7 +1106,7 @@ function listenForAllMessages(){
           lastEl.style.color='#007aff';
           lastEl.style.fontWeight='600';
         }
-        autoAddContact(senderId,msg);
+        if(!document.getElementById('contact-'+senderId)){loadContacts();}
         sendNotif();
       }
       // 未读提醒：只要不在当前聊天界面就提醒，与already无关
