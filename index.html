@@ -277,7 +277,7 @@ html,body{height:100%;margin:0;padding:0;}
 <div id="chat" class="screen">
   <div class="nav-bar nav-sm">
     <span class="nav-btn" onclick="show('main')">‹ Back</span>
-    <span class="t" id="chatName" onclick="setRemark()" style="cursor:pointer;text-decoration:underline dotted;">Friend</span>
+    <span class="t" id="chatName" onclick="showProfile(G.chat,this.textContent)" style="cursor:pointer;text-decoration:underline dotted;">Friend</span>
     <div style="display:flex;">
       <span class="nav-btn" onclick="startCall()"><svg viewBox="0 0 24 24" width="20" height="20" stroke="#007aff" fill="none" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg></span>
       <span class="nav-btn" onclick="startVideo()"><svg viewBox="0 0 24 24" width="20" height="20" stroke="#007aff" fill="none" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></span>
@@ -309,6 +309,20 @@ html,body{height:100%;margin:0;padding:0;}
         <div class="xi" onclick="panic()"><div class="xib" style="background:#ff3b30">🚨</div><span class="xil">Destroy</span></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- 资料页 -->
+<div id="profile" class="screen">
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="closeProfile()">‹ Back</span><span class="t">资料</span><span></span></div>
+  <div class="scroll" style="padding:16px;">
+    <div style="display:flex;flex-direction:column;align-items:center;padding:24px 0;">
+      <div id="profileAvatar" style="width:80px;height:80px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;font-weight:700;">?</div>
+      <div id="profileName" style="font-size:20px;font-weight:700;margin-top:12px;">-</div>
+      <div id="profileId" style="font-size:13px;color:#8e8e93;margin-top:4px;">ID: -</div>
+    </div>
+    <div class="card" id="profileActions"></div>
+    <div style="height:30px;"></div>
   </div>
 </div>
 
@@ -731,7 +745,6 @@ html,body{height:100%;margin:0;padding:0;}
 <input type="file" id="vidIn" accept="video/*" style="display:none" onchange="onVid()">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
 <script>
@@ -1201,10 +1214,9 @@ function showQR(){
   if(nm)nm.textContent=lg('myName')||'My QR Code';
   if(idtxt)idtxt.textContent='ID: '+myId;
   modal.style.display='flex';
-  if(window.QRCode&&img){
-    QRCode.toDataURL('ghostchat://add/'+myId,{width:200,margin:2},function(err,url){
-      if(!err&&url)img.src=url;
-    });
+  if(img){
+    var data=encodeURIComponent('ghostchat://add/'+myId);
+    img.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data='+data;
   }
 }
 
@@ -1274,6 +1286,12 @@ async function addFriendAndOpen(uid){
 async function doContactCard(){
   document.getElementById('xpanel').classList.remove('on');
   if(!G.chat){alert('请先打开一个聊天');return;}
+  var cardName=document.getElementById('chatName').textContent||('User '+G.chat);
+  shareContactCard(G.chat,cardName);
+}
+var _shareCardCtx=null;
+async function shareContactCard(cid,cname){
+  cid=String(cid);
   var mid=String(myId);
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   var fdata=fr.data||[];
@@ -1281,8 +1299,9 @@ async function doContactCard(){
   var users=uids.length?await _sb.from('users').select('id,name').in('id',uids):{data:[]};
   var nameMap={};(users.data||[]).forEach(function(u){nameMap[String(u.id)]=u.name;});
   var list=fdata.map(function(f){return {id:String(f.friend_id),name:f.nickname||nameMap[String(f.friend_id)]||('User '+f.friend_id)};})
-    .filter(function(f){return f.id!==String(G.chat);});
-  if(list.length===0){alert('暂无其他好友可以推荐');return;}
+    .filter(function(f){return f.id!==cid;});
+  if(list.length===0){alert('暂无好友可以推荐');return;}
+  _shareCardCtx={id:cid,name:cname};
   var html=list.map(function(f){
     return '<div class="row" style="cursor:pointer;padding:12px 4px;border-bottom:1px solid #f0f0f0;" onclick="sendContactCard(\''+f.id+'\')">'+esc(f.name)+'</div>';
   }).join('');
@@ -1291,19 +1310,86 @@ async function doContactCard(){
 }
 async function sendContactCard(targetId){
   document.getElementById('contactPickerModal').style.display='none';
-  var cardId=String(G.chat);
-  var cardName=document.getElementById('chatName').textContent||('User '+cardId);
+  if(!_shareCardCtx)return;
   var room=roomIdOf(myId,targetId);
-  var content=JSON.stringify({id:cardId,name:cardName});
+  var content=JSON.stringify(_shareCardCtx);
   var r=await _sb.from('messages').insert({room_id:room,sender:String(myId),content:content,type:'contact'});
   if(r.error){alert('发送失败: '+r.error.message);return;}
   alert('已推荐给好友');
+  _shareCardCtx=null;
 }
-async function openContactCard(cid,cname){
+function openContactCard(cid,cname){
   if(!cid)return;
-  if(String(cid)===String(myId)){alert('这是你自己');return;}
-  if(!confirm(cname+' (ID: '+cid+')\n\n添加为好友并打开聊天？'))return;
-  await addFriendAndOpen(cid);
+  showProfile(cid,cname);
+}
+
+// ═══ 资料页 ═══
+var _profileBack='main';
+async function showProfile(uid,fallbackName){
+  if(!uid)return;
+  uid=String(uid);
+  var active=document.querySelector('.screen.active');
+  if(active&&active.id!=='profile')_profileBack=active.id;
+  var mid=String(myId);
+  var isMe=uid===mid;
+  var res=await _sb.from('users').select('id,name').eq('id',parseInt(uid)||0).single();
+  var realName=(res.data&&res.data.name)||fallbackName||('User '+uid);
+  var fres=isMe?{data:null}:await _sb.from('friends').select('nickname').eq('user_id',mid).eq('friend_id',uid).maybeSingle();
+  var isFriend=!!(fres.data);
+  var dispName=(fres.data&&fres.data.nickname)||realName;
+  var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
+  var av=document.getElementById('profileAvatar');
+  av.style.background=colors[parseInt(uid)%colors.length];
+  av.textContent=dispName[0].toUpperCase();
+  document.getElementById('profileName').textContent=dispName+(isMe?'（我）':'');
+  document.getElementById('profileId').textContent='ID: '+uid;
+  var safeName=esc(realName).replace(/'/g,"\\'");
+  var safeDisp=esc(dispName).replace(/'/g,"\\'");
+  var actions='';
+  if(isMe){
+    actions+='<div class="row" onclick="show(\'account-set\')"><div style="flex:1;">编辑我的资料</div><span style="color:#c7c7cc;">›</span></div>';
+    actions+='<div class="row" onclick="showQR()"><div style="flex:1;">我的二维码</div><span style="color:#c7c7cc;">›</span></div>';
+  }else{
+    actions+='<div class="row" onclick="profileOpenChat(\''+uid+'\',\''+safeDisp+'\')"><div style="flex:1;">发消息</div><span style="color:#c7c7cc;">›</span></div>';
+    if(isFriend){
+      actions+='<div class="row" onclick="profileSetRemark(\''+uid+'\')"><div style="flex:1;">设置备注</div><span style="color:#c7c7cc;">›</span></div>';
+    }else{
+      actions+='<div class="row" onclick="profileAddFriend(\''+uid+'\',\''+safeName+'\')"><div style="flex:1;">添加到联系人</div><span style="color:#c7c7cc;">›</span></div>';
+    }
+    actions+='<div class="row" onclick="shareContactCard(\''+uid+'\',\''+safeDisp+'\')"><div style="flex:1;">推荐给好友</div><span style="color:#c7c7cc;">›</span></div>';
+    if(isFriend){
+      actions+='<div class="row" onclick="profileDelete(\''+uid+'\')"><div style="flex:1;color:#ff3b30;">删除聊天记录</div></div>';
+    }
+  }
+  document.getElementById('profileActions').innerHTML=actions;
+  show('profile');
+}
+function closeProfile(){show(_profileBack||'main');}
+function profileOpenChat(uid,name){
+  var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
+  var color=colors[parseInt(uid)%colors.length];
+  openChat(uid,name[0].toUpperCase(),color,name);
+}
+async function profileAddFriend(uid,name){
+  await saveFriend(uid,name);
+  alert('已添加到联系人');
+  loadContacts();
+  showProfile(uid,name);
+}
+async function profileSetRemark(uid){
+  var mid=String(myId);
+  var fres=await _sb.from('friends').select('nickname').eq('user_id',mid).eq('friend_id',uid).maybeSingle();
+  var cur=(fres.data&&fres.data.nickname)||'';
+  var nn=prompt('设置备注名称:',cur);
+  if(nn===null)return;
+  await saveFriend(uid,nn.trim());
+  if(String(G.chat)===String(uid))resolveDisplayName(uid);
+  loadContacts();
+  showProfile(uid);
+}
+function profileDelete(uid){
+  deleteContact(uid);
+  show('main');
 }
 
 function playVoice(el,src){
