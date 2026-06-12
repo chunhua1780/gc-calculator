@@ -37,7 +37,7 @@ html,body{height:100%;margin:0;padding:0;}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:#a18cd1;}
 .tab svg{width:24px;height:24px;}
-.scroll{flex:1;overflow-y:auto;background:#f2f2f7;}
+.scroll{flex:1;overflow-y:auto;background:linear-gradient(160deg,var(--theme-bg),var(--theme-bg2));background-image:radial-gradient(circle at 20% 20%, rgba(255,255,255,.5) 0, transparent 50%),radial-gradient(circle at 80% 60%, rgba(255,255,255,.4) 0, transparent 50%),linear-gradient(160deg,var(--theme-bg),var(--theme-bg2));}
 .card{background:#fff;border-radius:18px;margin:0 16px;overflow:hidden;box-shadow:0 2px 12px rgba(200,155,109,.08);}
 .row{display:flex;align-items:center;padding:12px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);cursor:pointer;gap:12px;}
 .row:last-child{border-bottom:none;}
@@ -1229,8 +1229,12 @@ async function sendMsg(){
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'});
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+var _loadingContacts=false;
 async function loadContacts(){
   if(!myId)return;
+  if(_loadingContacts)return;
+  _loadingContacts=true;
+  setTimeout(function(){_loadingContacts=false;},2000);
   var list=document.getElementById('chatList');
   if(!list)return;
   list.innerHTML='';
