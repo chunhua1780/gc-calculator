@@ -1295,6 +1295,7 @@ function listenForAllMessages(){
       if(parts.indexOf(mid)<0)return;
       if(String(m.sender)===mid)return;
       var senderId=parts[0]===mid?parts[1]:parts[0];
+      if(isBlocked(senderId))return;
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:new Date(m.created_at).getHours()+':'+(new Date(m.created_at).getMinutes()<10?'0':'')+new Date(m.created_at).getMinutes()};
       if(m.type==='image')msg.src=m.content;
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||'?';}
@@ -1395,6 +1396,7 @@ function renderMsgs(){
 function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];G.msgs[G.chat].push(m);renderMsgs();}
 async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
+  if(G.chat&&isBlocked(G.chat)){alert('对方已被你拉黑，请先在通讯录中解除拉黑');return;}
   addMsg({text:t,sent:true,t:gt()});inp.value='';
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'});
 }
@@ -1402,11 +1404,11 @@ function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 async function loadFriendsList(){
   var list=document.getElementById('friendsList');
   if(!list||!myId)return;
-  list.innerHTML='<div style=\"padding:16px;color:#8e8e93;text-align:center;\">加载中...</div>';
+  list.innerHTML='<div style="padding:16px;color:#8e8e93;text-align:center;">加载中...</div>';
   var mid=String(myId);
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   if(fr.error||!fr.data||fr.data.length===0){
-    list.innerHTML='<div style=\"padding:24px;color:#8e8e93;text-align:center;\">暂无联系人，可以点消息页的➕按钮添加</div>';
+    list.innerHTML='<div style="padding:24px;color:#8e8e93;text-align:center;">暂无联系人，可以点消息页的➕按钮添加</div>';
     return;
   }
   var uids=fr.data.map(function(f){return parseInt(f.friend_id)||0;});
@@ -1414,17 +1416,78 @@ async function loadFriendsList(){
   var userMap={};
   if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;});
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
+  var blocked=getBlockedContacts();
+  var sorted=fr.data.slice().sort(function(a,b){
+    var ab=blocked.indexOf(String(a.friend_id))>=0?1:0;
+    var bb=blocked.indexOf(String(b.friend_id))>=0?1:0;
+    return ab-bb;
+  });
   list.innerHTML='';
-  fr.data.forEach(function(f){
+  sorted.forEach(function(f){
     var cid=String(f.friend_id);
     var name=f.nickname||userMap[cid]||('User '+cid);
     var color=colors[parseInt(cid)%colors.length];
+    var isBlk=blocked.indexOf(cid)>=0;
+
+    var wrap=document.createElement('div');
+    wrap.className='swipe-wrap';
+    wrap.style.cssText='position:relative;overflow:hidden;';
+
+    var actions=document.createElement('div');
+    actions.style.cssText='position:absolute;top:0;right:0;bottom:0;display:flex;width:140px;transform:translateX(140px);';
+    if(isBlk){
+      actions.innerHTML='<div onclick="toggleBlock(\''+cid+'\')" style="background:linear-gradient(135deg,#a8d8b9,#7fc99e);color:#fff;display:flex;align-items:center;justify-content:center;width:70px;font-size:14px;cursor:pointer;">解除拉黑</div><div onclick="deleteFriendEntry(\''+cid+'\')" style="background:linear-gradient(135deg,#e8a0a0,#d4737e);color:#fff;display:flex;align-items:center;justify-content:center;width:70px;font-size:14px;cursor:pointer;border-radius:0 16px 16px 0;">删除</div>';
+    }else{
+      actions.innerHTML='<div onclick="toggleBlock(\''+cid+'\')" style="background:linear-gradient(135deg,#d4a5a5,#c89b6d);color:#fff;display:flex;align-items:center;justify-content:center;width:70px;font-size:14px;cursor:pointer;">拉黑</div><div onclick="deleteFriendEntry(\''+cid+'\')" style="background:linear-gradient(135deg,#e8a0a0,#d4737e);color:#fff;display:flex;align-items:center;justify-content:center;width:70px;font-size:14px;cursor:pointer;border-radius:0 16px 16px 0;">删除</div>';
+    }
+
     var div=document.createElement('div');
     div.className='row';
-    div.onclick=(function(c,n,col){return function(){show('main');openChat(c,n[0].toUpperCase(),col,n);};})(cid,name,color);
-    div.innerHTML='<div class=\"av\" style=\"background:'+color+'\">'+name[0].toUpperCase()+'</div><div style=\"flex:1;min-width:0;\"><div style=\"font-size:17px;\">'+name+'</div><div style=\"font-size:13px;color:#8e8e93;margin-top:1px;\">ID: '+cid+'</div></div><span style=\"color:#c7c7cc;font-size:18px;\">&#x203A;</span>';
-    list.appendChild(div);
+    div.style.cssText='background:var(--theme-bg,#fdf2f8);position:relative;transition:transform .2s;touch-action:pan-y;'+(isBlk?'opacity:.45;filter:grayscale(1);':'');
+    var rowName=name+(isBlk?' (已拉黑)':'');
+    div.onclick=(function(c,n,col,blk){return function(){
+      if(parseFloat(div.style.transform.replace(/[^-\d.]/g,''))<-5)return;
+      if(blk){alert('该联系人已被拉黑，请先解除拉黑');return;}
+      show('main');openChat(c,n[0].toUpperCase(),col,n);
+    };})(cid,name,color,isBlk);
+
+    div.innerHTML='<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div><div style="flex:1;min-width:0;"><div style="font-size:17px;">'+rowName+'</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">ID: '+cid+'</div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
+
+    attachSwipe(div,actions);
+    wrap.appendChild(actions);
+    wrap.appendChild(div);
+    list.appendChild(wrap);
   });
+}
+
+async function deleteFriendEntry(cid){
+  if(!confirm('确定要从通讯录中删除这个联系人吗？'))return;
+  var mid=String(myId);
+  await _sb.from('friends').delete().eq('user_id',mid).eq('friend_id',String(cid));
+  var b=getBlockedContacts().filter(function(x){return x!==String(cid);});
+  setBlockedContacts(b);
+  loadFriendsList();
+}
+
+function getBlockedContacts(){
+  try{return JSON.parse(lg('blockedContacts')||'[]');}catch(e){return [];}
+}
+function setBlockedContacts(arr){
+  ls('blockedContacts',JSON.stringify(arr));
+}
+function isBlocked(cid){
+  return getBlockedContacts().indexOf(String(cid))>=0;
+}
+function toggleBlock(cid){
+  cid=String(cid);
+  var b=getBlockedContacts();
+  if(b.indexOf(cid)>=0){
+    b=b.filter(function(x){return x!==cid;});
+  }else{
+    b.push(cid);
+  }
+  setBlockedContacts(b);
+  loadFriendsList();
 }
 
 async function resolveDisplayName(cid){
