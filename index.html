@@ -1097,19 +1097,18 @@ function listenForAllMessages(){
       // 加入消息队列
       if(!G.msgs[senderId])G.msgs[senderId]=[];
       var already=G.msgs[senderId].some(function(x){return x.id===m.id;});
+      console.log('Processing message from:',senderId,'already:',already);
       if(!already){
         G.msgs[senderId].push(msg);
-        // 如果当前在和这个人聊天，显示消息
         if(G.chat===senderId){renderMsgs();}
-        // 更新联系人列表最后消息
         var lastEl=document.getElementById('last-'+senderId);
+        console.log('lastEl found:',!!lastEl,'contact found:',!!document.getElementById('contact-'+senderId));
         if(lastEl){
           lastEl.textContent=msg.type==='text'?msg.text:'['+msg.type+']';
           lastEl.style.color='#007aff';
           lastEl.style.fontWeight='600';
         }
-        // 自动加入联系人列表
-        autoAddContact(senderId,msg);
+        autoAddContact(senderId,msg).catch(function(e){console.log('autoAddContact error:',e);});
         addUnread(senderId);
         sendNotif();
       }
