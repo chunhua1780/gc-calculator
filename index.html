@@ -94,7 +94,7 @@ html,body{height:100%;margin:0;padding:0;}
 <body>
 
 <!-- 注册/登录 -->
-<div id="reg" class="screen">
+<div id="reg" class="screen active">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,#fdf2f8,#eef2ff);position:relative;">
     <div style="position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;">
       <select id="regLangSelect" onchange="setLang(this.value)" style="background:rgba(255,255,255,.85);border:1px solid #e5e5ea;border-radius:10px;padding:6px 10px;font-size:13px;color:#3a3a3c;">
@@ -413,7 +413,7 @@ html,body{height:100%;margin:0;padding:0;}
 </div>
 
 <!-- 伪装：计算器 -->
-<div id="dcalc" class="screen active">
+<div id="dcalc" class="screen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:0 24px 16px;background:#1c1c1e;">
     <div id="cExpr" style="color:#636366;font-size:22px;min-height:28px;"></div>
     <div id="cNum" style="font-size:76px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1.1;"></div>
@@ -643,18 +643,14 @@ window.onload=function(){
   if(lg('registered')){loadContacts();listenForCalls();listenForAllMessages();}
   // 启动逻辑
   var _dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
-  var _skipCalc=sessionStorage.getItem('skip_calc');
-  sessionStorage.removeItem('skip_calc');
-  if(_skipCalc==='true'&&lg('registered')){
-    // logout后直接登录 - 跳过计算器
+  if(!lg('registered')){
+    show('reg');
+  } else if(G.hide&&lg('hideConfirmed')==='true'){
+    show(_dm[G.dis]||'dcalc');
+    listenForCalls();listenForAllMessages();
+  } else {
     show('main');
     listenForCalls();listenForAllMessages();loadContacts();
-  } else {
-    // 正常启动 - 显示计算器
-    show(_dm[G.dis]||'dcalc');
-    if(lg('registered')){
-      listenForCalls();listenForAllMessages();
-    }
   }
 };
 
