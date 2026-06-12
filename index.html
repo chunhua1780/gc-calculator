@@ -939,15 +939,19 @@ function setTestGatePin(){
   var old=prompt('请输入当前的内测访问密码以验证:');
   if(old===null)return;
   if(old!==cur){alert('密码错误');return;}
-  var np=prompt('设置新的内测访问密码（留空则恢复默认）:');
+  var np=prompt('设置新的内测访问密码（4-12位，可使用数字和字母，留空则恢复默认 '+TEST_GATE_DEFAULT+'）:');
   if(np===null)return;
   if(!np){
     ls('testGatePin','');
-    alert('已恢复默认密码');
-  }else{
-    ls('testGatePin',np);
-    alert('内测访问密码已更新');
+    alert('已恢复默认密码: '+TEST_GATE_DEFAULT);
+    return;
   }
+  if(!/^[A-Za-z0-9]{4,12}$/.test(np)){
+    alert('密码格式不对：请输入4-12位的数字和/或字母');
+    return;
+  }
+  ls('testGatePin',np);
+  alert('内测访问密码已更新');
 }
 function afterTestGate(){
   if(lg('appLockPin')){
