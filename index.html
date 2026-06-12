@@ -182,7 +182,7 @@ html,body{height:100%;margin:0;padding:0;}
 <div id="chat" class="screen">
   <div class="nav-bar nav-sm">
     <span class="nav-btn" onclick="show('main')">‹ Back</span>
-    <span class="t" id="chatName">Friend</span>
+    <span class="t" id="chatName" onclick="setRemark()" style="cursor:pointer;text-decoration:underline dotted;">Friend</span>
     <div style="display:flex;">
       <span class="nav-btn" onclick="startCall()"><svg viewBox="0 0 24 24" width="20" height="20" stroke="#007aff" fill="none" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg></span>
       <span class="nav-btn" onclick="startVideo()"><svg viewBox="0 0 24 24" width="20" height="20" stroke="#007aff" fill="none" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></span>
@@ -1514,6 +1514,18 @@ async function loadContacts(){
     wrap.appendChild(div);
     list.appendChild(wrap);
   });
+}
+
+async function setRemark(){
+  if(!G.chat)return;
+  var cur=document.getElementById('chatName').textContent;
+  var name=prompt('设置备注名称:',cur==='ID '+G.chat?'':cur);
+  if(name===null)return;
+  name=name.trim();
+  if(!name){alert('备注不能为空');return;}
+  await saveFriend(G.chat,name);
+  document.getElementById('chatName').textContent=name;
+  alert('备注已保存: '+name);
 }
 
 async function saveFriend(friendId,nickname){
