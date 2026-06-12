@@ -595,7 +595,6 @@ function setAppHeight(){
   var vv=window.visualViewport;
   var h=(vv?vv.height:window.innerHeight)+'px';
   document.querySelectorAll('.screen').forEach(function(s){s.style.height=h;});
-  window.scrollTo(0,0);
 }
 setAppHeight();
 if(window.visualViewport){
@@ -604,10 +603,18 @@ if(window.visualViewport){
     var c=document.getElementById('chatMsgs');
     if(c)setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
   });
-  window.visualViewport.addEventListener('scroll',function(){window.scrollTo(0,0);});
 } else {
   window.addEventListener('resize',setAppHeight);
 }
+
+// iOS Safari: 输入框聚焦时滚入可视区域，避免被键盘遮挡
+document.addEventListener('focusin',function(e){
+  if(e.target&&(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')){
+    setTimeout(function(){
+      e.target.scrollIntoView({block:'end',behavior:'smooth'});
+    },300);
+  }
+});
 window.addEventListener('orientationchange',function(){setTimeout(setAppHeight,300);});
 
 window.onload=function(){
