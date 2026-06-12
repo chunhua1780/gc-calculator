@@ -1443,8 +1443,10 @@ function updateUnreadBadge(){
   if(badge){if(total>0){badge.textContent=total>99?'99+':String(total);badge.style.display='inline';}else{badge.style.display='none';}}
 }
 function addUnread(senderId){
-  if(G.chat===senderId&&document.getElementById('chat').classList.contains('active'))return;
+  console.log('addUnread called for:',senderId,'current chat:',G.chat,'chat active:',document.getElementById('chat')&&document.getElementById('chat').classList.contains('active'));
+  if(G.chat===senderId&&document.getElementById('chat')&&document.getElementById('chat').classList.contains('active'))return;
   _unread[senderId]=(_unread[senderId]||0)+1;
+  console.log('_unread now:',JSON.stringify(_unread));
   updateUnreadBadge();
 }
 function clearUnread(senderId){_unread[senderId]=0;updateUnreadBadge();}
