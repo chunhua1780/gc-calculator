@@ -284,7 +284,12 @@ html,body{height:100%;margin:0;padding:0;}
         <div style="flex:1;margin-left:4px;">
           <div style="font-size:17px;font-weight:600;" id="nameDisplay">My Account</div>
           <div style="font-size:13px;color:#8e8e93;margin-top:2px;" id="myIdShow">ID: ...</div>
-      <div style="margin-top:8px;"><button onclick="showQR()" style="background:#007aff;border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">Show QR Code</button></div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="showQR()" style="background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">📷 QR</button>
+        <button onclick="editNickname()" style="background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">✏️ 昵称</button>
+        <button onclick="editAvatar()" style="background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">🖼️ 头像</button>
+        <button onclick="changePin()" style="background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">🔒 密码</button>
+      </div>
         </div>
       </div>
     </div>
@@ -703,6 +708,54 @@ async function showNewChat(){
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
 
 // ═══ 注册/登录 ═══
+function editNickname(){
+  var cur=lg('myName')||'';
+  var name=prompt('请输入新昵称:',cur);
+  if(!name||!name.trim())return;
+  name=name.trim();
+  ls('myName',name);
+  _sb.from('users').update({name:name}).eq('id',parseInt(myId)||myId).then(function(r){
+    if(r.error)console.log('update name err:',r.error.message);
+  });
+  var nd=document.getElementById('nameDisplay');if(nd)nd.textContent=name;
+  var idShow=document.getElementById('myIdShow');if(idShow)idShow.textContent='ID: '+myId+' - '+name;
+  var av=document.getElementById('avatarDisplay');
+  if(av&&!lg('myAvatar'))av.textContent=name[0].toUpperCase();
+  alert('昵称已更新为: '+name);
+}
+
+function editAvatar(){
+  var emojis=['😊','😎','🦊','🐼','🦁','🐯','🦄','🐸','🤖','👻','🎭','🌟','🔥','💎','🎯'];
+  var pick=prompt('选择头像表情:\n'+emojis.join(' ')+'\n\n或输入任意表情:');
+  if(!pick||!pick.trim())return;
+  var trimmed=pick.trim();
+  ls('myAvatar',trimmed);
+  var av=document.getElementById('avatarDisplay');
+  if(av){av.textContent=trimmed;av.style.fontSize='24px';}
+  alert('头像已更新!');
+}
+
+function changePin(){
+  var oldPin=prompt('请输入当前密码:');
+  if(oldPin===null)return;
+  var saved=lg('pin')||'1234';
+  if(oldPin.replace(/[^0-9a-zA-Z]/g,'')!==saved){
+    alert('当前密码错误');
+    return;
+  }
+  var newPin=prompt('请输入新密码(4-8位):');
+  if(!newPin)return;
+  newPin=newPin.replace(/[^0-9a-zA-Z]/g,'');
+  if(newPin.length<4){alert('密码至少4位');return;}
+  var confirmPin=prompt('请再输入一次新密码:');
+  if(confirmPin===null)return;
+  confirmPin=confirmPin.replace(/[^0-9a-zA-Z]/g,'');
+  if(newPin!==confirmPin){alert('两次密码不一致');return;}
+  ls('pin',newPin);
+  G.pin=newPin;
+  alert('密码已更新!');
+}
+
 function switchTo(f){
   ['reg-form','login-form','recovery-form'].forEach(function(id){document.getElementById(id).style.display='none';});
   document.getElementById(f+'-form').style.display='block';
