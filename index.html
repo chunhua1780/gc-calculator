@@ -1276,10 +1276,13 @@ function pickLang(code){
 // ═══ Supabase ═══
 var _sb=supabase.createClient('https://mztoenhgfuomzrashrqk.supabase.co','sb_publishable_pOM3IfVWYiscQ-cz9vAwvA_F2Ht6zg1');
 var currentRoom=null,realtimeSub=null;
+function roomIdOf(a,b){
+  var ids=[String(a),String(b)].sort(function(x,y){return (parseInt(x)||0)-(parseInt(y)||0)||x.localeCompare(y);});
+  return ids.join('_');
+}
 async function joinRoom(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
-  var ids=[String(a),String(b)].sort(function(x,y){return (parseInt(x)||0)-(parseInt(y)||0)||x.localeCompare(y);});
-  currentRoom=ids.join('_');
+  currentRoom=roomIdOf(a,b);
   if(realtimeSub)realtimeSub.unsubscribe();
   if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}}
   realtimeSub=_sb.channel('room:'+currentRoom)
@@ -1852,14 +1855,20 @@ function hideContact(cid){
 async function deleteContact(cid){
   if(!confirm('确定要删除这段聊天记录吗？此操作不可恢复。'))return;
   var mid=String(myId);
-  var ids=[mid,cid].sort();
-  var room=ids.join('_');
+  var room=roomIdOf(mid,cid);
+  var legacyRoom=[mid,cid].sort().join('_'); // 兼容旧版本可能用过字符串排序生成的room_id，一并清理
   await _sb.from('messages').delete().eq('room_id',room);
+  if(legacyRoom!==room)await _sb.from('messages').delete().eq('room_id',legacyRoom);
   await _sb.from('friends').delete().eq('user_id',mid).eq('friend_id',cid);
   var h=getHiddenContacts();
   h=h.filter(function(x){return x!==cid;});
   setHiddenContacts(h);
   if(G.msgs&&G.msgs[cid])delete G.msgs[cid];
+  if(_unread)_unread[cid]=0;
+  if(currentRoom===room||currentRoom===legacyRoom){
+    if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}realtimeSub=null;}
+    currentRoom=null;
+  }
   loadContacts();
 }
 function attachSwipe(el,actionsEl){
