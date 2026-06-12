@@ -1097,20 +1097,22 @@ function listenForAllMessages(){
       // 加入消息队列
       if(!G.msgs[senderId])G.msgs[senderId]=[];
       var already=G.msgs[senderId].some(function(x){return x.id===m.id;});
-      console.log('Processing message from:',senderId,'already:',already);
       if(!already){
         G.msgs[senderId].push(msg);
         if(G.chat===senderId){renderMsgs();}
         var lastEl=document.getElementById('last-'+senderId);
-        console.log('lastEl found:',!!lastEl,'contact found:',!!document.getElementById('contact-'+senderId));
         if(lastEl){
           lastEl.textContent=msg.type==='text'?msg.text:'['+msg.type+']';
           lastEl.style.color='#007aff';
           lastEl.style.fontWeight='600';
         }
-        autoAddContact(senderId,msg).catch(function(e){console.log('autoAddContact error:',e);});
-        addUnread(senderId);
+        autoAddContact(senderId,msg);
         sendNotif();
+      }
+      // 未读提醒：只要不在当前聊天界面就提醒，与already无关
+      var inThisChat=(G.chat===senderId)&&document.getElementById('chat')&&document.getElementById('chat').classList.contains('active');
+      if(!inThisChat){
+        addUnread(senderId);
       }
     }).subscribe(function(s){
       console.log('All msgs sub:',s);
