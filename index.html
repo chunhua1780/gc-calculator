@@ -44,12 +44,12 @@ html,body{height:100%;margin:0;padding:0;}
 .tab.on{color:#a18cd1;}
 .tab svg{width:24px;height:24px;}
 .scroll{flex:1;overflow-y:auto;background:transparent;}
-.card{background:#fff;border-radius:18px;margin:0 16px;overflow:hidden;box-shadow:0 2px 12px rgba(200,155,109,.08);}
-.row{display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--theme-border);cursor:pointer;gap:12px;}
+.card{background:transparent;margin:0 8px;overflow:visible;}
+.row{display:flex;align-items:center;padding:14px 16px;cursor:pointer;gap:12px;background:rgba(255,154,158,.07);border-radius:16px;margin:6px 8px;}
 .row:last-child{border-bottom:none;}
 .row:active{background:#e5e5ea;}
-.av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.08);}
-.si{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.si{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;background:rgba(255,255,255,.6);}
 .tog{width:51px;height:31px;border-radius:16px;background:#e5e5ea;position:relative;cursor:pointer;transition:background .25s;flex-shrink:0;}
 .tog.on{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));}
 .td{width:27px;height:27px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .25s;box-shadow:0 2px 5px rgba(0,0,0,.25);}
@@ -291,27 +291,27 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Privacy & Security</div>
     <div class="card">
       <div class="row" onclick="show('hide-set')">
-        <div class="si" style="background:#636366;">🕵️</div>
+        <div class="si" style="background:#f3e8ff;">🕵️</div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-hideMode">Hide Mode</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="hideDesc">Not enabled</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="show('notif-set')">
-        <div class="si" style="background:#bf5af2;">🔔</div>
+        <div class="si" style="background:#fde2f3;">🔔</div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-secretNotif">Secret Notification</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="notifDesc">● Dot</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="show('dest-set')">
-        <div class="si" style="background:#ff3b30;">💣</div>
+        <div class="si" style="background:#ffe4e1;">💣</div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-destroyMethod">Destroy Method</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="destructDesc">3 wrong passwords</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="panic()">
-        <div class="si" style="background:#ff3b30;">🚨</div>
+        <div class="si" style="background:#ffe4e1;">🚨</div>
         <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;" id="set-destroyNow">Destroy Now</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">Clear all records instantly</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row">
-        <div class="si" style="background:#34c759;">🔒</div>
+        <div class="si" style="background:#e1f5ee;">🔒</div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-e2e">End-to-End Encryption</div></div>
         <div class="tog on" onclick="this.classList.toggle('on')"><div class="td"></div></div>
       </div>
@@ -319,7 +319,7 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-lang-hd">Language</div>
     <div class="card">
       <div class="row" onclick="show('lang-set')">
-        <div class="si" style="background:#007aff;">🌐</div>
+        <div class="si" style="background:#e6f1fb;">🌐</div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-lang">Language</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="curLangShow">English</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
@@ -327,7 +327,7 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-sub-hd">Subscription</div>
     <div class="card">
       <div class="row">
-        <div class="si" style="background:#ff9f0a;">💰</div>
+        <div class="si" style="background:#faeeda;">💰</div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-subscribe">Subscribe</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">$9.99/month · Unlock all features</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
@@ -335,7 +335,7 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-acct">Account</div>
     <div class="card">
       <div class="row" onclick="doLogout()">
-        <div class="si" style="background:#ff3b30;">🚪</div>
+        <div class="si" style="background:#ffe4e1;">🚪</div>
         <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;" id="set-logout">Logout</div></div>
       </div>
     </div>
