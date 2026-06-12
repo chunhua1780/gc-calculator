@@ -1346,9 +1346,12 @@ function listenForCalls(){
 // ═══ 聊天 ═══
 function openChat(name,ini,color,displayName){
   clearUnread(name);
-  G.chat=name;document.getElementById('chatName').textContent=name;
-  document.getElementById('callAv').textContent=ini||name[0];document.getElementById('callAv').style.background=color||'#007aff';
-  document.getElementById('callNm').textContent=name;document.getElementById('vidNm').textContent=name;
+  G.chat=name;
+  var dn=displayName||name;
+  document.getElementById('chatName').textContent=dn;
+  document.getElementById('callAv').textContent=ini||dn[0];document.getElementById('callAv').style.background=color||'#007aff';
+  document.getElementById('callNm').textContent=dn;document.getElementById('vidNm').textContent=dn;
+  resolveDisplayName(name);
   if(!G.msgs[name])G.msgs[name]=[{text:'👋',sent:false,t:gt()}];
   renderMsgs();show('chat');document.getElementById('xpanel').classList.remove('on');
   joinRoom(name);
@@ -1422,6 +1425,25 @@ async function loadFriendsList(){
     div.innerHTML='<div class=\"av\" style=\"background:'+color+'\">'+name[0].toUpperCase()+'</div><div style=\"flex:1;min-width:0;\"><div style=\"font-size:17px;\">'+name+'</div><div style=\"font-size:13px;color:#8e8e93;margin-top:1px;\">ID: '+cid+'</div></div><span style=\"color:#c7c7cc;font-size:18px;\">&#x203A;</span>';
     list.appendChild(div);
   });
+}
+
+async function resolveDisplayName(cid){
+  if(!myId)return;
+  var mid=String(myId);
+  var dn=cid;
+  var fr=await _sb.from('friends').select('nickname').eq('user_id',mid).eq('friend_id',String(cid)).maybeSingle();
+  if(fr.data&&fr.data.nickname){dn=fr.data.nickname;}
+  else{
+    var u=await _sb.from('users').select('name').eq('id',parseInt(cid)||0).maybeSingle();
+    if(u.data&&u.data.name)dn=u.data.name;
+  }
+  if(G.chat===cid){
+    var cn=document.getElementById('chatName');
+    if(cn)cn.textContent=dn;
+    var ca=document.getElementById('callAv');if(ca)ca.textContent=dn[0].toUpperCase();
+    var cnm=document.getElementById('callNm');if(cnm)cnm.textContent=dn;
+    var vnm=document.getElementById('vidNm');if(vnm)vnm.textContent=dn;
+  }
 }
 
 function getHiddenContacts(){
