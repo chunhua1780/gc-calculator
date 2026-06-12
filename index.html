@@ -1151,7 +1151,7 @@ function listenForAllMessages(){
         var lastEl=document.getElementById('last-'+senderId);
         if(lastEl){
           lastEl.textContent=msg.type==='text'?msg.text:'['+msg.type+']';
-          lastEl.style.color='#007aff';
+          lastEl.style.color='#d4537e';
           lastEl.style.fontWeight='600';
         }
         loadContacts();
@@ -1289,7 +1289,7 @@ async function loadContacts(){
     div.id='contact-'+cid;
     div.onclick=(function(c,n,col){return function(){openChat(c,n[0].toUpperCase(),col,n);};})(cid,name,color);
     var hasUnread=(_unread[cid]||0)>0;
-    var lastStyle=hasUnread?'font-size:14px;color:var(--theme-accent2);font-weight:600;margin-top:2px;':'font-size:14px;color:#8e8e93;margin-top:2px;';
+    var lastStyle=hasUnread?'font-size:14px;color:#d4537e;font-weight:600;margin-top:2px;':'font-size:14px;color:#8e8e93;margin-top:2px;';
     div.innerHTML='<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div><div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="'+lastStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="last-'+cid+'">'+lastText+'</div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
     list.appendChild(div);
   });
@@ -1503,7 +1503,15 @@ function addUnread(senderId){
   console.log('_unread now:',JSON.stringify(_unread));
   updateUnreadBadge();
 }
-function clearUnread(senderId){_unread[senderId]=0;updateUnreadBadge();}
+function clearUnread(senderId){
+  _unread[senderId]=0;
+  updateUnreadBadge();
+  var lastEl=document.getElementById('last-'+senderId);
+  if(lastEl){
+    lastEl.style.color='#8e8e93';
+    lastEl.style.fontWeight='normal';
+  }
+}
 
 function sendNotif(){
   if(!('Notification' in window))return;
