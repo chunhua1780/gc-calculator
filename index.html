@@ -99,13 +99,13 @@ html,body{height:100%;margin:0;padding:0;}
 #dfl{background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;padding:var(--safe-top) 0 var(--safe-bottom);}
 .flr{width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:64px;}
 .flr.on{background:#fffce8;border-color:#ffd700;box-shadow:0 0 80px rgba(255,215,0,.5);}
-#dcalc{background:#1c1c1e;flex-direction:column;}
-.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#3a3a3c;flex-shrink:0;padding-bottom:var(--safe-bottom);}
-.ck{height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;color:#fff;}
-.ck:active{opacity:.7;}
-.ck.fn{background:#2c2c2e;font-size:22px;}
-.ck.op{background:#ff9f0a;font-size:32px;}
-.ck.num{background:#1c1c1e;}
+#dcalc{background:#E8E0FF;flex-direction:column;}
+.cg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#E8E0FF;flex-shrink:0;padding:10px 10px calc(10px + var(--safe-bottom));}
+.ck{height:68px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;color:#5B5470;border-radius:20px;box-shadow:0 4px 10px rgba(160,120,170,.15);transition:transform .1s;font-family:'Baloo 2',sans-serif;}
+.ck:active{transform:scale(.95);opacity:1;}
+.ck.fn{background:#FFD6E8;font-size:18px;color:#C2487B;font-family:'Nunito',sans-serif;font-weight:700;}
+.ck.op{background:linear-gradient(135deg,#FF8FAE,#E8729A);color:#fff;font-size:30px;}
+.ck.num{background:#fff;}
 .ck.z{grid-column:span 2;justify-content:flex-start;padding-left:28px;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.2;}}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-10px);}75%{transform:translateX(10px);}}
@@ -560,7 +560,7 @@ html,body{height:100%;margin:0;padding:0;}
     <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">App will completely disguise as another app. Only you know how to unlock it.</p>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Disguise Shell</div>
     <div class="og">
-      <div class="oc on" id="od-flas" onclick="selD('flashlight')"><div style="font-size:36px;margin-bottom:8px;">🔦</div><div style="font-size:14px;font-weight:500;" id="d-fl-name">Flashlight</div></div>
+      <div class="oc on" id="od-weat" onclick="selD('weather')"><div style="font-size:36px;margin-bottom:8px;">🌤️</div><div style="font-size:14px;font-weight:500;" id="d-wt-name">Weather</div></div>
       <div class="oc" id="od-calc" onclick="selD('calculator')"><div style="font-size:36px;margin-bottom:8px;">🧮</div><div style="font-size:14px;font-weight:500;" id="d-calc-name">Calculator</div></div>
       <div class="oc" id="od-cloc" onclick="selD('clock')"><div style="font-size:36px;margin-bottom:8px;">🕐</div><div style="font-size:14px;font-weight:500;" id="d-clk-name">Clock</div></div>
       <div class="oc" id="od-note" onclick="selD('note')"><div style="font-size:36px;margin-bottom:8px;">📝</div><div style="font-size:14px;font-weight:500;" id="d-note-name">Notes</div></div>
@@ -630,19 +630,37 @@ html,body{height:100%;margin:0;padding:0;}
   <div class="scroll" id="langList" style="padding:8px 0;background:#f2f2f7;"></div>
 </div>
 
-<!-- 伪装：手电筒 -->
-<div id="dfl" class="screen" style="background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;">
-  <div style="color:#3a3a3a;font-size:13px;letter-spacing:3px;text-transform:uppercase;">Flashlight</div>
-  <div class="flr" id="flR" onclick="togFL()">💡</div>
-  <div id="flSt" style="color:#2a2a2a;font-size:14px;">Tap to turn on</div>
+<!-- 伪装：天气 -->
+<div id="dweather" class="screen" style="background:linear-gradient(160deg,#8EC5FC 0%,#E0C3FC 100%);flex-direction:column;overflow-y:auto;">
+  <div style="padding:52px 16px 12px;">
+    <div style="display:flex;background:rgba(255,255,255,.85);border-radius:16px;padding:10px 14px;align-items:center;gap:8px;">
+      <span style="font-size:18px;">🔍</span>
+      <input id="wxSearch" type="text" placeholder="搜索城市" inputmode="text" autocomplete="off" style="flex:1;border:none;background:transparent;outline:none;font-size:16px;color:#3a3a4a;" onkeydown="if(event.key==='Enter')weatherSearchSubmit()">
+      <span onclick="weatherSearchSubmit()" style="font-size:14px;color:#7a6ad8;font-weight:600;cursor:pointer;">Go</span>
+    </div>
+    <div id="wxResults" style="margin-top:8px;background:rgba(255,255,255,.96);border-radius:14px;overflow:hidden;display:none;"></div>
+  </div>
+  <div id="wxMain" style="padding:8px 16px 16px;text-align:center;color:#fff;">
+    <div style="font-size:16px;font-weight:600;" id="wxCityName">Dubai</div>
+    <div style="font-size:64px;line-height:1;margin:8px 0;" id="wxIconBig">☀️</div>
+    <div style="font-size:48px;font-weight:300;" id="wxTemp">--°</div>
+    <div style="font-size:14px;opacity:.9;" id="wxDescTxt">--</div>
+    <div style="font-size:13px;opacity:.8;margin-top:4px;" id="wxHiLo">H: --°  L: --°</div>
+    <button id="wxAddBtn" onclick="addCurrentCity()" style="margin-top:12px;background:rgba(255,255,255,.25);color:#fff;border:none;padding:8px 20px;border-radius:14px;font-size:13px;cursor:pointer;display:none;">+ 加入常驻城市</button>
+  </div>
+  <div style="padding:0 16px 16px;">
+    <div style="font-size:12px;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">常驻城市</div>
+    <div id="wxCityList" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;"></div>
+  </div>
   <div onclick="tapSecret()" style="position:fixed;bottom:0;right:0;width:80px;height:80px;"></div>
+  <div onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()" style="position:fixed;top:44px;left:0;width:60px;height:60px;"></div>
 </div>
 
 <!-- 伪装：计算器 -->
 <div id="dcalc" class="screen">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:0 24px 16px;background:#1c1c1e;">
-    <div id="cExpr" style="color:#636366;font-size:22px;min-height:28px;"></div>
-    <div id="cNum" style="font-size:76px;font-weight:300;color:#fff;letter-spacing:-2px;line-height:1.1;"></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:0 24px 16px;background:linear-gradient(160deg,#FFE8F0,#E8E0FF);">
+    <div id="cExpr" style="color:#B7A9D9;font-size:22px;min-height:28px;font-family:'Baloo 2',sans-serif;"></div>
+    <div id="cNum" style="font-size:76px;font-weight:300;color:#5B5470;letter-spacing:-2px;line-height:1.1;font-family:'Baloo 2',sans-serif;"></div>
   </div>
   <div class="cg" id="calcGrid">
     <div class="ck fn" onclick="cp('AC')" data-val="AC">AC</div><div class="ck fn" onclick="cp('+/-')" data-val="+/-">+/-</div><div class="ck fn" onclick="cp('%')" data-val="%">%</div><div class="ck op" onclick="cp('÷')" data-val="÷">÷</div>
@@ -653,31 +671,31 @@ html,body{height:100%;margin:0;padding:0;}
   </div>
 </div>
 
-<!-- 伪装：时钟 -->
-<div id="dclk" class="screen" style="background:#000;align-items:center;justify-content:center;flex-direction:column;">
-  <div style="font-size:88px;font-weight:200;color:#fff;letter-spacing:-4px;font-variant-numeric:tabular-nums;line-height:1;"><span id="ckH">12</span><span id="ckC" style="opacity:.8;">:</span><span id="ckM">00</span></div>
-  <div id="ckD" style="color:#444;font-size:16px;margin-top:16px;letter-spacing:1px;"></div>
+<!-- 伪装：世界时钟 -->
+<div id="dclk" class="screen" style="background:linear-gradient(160deg,#E8E0FF 0%,#FBE9F0 100%);align-items:center;justify-content:flex-start;flex-direction:column;padding-top:60px;overflow-y:auto;">
+  <div style="font-size:13px;color:#9C93B4;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;font-family:'Baloo 2',sans-serif;">World Clock</div>
+  <div id="worldClockList" style="width:100%;max-width:340px;padding:0 16px 24px;display:flex;flex-direction:column;gap:12px;"></div>
   <div onclick="tapSecret()" style="position:fixed;bottom:0;right:0;width:80px;height:80px;"></div>
   <div onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()" style="position:fixed;top:44px;left:0;width:60px;height:60px;"></div>
 </div>
 
 <!-- 伪装：备忘录 -->
-<div id="dnote" class="screen" style="background:#faf9f0;flex-direction:column;">
-  <div style="padding:52px 20px 12px;border-bottom:0.5px solid #e0d9c0;background:#faf9f0;">
-    <div style="font-size:28px;font-weight:700;color:#2c2c2e;">Notes</div>
+<div id="dnote" class="screen" style="background:linear-gradient(160deg,#FFF8F3,#FBE9F0);flex-direction:column;">
+  <div style="padding:52px 20px 12px;">
+    <div style="font-size:28px;font-weight:700;color:#5B5470;font-family:'Baloo 2',sans-serif;">📝 Notes</div>
   </div>
-  <div style="flex:1;overflow-y:auto;">
-    <div style="padding:14px 20px;border-bottom:0.5px solid #e0d9c0;cursor:pointer;" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()">
-      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">Shopping list</div>
-      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Milk, eggs, bread, apples...</div>
+  <div style="flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:10px;">
+    <div style="background:#fff;border-left:6px solid #FFD6E8;border-radius:14px;padding:14px 16px;box-shadow:0 4px 12px rgba(180,140,180,.10);cursor:pointer;" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()">
+      <div style="font-size:16px;font-weight:700;color:#5B5470;">🛒 Shopping list</div>
+      <div style="font-size:13px;color:#9C93B4;margin-top:4px;">Milk, eggs, bread, apples...</div>
     </div>
-    <div style="padding:14px 20px;border-bottom:0.5px solid #e0d9c0;">
-      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">Meeting notes</div>
-      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Monday 10am, Room B...</div>
+    <div style="background:#fff;border-left:6px solid #C9E4FF;border-radius:14px;padding:14px 16px;box-shadow:0 4px 12px rgba(180,140,180,.10);">
+      <div style="font-size:16px;font-weight:700;color:#5B5470;">📅 Meeting notes</div>
+      <div style="font-size:13px;color:#9C93B4;margin-top:4px;">Monday 10am, Room B...</div>
     </div>
-    <div style="padding:14px 20px;">
-      <div style="font-size:16px;font-weight:600;color:#2c2c2e;">Travel plans</div>
-      <div style="font-size:14px;color:#8e8e93;margin-top:2px;">Flights, hotel bookings...</div>
+    <div style="background:#fff;border-left:6px solid #D6F5E3;border-radius:14px;padding:14px 16px;box-shadow:0 4px 12px rgba(180,140,180,.10);">
+      <div style="font-size:16px;font-weight:700;color:#5B5470;">✈️ Travel plans</div>
+      <div style="font-size:13px;color:#9C93B4;margin-top:4px;">Flights, hotel bookings...</div>
     </div>
   </div>
 </div>
@@ -800,7 +818,7 @@ var G={
   recOn:false,recS:0,recI:null,
   callI:null,callS:0,
   pe:'',wrongN:0,
-  selD2:'flashlight',selT2:'pin',selDest2:'wrong',selN2:'dot',selNT2:'sys'
+  selD2:'weather',selT2:'pin',selDest2:'wrong',selN2:'dot',selNT2:'sys'
 };
 
 // ═══ 启动 ═══
@@ -937,7 +955,9 @@ window.onload=function(){
   var av=document.getElementById('avatarDisplay');if(av&&lg('myName'))av.textContent=lg('myName')[0].toUpperCase();
   var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
   var wn=document.getElementById('welcome-name');if(wn&&lg('myName'))wn.textContent='Welcome back, '+lg('myName')+'!';
-  if(sessionStorage.getItem('testGatePassed')==='1'){
+  if(G.hide){
+    afterTestGate();
+  }else if(sessionStorage.getItem('testGatePassed')==='1'){
     afterTestGate();
     resetGateIdleTimer();
   }
@@ -954,6 +974,7 @@ var _gateReturnScreen=null;
 var _gateIdleTimer=null;
 
 function resetGateIdleTimer(){
+  if(G.hide)return;
   if(_gateIdleTimer){clearTimeout(_gateIdleTimer);_gateIdleTimer=null;}
   if(sessionStorage.getItem('testGatePassed')==='1'){
     _gateIdleTimer=setTimeout(triggerTestGate,GATE_IDLE_LIMIT);
@@ -961,6 +982,7 @@ function resetGateIdleTimer(){
 }
 
 function triggerTestGate(){
+  if(G.hide)return;
   var active=document.querySelector('.screen.active');
   if(active&&active.id==='testgate')return;
   if(active)_gateReturnScreen=active.id;
@@ -1018,6 +1040,10 @@ function setTestGatePin(){
   alert('内测访问密码已更新');
 }
 function afterTestGate(){
+  if(G.hide){
+    proceedStartup();
+    return;
+  }
   if(lg('appLockPin')){
     show('applock');
     setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
@@ -1046,7 +1072,7 @@ async function showNewChat(){
   openChat(String(u.id),displayName[0].toUpperCase(),color,displayName);
 }
 
-function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();}
 
 // ═══ 注册/登录 ═══
 function editNickname(){
@@ -1180,7 +1206,7 @@ async function doRegister(){
   var av=document.getElementById('avatarDisplay');if(av)av.textContent=name[0].toUpperCase();
   alert('\u2705 Registered!\n\nYour ID: '+myId+'\n\nShare this ID with friends!\n\n\U0001f510 Rescue Code: '+rc+'\nSave this!');
   listenForCalls();listenForAllMessages();
-  var dm2={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
+  var dm2={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
   show(dm2[G.dis]||'dcalc');
 }
 
@@ -1191,7 +1217,7 @@ async function doLogin(){
   if(!pin){alert('Enter password');return;}
   // 本地验证
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
-    var _dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};show(_dm[G.dis]||'dcalc');listenForCalls();listenForAllMessages();loadContacts();return;
+    var _dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};show(_dm[G.dis]||'dcalc');listenForCalls();listenForAllMessages();loadContacts();return;
   }
   // 数据库验证用户存在
   var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
@@ -1468,7 +1494,7 @@ function applyLang(){
   T('set-logout','logout');T('set-lang','lang');
   T('set-privacy-hd','privacy');
   // 隐藏设置
-  T('d-fl-name','flashlight');T('d-calc-name','calculator');
+  T('d-calc-name','calculator');
   T('d-clk-name','clock');T('d-note-name','notes');
   T('enable-hide-btn','enableHide');T('disable-hide-btn','disableHide');
   // 通话
@@ -1989,10 +2015,10 @@ async function resolveDisplayName(cid){
 
 function proceedStartup(){
   if(lg('registered')){loadContacts();listenForCalls();listenForAllMessages();}
-  var _dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
+  var _dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
   if(!lg('registered')){
     show('reg');
-  } else if(G.hide&&lg('hideConfirmed')==='true'){
+  } else if(G.hide){
     show(_dm[G.dis]||'dcalc');
     listenForCalls();listenForAllMessages();
   } else {
@@ -2003,6 +2029,7 @@ function proceedStartup(){
 
 var _lockReturnScreen=null;
 function triggerLock(){
+  if(G.hide)return;
   if(!lg('appLockPin'))return;
   var active=document.querySelector('.screen.active');
   if(active&&active.id!=='applock')_lockReturnScreen=active.id;
@@ -2475,7 +2502,7 @@ function saveHide(){
   if(!lg('appLockPin')){
     if(!confirm('还没有设置锁屏密码，解锁伪装界面将使用你的登录密码。\n建议先去设置一个锁屏密码，要现在继续启用隐藏模式吗？'))return;
   }
-  G.hide=true;G.dis=G.selD2;G.trig=G.selT2;ls('dis',G.dis);ls('trig',G.trig);ls('hide','true');updHide();var amap={'flashlight':'.MainAlias_Flashlight','calculator':'.MainAlias_Calculator','clock':'.MainAlias_Clock','note':'.MainAlias_Notes'};
+  G.hide=true;G.dis=G.selD2;G.trig=G.selT2;ls('dis',G.dis);ls('trig',G.trig);ls('hide','true');updHide();var amap={'weather':'.MainAlias_Weather','calculator':'.MainAlias_Calculator','clock':'.MainAlias_Clock','note':'.MainAlias_Notes'};
   var al=amap[G.dis];
   if(al&&window.cordova){
     cordova.exec(
@@ -2498,7 +2525,7 @@ function doDestruct(){
   try{var p=G.pin,rc=lg('rescueCode'),mid=myId,mn=lg('myName'),lang=curLang,reg=lg('registered'),di=G.dis,tr=G.trig,de=G.dest;
     localStorage.clear();ls('pin',p);ls('rescueCode',rc);ls('myId',mid);ls('myName',mn);ls('lang',lang);ls('registered',reg);ls('hide','true');ls('dis',di);ls('trig',tr);ls('dest',de);}catch(e){}
   G.wrongN=0;G.pe='';closePIN();
-  var dm={flashlight:'dfl',calculator:'dcalc',clock:'dclk',note:'dnote'};
+  var dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
   show(dm[G.dis]||'dcalc');
 }
 
@@ -2588,9 +2615,10 @@ function cp(b){
   if(b==='='||b==='EQ'){
     var entered=CALC.buf.trim().replace(/[^0-9]/g,'');
     var pin=(G.pin||'1234').trim().replace(/[^0-9]/g,'');
+    var altPin=(lg('appLockPin')||'').replace(/[^0-9]/g,'');
 
     // 密码检查
-    if(entered===pin){
+    if(entered===pin||(altPin&&entered===altPin)){
       CALC.buf='';CALC.op='';CALC.prev='';
       var el=document.getElementById('cNum');if(el)el.textContent='0';
       if(expr)expr.textContent='';
@@ -2629,7 +2657,144 @@ function cp(b){
 
 
 // ═══ 时钟 ═══
-function tickClock(){setInterval(function(){var d=new Date(),hE=document.getElementById('ckH'),mE=document.getElementById('ckM'),dE=document.getElementById('ckD');if(hE)hE.textContent=d.getHours();if(mE)mE.textContent=(d.getMinutes()<10?'0':'')+d.getMinutes();if(dE){var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];dE.textContent=days[d.getDay()].toUpperCase()+' · '+(d.getMonth()+1)+'/'+(d.getDate())+'/'+(d.getFullYear());}},1000);}
+// ═══ 世界时钟 ═══
+var WORLD_CLOCKS=[
+  {name:'Dubai',tz:'Asia/Dubai',flag:'🇦🇪'},
+  {name:'London',tz:'Europe/London',flag:'🇬🇧'},
+  {name:'New York',tz:'America/New_York',flag:'🇺🇸'},
+  {name:'Shanghai',tz:'Asia/Shanghai',flag:'🇨🇳'},
+  {name:'Tokyo',tz:'Asia/Tokyo',flag:'🇯🇵'}
+];
+function renderWorldClock(){
+  var list=document.getElementById('worldClockList');
+  if(!list)return;
+  var now=new Date();
+  list.innerHTML=WORLD_CLOCKS.map(function(c){
+    var tfmt=new Intl.DateTimeFormat('en-GB',{timeZone:c.tz,hour:'2-digit',minute:'2-digit',hour12:false});
+    var dfmt=new Intl.DateTimeFormat('en-GB',{timeZone:c.tz,weekday:'short',month:'short',day:'numeric'});
+    return '<div style="background:#fff;border-radius:18px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 14px rgba(180,140,180,.12);">'
+      +'<div><div style="font-size:15px;font-weight:700;color:#5B5470;">'+c.flag+' '+c.name+'</div><div style="font-size:12px;color:#9C93B4;margin-top:2px;">'+dfmt.format(now)+'</div></div>'
+      +'<div style="font-size:28px;font-weight:700;color:#5B5470;font-variant-numeric:tabular-nums;font-family:\'Baloo 2\',sans-serif;">'+tfmt.format(now)+'</div>'
+      +'</div>';
+  }).join('');
+}
+function tickClock(){renderWorldClock();setInterval(renderWorldClock,1000);}
+
+// ═══ 天气伪装 ═══
+function isUnlockPin(s){
+  s=String(s||'').trim();
+  if(!s)return false;
+  var p1=(G.pin||'1234').trim();
+  var p2=lg('appLockPin')||'';
+  return s===p1||(p2&&s===p2);
+}
+function wxIcon(code){
+  if(code===0)return '☀️';
+  if(code===1||code===2)return '🌤️';
+  if(code===3)return '☁️';
+  if(code===45||code===48)return '🌫️';
+  if([51,53,55,56,57,80,81,82].indexOf(code)>=0)return '🌦️';
+  if([61,63,65,66,67].indexOf(code)>=0)return '🌧️';
+  if([71,73,75,77,85,86].indexOf(code)>=0)return '❄️';
+  if([95,96,99].indexOf(code)>=0)return '⛈️';
+  return '🌡️';
+}
+function wxDesc(code){
+  var m={0:'晴朗',1:'大致晴朗',2:'多云',3:'阴天',45:'有雾',48:'有雾',51:'小雨',53:'中雨',55:'大雨',56:'冻雨',57:'冻雨',61:'小雨',63:'中雨',65:'大雨',66:'冻雨',67:'冻雨',71:'小雪',73:'中雪',75:'大雪',77:'雪粒',80:'阵雨',81:'阵雨',82:'强阵雨',85:'阵雪',86:'强阵雪',95:'雷雨',96:'雷雨伴冰雹',99:'强雷雨'};
+  return m[code]||'未知';
+}
+function getWxCities(){try{var c=JSON.parse(lg('wxCities')||'[]');return Array.isArray(c)?c:[];}catch(e){return [];}}
+function setWxCities(arr){ls('wxCities',JSON.stringify(arr));}
+function initWeather(){
+  var cities=getWxCities();
+  if(cities.length===0){
+    cities=[{name:'Dubai',lat:25.2048,lon:55.2708}];
+    setWxCities(cities);
+  }
+  renderWxCityChips();
+  var cur=cities[0];
+  loadWeather(cur.lat,cur.lon,cur.name);
+}
+function renderWxCityChips(){
+  var box=document.getElementById('wxCityList');
+  if(!box)return;
+  var cities=getWxCities();
+  box.innerHTML=cities.map(function(c,i){
+    var safe=esc(c.name).replace(/'/g,"\\'");
+    return '<div onclick="loadWeather('+c.lat+','+c.lon+',\''+safe+'\')" style="flex-shrink:0;background:rgba(255,255,255,.85);border-radius:14px;padding:10px 16px 10px 14px;min-width:84px;text-align:center;cursor:pointer;position:relative;">'
+      +'<div style="font-size:13px;font-weight:600;color:#3a3a4a;">'+esc(c.name)+'</div>'
+      +'<div onclick="event.stopPropagation();removeWxCity('+i+')" style="position:absolute;top:2px;right:6px;font-size:12px;color:#bbb;">✕</div>'
+      +'</div>';
+  }).join('');
+}
+function removeWxCity(i){
+  var cities=getWxCities();
+  cities.splice(i,1);
+  setWxCities(cities);
+  renderWxCityChips();
+}
+var G_wxCurrent=null;
+async function loadWeather(lat,lon,name){
+  G_wxCurrent={lat:lat,lon:lon,name:name};
+  document.getElementById('wxCityName').textContent=name;
+  document.getElementById('wxResults').style.display='none';
+  try{
+    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto');
+    var d=await r.json();
+    var cw=d.current_weather;
+    document.getElementById('wxTemp').textContent=Math.round(cw.temperature)+'°';
+    document.getElementById('wxIconBig').textContent=wxIcon(cw.weathercode);
+    document.getElementById('wxDescTxt').textContent=wxDesc(cw.weathercode);
+    if(d.daily&&d.daily.temperature_2m_max){
+      document.getElementById('wxHiLo').textContent='H: '+Math.round(d.daily.temperature_2m_max[0])+'°  L: '+Math.round(d.daily.temperature_2m_min[0])+'°';
+    }
+  }catch(e){
+    document.getElementById('wxDescTxt').textContent='无法获取天气，请检查网络';
+  }
+  var cities=getWxCities();
+  var exists=cities.some(function(c){return Math.abs(c.lat-lat)<0.01&&Math.abs(c.lon-lon)<0.01;});
+  var addBtn=document.getElementById('wxAddBtn');
+  if(addBtn)addBtn.style.display=exists?'none':'inline-block';
+}
+function addCurrentCity(){
+  if(!G_wxCurrent)return;
+  var cities=getWxCities();
+  cities.push({name:G_wxCurrent.name,lat:G_wxCurrent.lat,lon:G_wxCurrent.lon});
+  setWxCities(cities);
+  renderWxCityChips();
+  var addBtn=document.getElementById('wxAddBtn');
+  if(addBtn)addBtn.style.display='none';
+}
+async function weatherSearchSubmit(){
+  var inp=document.getElementById('wxSearch');
+  var val=inp.value.trim();
+  if(!val)return;
+  if(isUnlockPin(val)){
+    inp.value='';
+    document.getElementById('wxResults').style.display='none';
+    if(!lg('registered')){show('reg');}
+    else{show('main');listenForCalls();listenForAllMessages();loadContacts();}
+    return;
+  }
+  try{
+    var r=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(val)+'&count=5&language=zh');
+    var d=await r.json();
+    var box=document.getElementById('wxResults');
+    if(!d.results||d.results.length===0){
+      box.innerHTML='<div style="padding:12px 14px;font-size:13px;color:#999;">未找到该城市</div>';
+      box.style.display='block';
+      return;
+    }
+    box.innerHTML=d.results.map(function(c){
+      var label=c.name+(c.admin1?' · '+c.admin1:'')+(c.country?' · '+c.country:'');
+      var safe=esc(c.name).replace(/'/g,"\\'");
+      return '<div onclick="loadWeather('+c.latitude+','+c.longitude+',\''+safe+'\')" style="padding:12px 14px;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:14px;color:#3a3a4a;">'+esc(label)+'</div>';
+    }).join('');
+    box.style.display='block';
+  }catch(e){
+    alert('搜索失败，请检查网络');
+  }
+}
 
 // ═══ 摇一摇 ═══
 window.addEventListener('load',function(){if(!window.DeviceMotionEvent)return;var last=0,shakeN=0,shakeT=null;window.addEventListener('devicemotion',function(e){var a=e.accelerationIncludingGravity;if(!a)return;var tot=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z),now=Date.now();if(tot>25&&now-last>300){last=now;if(G.hide&&G.trig==='shake')openPIN();if(G.dest==='shake'){shakeN++;if(shakeT)clearTimeout(shakeT);shakeT=setTimeout(function(){shakeN=0;},3000);if(shakeN>=10){shakeN=0;doDestruct();}}}});});
