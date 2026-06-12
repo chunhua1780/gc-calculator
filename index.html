@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>SecretTalk</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --theme-bg:#fdf2f8;
@@ -110,12 +111,104 @@ html,body{height:100%;margin:0;padding:0;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-10px);}75%{transform:translateX(10px);}}
 @keyframes bunnyBounce{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-10px) rotate(-3deg);}}
 @keyframes lockShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+
+/* ===== 内测密码门 (可爱兔子版) ===== */
+#testgate .gate-stage{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#FBE9F0 0%, #E7E0F9 100%);
+  font-family:'Nunito',sans-serif;
+}
+#testgate .gate-ambient{position:absolute;inset:0;pointer-events:none;}
+#testgate .gate-ambient span{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);animation:gateDrift 14s ease-in-out infinite;}
+#testgate .gate-ambient span:nth-child(1){width:18px;height:18px;left:12%;top:18%;animation-delay:0s;}
+#testgate .gate-ambient span:nth-child(2){width:10px;height:10px;left:80%;top:24%;animation-delay:2s;}
+#testgate .gate-ambient span:nth-child(3){width:14px;height:14px;left:75%;top:70%;animation-delay:4s;}
+#testgate .gate-ambient span:nth-child(4){width:8px;height:8px;left:20%;top:75%;animation-delay:6s;}
+#testgate .gate-ambient span:nth-child(5){width:12px;height:12px;left:50%;top:10%;animation-delay:1s;}
+@keyframes gateDrift{0%,100%{transform:translateY(0) scale(1);opacity:.5;}50%{transform:translateY(-18px) scale(1.15);opacity:.9;}}
+
+#testgate .bunny-wrap{position:relative;z-index:1;animation:gateBob 4s ease-in-out infinite;}
+@keyframes gateBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+#testgate .bunny{width:170px;height:auto;display:block;filter:drop-shadow(0 14px 24px rgba(180,130,180,.25));}
+#testgate .blink{animation:gateBlink 5s infinite;transform-origin:center;}
+@keyframes gateBlink{0%,92%,100%{transform:scaleY(1);}95%{transform:scaleY(.1);}}
+
+#testgate .gate-bubble{
+  position:relative;z-index:1;margin-top:-22px;background:#fff;border:2px solid #F3D7E6;
+  border-radius:26px;padding:26px 26px 24px;width:100%;max-width:300px;text-align:center;
+  box-shadow:0 18px 40px rgba(160,120,170,.18);
+  animation:gatePop .5s cubic-bezier(.34,1.56,.64,1) .15s both;
+}
+@keyframes gatePop{0%{opacity:0;transform:scale(.85) translateY(10px);}100%{opacity:1;transform:scale(1) translateY(0);}}
+#testgate .gate-bubble h1{font-family:'Baloo 2',sans-serif;font-size:20px;font-weight:700;margin:0 0 4px;color:#5B5470;}
+#testgate .gate-bubble p{margin:0 0 18px;font-size:13.5px;color:#9C93B4;line-height:1.5;}
+#testgate .gate-pw-input{
+  width:100%;padding:14px 16px;font-size:15px;font-family:'Nunito',sans-serif;
+  border:2px solid #F3D7E6;border-radius:16px;outline:none;background:#FFF9FB;color:#5B5470;
+  letter-spacing:2px;text-align:center;transition:border-color .2s,box-shadow .2s;margin-bottom:12px;
+}
+#testgate .gate-pw-input::placeholder{letter-spacing:normal;color:#C9C0DD;}
+#testgate .gate-pw-input:focus{border-color:#FF8FAE;box-shadow:0 0 0 4px rgba(255,143,174,.15);}
+#testgate .gate-submit{
+  width:100%;padding:13px 16px;font-family:'Baloo 2',sans-serif;font-size:15px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg,#FF8FAE,#E8729A);border:none;border-radius:16px;cursor:pointer;
+  transition:transform .12s ease,box-shadow .2s ease;box-shadow:0 8px 18px rgba(232,114,154,.35);
+}
+#testgate .gate-submit:active{transform:translateY(1px) scale(.98);}
+#testgate .gate-hint{min-height:18px;font-size:12.5px;color:#E8607A;font-weight:600;margin-top:10px;opacity:0;transition:opacity .2s;}
+#testgate .gate-hint.show{opacity:1;}
+#testgate .gate-shake{animation:gateShake .45s ease;}
+@keyframes gateShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(4px);}}
+@media (prefers-reduced-motion: reduce){
+  #testgate .bunny-wrap,#testgate .gate-ambient span,#testgate .gate-bubble,#testgate .blink{animation:none!important;}
+}
 </style>
 </head>
 <body>
 
+<!-- 内测密码门 -->
+<div id="testgate" class="screen active">
+  <div class="gate-stage">
+    <div class="gate-ambient"><span></span><span></span><span></span><span></span><span></span></div>
+
+    <div class="bunny-wrap">
+      <svg class="bunny" viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="68" cy="40" rx="20" ry="46" fill="#FFFFFF" stroke="#EFE2EE" stroke-width="2" transform="rotate(-12 68 40)"/>
+        <ellipse cx="132" cy="40" rx="20" ry="46" fill="#FFFFFF" stroke="#EFE2EE" stroke-width="2" transform="rotate(12 132 40)"/>
+        <ellipse cx="68" cy="44" rx="10" ry="32" fill="#FFC1D9" transform="rotate(-12 68 44)"/>
+        <ellipse cx="132" cy="44" rx="10" ry="32" fill="#FFC1D9" transform="rotate(12 132 44)"/>
+        <circle cx="100" cy="92" r="56" fill="#FFFFFF" stroke="#EFE2EE" stroke-width="2"/>
+        <ellipse cx="70" cy="104" rx="11" ry="7" fill="#FFC1D9" opacity="0.6"/>
+        <ellipse cx="130" cy="104" rx="11" ry="7" fill="#FFC1D9" opacity="0.6"/>
+        <g class="blink">
+          <ellipse cx="80" cy="90" rx="5" ry="7" fill="#5B5470"/>
+          <ellipse cx="120" cy="90" rx="5" ry="7" fill="#5B5470"/>
+          <circle cx="78.5" cy="87" r="1.6" fill="#fff"/>
+          <circle cx="118.5" cy="87" r="1.6" fill="#fff"/>
+        </g>
+        <path d="M96 102 Q100 106 104 102" fill="none" stroke="#E8729A" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="100" cy="98" rx="3.5" ry="2.5" fill="#FFB6CD"/>
+        <path d="M58 130 C46 140, 42 158, 50 174 C54 182, 68 184, 74 176 C80 167, 76 150, 78 138 C78 130, 64 124, 58 130 Z" fill="#FFFFFF" stroke="#EFE2EE" stroke-width="2"/>
+        <path d="M142 130 C154 140, 158 158, 150 174 C146 182, 132 184, 126 176 C120 167, 124 150, 122 138 C122 130, 136 124, 142 130 Z" fill="#FFFFFF" stroke="#EFE2EE" stroke-width="2"/>
+        <ellipse cx="62" cy="170" rx="9" ry="6" fill="#FBEFF5"/>
+        <ellipse cx="138" cy="170" rx="9" ry="6" fill="#FBEFF5"/>
+      </svg>
+    </div>
+
+    <div class="gate-bubble" id="gateBubble">
+      <h1>请输入密码</h1>
+      <p>这是 GhostChat 内测版的访问保护<br>输入密码后即可进入</p>
+      <input id="gatePinInput" type="password" class="gate-pw-input" placeholder="• • • • • •" inputmode="text" autocomplete="off" onkeydown="if(event.key==='Enter')checkTestGate()">
+      <button class="gate-submit" onclick="checkTestGate()">进入 GhostChat</button>
+      <div class="gate-hint" id="gateHint">密码不对哦，再试一下 🐾</div>
+      <div style="font-size:12px;color:#C9C0DD;margin-top:14px;">初始密码：1234</div>
+    </div>
+  </div>
+</div>
+
 <!-- 注册/登录 -->
-<div id="reg" class="screen active">
+<div id="reg" class="screen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,#fdf2f8,#eef2ff);position:relative;">
     <div style="position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;">
       <select id="regLangSelect" onchange="setLang(this.value)" style="background:rgba(255,255,255,.85);border:1px solid #e5e5ea;border-radius:10px;padding:6px 10px;font-size:13px;color:#3a3a3c;">
@@ -298,6 +391,11 @@ html,body{height:100%;margin:0;padding:0;}
       <div class="row" onclick="setAppLockPin()">
         <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">🐰</div>
         <div style="flex:1;"><div style="font-size:17px;">锁屏密码</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">打开后浏览器需输密码才能进入</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+      <div class="row" onclick="setTestGatePin()">
+        <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">🔐</div>
+        <div style="flex:1;"><div style="font-size:17px;">访问密码</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">进入网站前的兔子密码门</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="setLockTimeout()">
@@ -763,21 +861,67 @@ window.onload=function(){
     vidInput.addEventListener('change',function(e){onVid(e);});
   }
   buildLangBtns();buildLangList();
+  var gateBubble=document.getElementById('gateBubble');
+  if(gateBubble){gateBubble.addEventListener('animationend',function(e){if(e.animationName==='gateShake')gateBubble.classList.remove('gate-shake');});}
   applyLang();
-  updHide();updDest();updNotif();
   tickClock();
   var si=document.getElementById('myIdShow');if(si)si.textContent='ID: '+myId;
   var na=document.getElementById('nameDisplay');if(na&&lg('myName'))na.textContent=lg('myName');
   var av=document.getElementById('avatarDisplay');if(av&&lg('myName'))av.textContent=lg('myName')[0].toUpperCase();
   var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
   var wn=document.getElementById('welcome-name');if(wn&&lg('myName'))wn.textContent='Welcome back, '+lg('myName')+'!';
+  if(sessionStorage.getItem('testGatePassed')==='1'){
+    afterTestGate();
+  }
+  // 否则停留在 testgate 屏幕（默认 active），等待用户输入内测密码
+};
+
+// ═══ 内测密码门 ═══
+var TEST_GATE_DEFAULT='1234'; // 初次默认密码，之后可在 设置→隐私与安全 里修改
+function checkTestGate(){
+  var inp=document.getElementById('gatePinInput');
+  var saved=lg('testGatePin')||TEST_GATE_DEFAULT;
+  if(inp.value===saved){
+    sessionStorage.setItem('testGatePassed','1');
+    var stage=document.querySelector('#testgate .gate-stage');
+    if(stage){stage.style.transition='opacity .4s ease, transform .4s ease';stage.style.opacity='0';stage.style.transform='scale(.97)';}
+    setTimeout(afterTestGate,380);
+  }else{
+    var hint=document.getElementById('gateHint');
+    var bubble=document.getElementById('gateBubble');
+    if(hint)hint.classList.add('show');
+    if(bubble){
+      bubble.classList.remove('gate-shake');
+      void bubble.offsetWidth;
+      bubble.classList.add('gate-shake');
+    }
+    inp.value='';
+    inp.focus();
+  }
+}
+function setTestGatePin(){
+  var cur=lg('testGatePin')||TEST_GATE_DEFAULT;
+  var old=prompt('请输入当前的内测访问密码以验证:');
+  if(old===null)return;
+  if(old!==cur){alert('密码错误');return;}
+  var np=prompt('设置新的内测访问密码（留空则恢复默认）:');
+  if(np===null)return;
+  if(!np){
+    ls('testGatePin','');
+    alert('已恢复默认密码');
+  }else{
+    ls('testGatePin',np);
+    alert('内测访问密码已更新');
+  }
+}
+function afterTestGate(){
   if(lg('appLockPin')){
     show('applock');
     setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
   }else{
     proceedStartup();
   }
-};
+}
 
 async function showNewChat(){
   var input=prompt('Enter user ID or username to chat:');
