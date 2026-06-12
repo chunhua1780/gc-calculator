@@ -1288,7 +1288,9 @@ async function loadContacts(){
     div.className='row';
     div.id='contact-'+cid;
     div.onclick=(function(c,n,col){return function(){openChat(c,n[0].toUpperCase(),col,n);};})(cid,name,color);
-    div.innerHTML='<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div><div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="font-size:14px;color:#8e8e93;margin-top:2px;" id="last-'+cid+'">'+lastText+'</div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
+    var hasUnread=(_unread[cid]||0)>0;
+    var lastStyle=hasUnread?'font-size:14px;color:var(--theme-accent2);font-weight:600;margin-top:2px;':'font-size:14px;color:#8e8e93;margin-top:2px;';
+    div.innerHTML='<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div><div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="'+lastStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="last-'+cid+'">'+lastText+'</div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
     list.appendChild(div);
   });
 }
