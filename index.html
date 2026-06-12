@@ -274,23 +274,49 @@ html,body{height:100%;margin:0;padding:0;}
 </div>
 
 <!-- 设置 -->
+<div id="account-set" class="screen">
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ 设置</span><span class="t">账号</span><span></span></div>
+  <div class="scroll">
+    <div style="height:8px;"></div>
+    <div style="display:flex;flex-direction:column;align-items:center;padding:20px;">
+      <div onclick="editAvatar()" style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#007aff,#5ac8fa);display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;font-weight:700;cursor:pointer;overflow:hidden;position:relative;" id="avatarDisplay2">?</div>
+      <div style="font-size:13px;color:var(--theme-accent2);margin-top:8px;cursor:pointer;" onclick="editAvatar()">✏️ 更换头像</div>
+    </div>
+    <div class="card">
+      <div class="row" onclick="editNickname()">
+        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+        <div style="flex:1;"><div style="font-size:17px;">昵称</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="nickShow2">-</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+      <div class="row" onclick="changePin()">
+        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
+        <div style="flex:1;"><div style="font-size:17px;">修改密码</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+      <div class="row" onclick="showQR()">
+        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="21" y2="14"/><line x1="14" y1="21" x2="21" y2="21"/><line x1="17.5" y1="14" x2="17.5" y2="21"/></svg></div>
+        <div style="flex:1;"><div style="font-size:17px;">我的二维码</div></div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+      <div class="row">
+        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div style="flex:1;"><div style="font-size:17px;">我的ID</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="idShow2">-</div></div>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="settings" class="screen">
   <div class="nav-bar nav-lg"><div class="t">Settings</div></div>
   <div class="scroll">
     <div style="height:8px;"></div>
     <div class="card">
-      <div class="row" style="padding:16px;">
-        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#007aff,#5ac8fa);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:700;flex-shrink:0;" id="avatarDisplay">?</div>
+      <div class="row" style="padding:16px;cursor:pointer;" onclick="show('account-set')">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#007aff,#5ac8fa);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:700;flex-shrink:0;overflow:hidden;" id="avatarDisplay">?</div>
         <div style="flex:1;margin-left:4px;">
           <div style="font-size:17px;font-weight:600;" id="nameDisplay">My Account</div>
           <div style="font-size:13px;color:#8e8e93;margin-top:2px;" id="myIdShow">ID: ...</div>
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="showQR()" style="background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">📷 QR</button>
-        <button onclick="editNickname()" style="background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">✏️ 昵称</button>
-        <button onclick="editAvatar()" style="background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">🖼️ 头像</button>
-        <button onclick="changePin()" style="background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:6px 14px;border-radius:10px;font-size:13px;cursor:pointer;">🔒 密码</button>
-      </div>
         </div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
     </div>
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Privacy & Security</div>
@@ -629,14 +655,16 @@ window.onload=function(){
       var savedName=lg('myName')||'';
       var nd=document.getElementById('nameDisplay');if(nd&&savedName)nd.textContent=savedName;
       var idShow=document.getElementById('myIdShow');if(idShow)idShow.textContent='ID: '+myId+(savedName?(' - '+savedName):'');
-      var av=document.getElementById('avatarDisplay');
       var avUrl=lg('myAvatarUrl');
       var avEmoji=lg('myAvatar');
-      if(av){
-        if(avUrl){av.innerHTML='<img src="'+avUrl+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';av.style.fontSize='';}
-        else if(avEmoji){av.innerHTML=avEmoji;av.style.fontSize='24px';}
-        else if(savedName){av.textContent=savedName[0].toUpperCase();}
-      }
+      var avHtml=avUrl?('<img src="'+avUrl+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'):(avEmoji?avEmoji:(savedName?savedName[0].toUpperCase():'?'));
+      var avFont=avUrl?'':(avEmoji?'24px':'');
+      ['avatarDisplay','avatarDisplay2'].forEach(function(id){
+        var av=document.getElementById(id);
+        if(av){av.innerHTML=avHtml;av.style.fontSize=avFont;}
+      });
+      var n2=document.getElementById('nickShow2');if(n2)n2.textContent=savedName||'-';
+      var id2=document.getElementById('idShow2');if(id2)id2.textContent=myId;
     }
   }catch(e){console.log('avatar load err',e);}
   // 计算器全局事件
@@ -734,60 +762,56 @@ function editNickname(){
   });
   var nd=document.getElementById('nameDisplay');if(nd)nd.textContent=name;
   var idShow=document.getElementById('myIdShow');if(idShow)idShow.textContent='ID: '+myId+' - '+name;
-  var av=document.getElementById('avatarDisplay');
-  if(av&&!lg('myAvatar'))av.textContent=name[0].toUpperCase();
+  var n2=document.getElementById('nickShow2');if(n2)n2.textContent=name;
+  if(!lg('myAvatarUrl')&&!lg('myAvatar'))applyAvatarToDisplays(name[0].toUpperCase());
   alert('昵称已更新为: '+name);
 }
 
+function applyAvatarToDisplays(html,fontSize){
+  ['avatarDisplay','avatarDisplay2'].forEach(function(id){
+    var av=document.getElementById(id);
+    if(av){av.innerHTML=html;av.style.fontSize=fontSize||'';}
+  });
+}
+
 function editAvatar(){
-  if(confirm('选择上传照片作为头像?\n\n点击"取消"使用表情作为头像。')){
-    var inp=document.createElement('input');
-    inp.type='file';
-    inp.accept='image/*';
-    inp.onchange=function(e){
-      var file=e.target.files[0];
-      if(!file)return;
-      var img=new Image();
-      var reader=new FileReader();
-      reader.onload=function(ev){
-        img.onload=function(){
-          var size=240;
-          var canvas=document.createElement('canvas');
-          canvas.width=size;canvas.height=size;
-          var ctx=canvas.getContext('2d');
-          var s=Math.min(img.width,img.height);
-          var sx=(img.width-s)/2,sy=(img.height-s)/2;
-          ctx.drawImage(img,sx,sy,s,s,0,0,size,size);
-          canvas.toBlob(async function(blob){
-            var fname='avatar_'+myId+'_'+Date.now()+'.jpg';
-            var up=await _sb.storage.from('media').upload(fname,blob,{contentType:'image/jpeg',upsert:true});
-            if(up.error){alert('上传失败: '+up.error.message);return;}
-            var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
-            ls('myAvatar','');
-            ls('myAvatarUrl',url);
-            await _sb.from('users').update({avatar_url:url}).eq('id',parseInt(myId)||myId);
-            var av=document.getElementById('avatarDisplay');
-            if(av){av.innerHTML='<img src="'+url+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">';av.style.fontSize='';}
-            alert('头像已更新!');
-          },'image/jpeg',0.85);
-        };
-        img.src=ev.target.result;
+  var inp=document.createElement('input');
+  inp.type='file';
+  inp.accept='image/*';
+  inp.style.display='none';
+  document.body.appendChild(inp);
+  inp.onchange=function(e){
+    var file=e.target.files[0];
+    document.body.removeChild(inp);
+    if(!file)return;
+    var img=new Image();
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      img.onload=function(){
+        var size=240;
+        var canvas=document.createElement('canvas');
+        canvas.width=size;canvas.height=size;
+        var ctx=canvas.getContext('2d');
+        var s=Math.min(img.width,img.height);
+        var sx=(img.width-s)/2,sy=(img.height-s)/2;
+        ctx.drawImage(img,sx,sy,s,s,0,0,size,size);
+        canvas.toBlob(async function(blob){
+          var fname='avatar_'+myId+'_'+Date.now()+'.jpg';
+          var up=await _sb.storage.from('media').upload(fname,blob,{contentType:'image/jpeg',upsert:true});
+          if(up.error){alert('上传失败: '+up.error.message);return;}
+          var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname+'?t='+Date.now();
+          ls('myAvatar','');
+          ls('myAvatarUrl',url);
+          await _sb.from('users').update({avatar_url:url}).eq('id',parseInt(myId)||myId);
+          applyAvatarToDisplays('<img src="'+url+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">');
+          alert('头像已更新!');
+        },'image/jpeg',0.85);
       };
-      reader.readAsDataURL(file);
+      img.src=ev.target.result;
     };
-    inp.click();
-    return;
-  }
-  var emojis=['😊','😎','🦊','🐼','🦁','🐯','🦄','🐸','🤖','👻','🎭','🌟','🔥','💎','🎯'];
-  var pick=prompt('选择头像表情:\n'+emojis.join(' ')+'\n\n或输入任意表情:');
-  if(!pick||!pick.trim())return;
-  var trimmed=pick.trim();
-  ls('myAvatar',trimmed);
-  ls('myAvatarUrl','');
-  var av=document.getElementById('avatarDisplay');
-  if(av){av.innerHTML=trimmed;av.style.fontSize='24px';}
-  _sb.from('users').update({avatar_url:null}).eq('id',parseInt(myId)||myId);
-  alert('头像已更新!');
+    reader.readAsDataURL(file);
+  };
+  inp.click();
 }
 
 function changePin(){
