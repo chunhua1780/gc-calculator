@@ -595,13 +595,7 @@ function setAppHeight(){
   var vv=window.visualViewport;
   var h=(vv?vv.height:window.innerHeight)+'px';
   document.querySelectorAll('.screen').forEach(function(s){s.style.height=h;});
-  if(vv){
-    document.body.style.position='fixed';
-    document.body.style.top=(-vv.offsetTop)+'px';
-    document.body.style.left='0';
-    document.body.style.right='0';
-    document.body.style.width='100%';
-  }
+  window.scrollTo(0,0);
 }
 setAppHeight();
 if(window.visualViewport){
@@ -610,7 +604,7 @@ if(window.visualViewport){
     var c=document.getElementById('chatMsgs');
     if(c)setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
   });
-  window.visualViewport.addEventListener('scroll',setAppHeight);
+  window.visualViewport.addEventListener('scroll',function(){window.scrollTo(0,0);});
 } else {
   window.addEventListener('resize',setAppHeight);
 }
