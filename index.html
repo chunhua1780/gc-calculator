@@ -787,7 +787,10 @@ document.addEventListener('visibilitychange',function(){
   if(document.hidden){
     ls('lastHiddenAt',String(Date.now()));
   }else{
-    if(lg('appLockPin')){
+    if(sessionStorage.getItem('testGatePassed')==='1'){
+      // 系统锁屏/切到后台再回来，重新要求内测密码
+      triggerTestGate();
+    }else if(lg('appLockPin')){
       var last=parseInt(lg('lastHiddenAt')||'0');
       var timeout=parseInt(lg('lockTimeout')||'0')*60000;
       if(last>0&&Date.now()-last>=timeout){
@@ -872,12 +875,40 @@ window.onload=function(){
   var wn=document.getElementById('welcome-name');if(wn&&lg('myName'))wn.textContent='Welcome back, '+lg('myName')+'!';
   if(sessionStorage.getItem('testGatePassed')==='1'){
     afterTestGate();
+    resetGateIdleTimer();
   }
   // 否则停留在 testgate 屏幕（默认 active），等待用户输入内测密码
+  ['click','keydown','touchstart','mousemove','scroll'].forEach(function(ev){
+    document.addEventListener(ev,resetGateIdleTimer,{passive:true});
+  });
 };
 
 // ═══ 内测密码门 ═══
 var TEST_GATE_DEFAULT='1234'; // 初次默认密码，之后可在 设置→隐私与安全 里修改
+var GATE_IDLE_LIMIT=5*60*1000; // 空闲5分钟后重新要求密码
+var _gateReturnScreen=null;
+var _gateIdleTimer=null;
+
+function resetGateIdleTimer(){
+  if(_gateIdleTimer){clearTimeout(_gateIdleTimer);_gateIdleTimer=null;}
+  if(sessionStorage.getItem('testGatePassed')==='1'){
+    _gateIdleTimer=setTimeout(triggerTestGate,GATE_IDLE_LIMIT);
+  }
+}
+
+function triggerTestGate(){
+  var active=document.querySelector('.screen.active');
+  if(active&&active.id==='testgate')return;
+  if(active)_gateReturnScreen=active.id;
+  sessionStorage.removeItem('testGatePassed');
+  if(_gateIdleTimer){clearTimeout(_gateIdleTimer);_gateIdleTimer=null;}
+  var stage=document.querySelector('#testgate .gate-stage');
+  if(stage){stage.style.transition='none';stage.style.opacity='1';stage.style.transform='none';}
+  var hint=document.getElementById('gateHint');if(hint)hint.classList.remove('show');
+  show('testgate');
+  var p=document.getElementById('gatePinInput');if(p){p.value='';setTimeout(function(){p.focus();},200);}
+}
+
 function checkTestGate(){
   var inp=document.getElementById('gatePinInput');
   var saved=lg('testGatePin')||TEST_GATE_DEFAULT;
@@ -885,7 +916,11 @@ function checkTestGate(){
     sessionStorage.setItem('testGatePassed','1');
     var stage=document.querySelector('#testgate .gate-stage');
     if(stage){stage.style.transition='opacity .4s ease, transform .4s ease';stage.style.opacity='0';stage.style.transform='scale(.97)';}
-    setTimeout(afterTestGate,380);
+    setTimeout(function(){
+      if(_gateReturnScreen){show(_gateReturnScreen);_gateReturnScreen=null;}
+      else{afterTestGate();}
+      resetGateIdleTimer();
+    },380);
   }else{
     var hint=document.getElementById('gateHint');
     var bubble=document.getElementById('gateBubble');
