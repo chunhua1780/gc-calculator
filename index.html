@@ -1935,7 +1935,7 @@ async function getIceServers(){
   return ICE;
 }
 
-async // ═══ 每月通话时长限制（保护Metered免费TURN流量配额）═══
+// ═══ 每月通话时长限制（保护Metered免费TURN流量配额）═══
 var CALL_MONTHLY_LIMIT_MIN=50;
 function curMonthStr(){return new Date().toISOString().slice(0,7);}
 async function getCallUsage(){
