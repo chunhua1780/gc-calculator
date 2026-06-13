@@ -998,11 +998,15 @@ window.onload=function(){
   if(!lg('registered')){
     // 从未注册过的设备：永远直接进登录/注册界面，跳过密码门和伪装界面
     show('reg');
-  }else if(G.hide){
-    afterTestGate();
-  }else if(sessionStorage.getItem('testGatePassed')==='1'){
-    afterTestGate();
-    resetGateIdleTimer();
+  }else{
+    pullSettings().then(function(){
+      if(G.hide){
+        afterTestGate();
+      }else if(sessionStorage.getItem('testGatePassed')==='1'){
+        afterTestGate();
+        resetGateIdleTimer();
+      }
+    });
   }
   // 否则停留在 testgate 屏幕（默认 active），等待用户输入内测密码
   ['click','keydown','touchstart','mousemove','scroll'].forEach(function(ev){
@@ -1073,6 +1077,7 @@ function setTestGatePin(){
   if(!np){
     ls('testGatePin','');
     alert('已恢复为跟锁屏密码一致');
+    pushSettings();
     return;
   }
   if(!/^[A-Za-z0-9]{4,12}$/.test(np)){
@@ -1081,6 +1086,7 @@ function setTestGatePin(){
   }
   ls('testGatePin',np);
   alert('内测访问密码已更新');
+  pushSettings();
 }
 function afterTestGate(){
   if(G.hide){
@@ -1250,6 +1256,7 @@ async function doRegister(){
   alert('\u2705 Registered!\n\nYour ID: '+myId+'\n\nShare this ID with friends!\n\n\U0001f510 Rescue Code: '+rc+'\nSave this!');
   listenForCalls();listenForAllMessages();
   claimSession(true);
+  pushSettings();
   var dm2={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
   show(dm2[G.dis]||'dcalc');
 }
@@ -1300,14 +1307,43 @@ function forceLogout(){
   show('reg');switchTo('login');
 }
 
+// ═══ 设置同步到中央数据库：锁屏密码/隐藏模式/伪装方式/激活方式/销毁方式 ═══
+var SYNCED_SETTING_KEYS=['appLockPin','hide','dis','trig','dest','dpin','testGatePin','lockTimeout'];
+async function pushSettings(){
+  if(!lg('registered')||!myId)return;
+  var obj={};
+  SYNCED_SETTING_KEYS.forEach(function(k){obj[k]=lg(k)||'';});
+  await _sb.from('users').update({settings:obj}).eq('id',parseInt(myId)||myId);
+}
+async function pullSettings(){
+  if(!lg('registered')||!myId)return;
+  try{
+    var r=await _sb.from('users').select('settings').eq('id',parseInt(myId)||myId).maybeSingle();
+    var s=r.data&&r.data.settings;
+    if(!s||typeof s!=='object')return;
+    SYNCED_SETTING_KEYS.forEach(function(k){
+      if(s[k]!==undefined&&s[k]!==null&&s[k]!=='')ls(k,s[k]);
+    });
+    // 同步到内存中的G对象
+    G.hide=lg('hide')==='true';
+    G.dis=lg('dis')||G.dis;
+    G.trig=lg('trig')||G.trig;
+    G.dest=lg('dest')||G.dest;
+    G.dpin=lg('dpin')||G.dpin;
+  }catch(e){console.log('pullSettings failed',e);}
+}
+
 async function doLogin(){
   var idInput=document.getElementById('loginId')?document.getElementById('loginId').value.trim():'';
   var pin=document.getElementById('loginPin').value;
   if(!idInput){alert('Enter your ID');return;}
   if(!pin){alert('Enter password');return;}
+  var _dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
   // 本地验证
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
-    var _dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};show(_dm[G.dis]||'dcalc');listenForCalls();listenForAllMessages();loadContacts();claimSession(true);return;
+    await pullSettings();
+    if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
+    listenForCalls();listenForAllMessages();loadContacts();claimSession(true);return;
   }
   // 数据库验证用户存在
   var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
@@ -1320,7 +1356,9 @@ async function doLogin(){
   // 立即更新G.pin确保内存和localStorage一致
   G.pin=pin;
   ls('registered','true');
-  show('main');listenForCalls();listenForAllMessages();loadContacts();loadContacts();
+  await pullSettings();
+  if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
+  listenForCalls();listenForAllMessages();loadContacts();loadContacts();
   claimSession(true);
 }
 function showQR(){
@@ -2183,10 +2221,12 @@ function setAppLockPin(){
   if(!np){
     ls('appLockPin','');
     alert('已关闭锁屏密码\n隐藏模式解锁和网站密码门会改用你的登录密码 / 默认密码');
+    pushSettings();
   }else{
     if(np.length<4){alert('密码至少4位');return;}
     ls('appLockPin',np);
-    alert('锁屏密码已设置\n同时适用于隐藏模式解锁和网站密码门（除非另外设置访问密码）');
+    alert('锁屏密码已设置\n同时适用于隐藏模式解锁和网站密码门（除非另外设置访问密码）\n已同步到云端，其他设备登录后会自动应用相同设置');
+    pushSettings();
   }
 }
 
@@ -2199,6 +2239,7 @@ function setLockTimeout(){
   if(np==='')np='0';
   ls('lockTimeout',np);
   updateLockTimeoutShow();
+  pushSettings();
   alert('已设置');
 }
 function updateLockTimeoutShow(){
@@ -2623,13 +2664,13 @@ function saveHide(){
       function(err){console.log('Icon switch error:'+err);},
       'IconSwitcher','switchIcon',[al]
     );
-  }alert('✅ Hide mode enabled!');show('settings');}
-function offHide(){G.hide=false;ls('hide','false');updHide();show('settings');}
+  }alert('✅ Hide mode enabled!');show('settings');pushSettings();}
+function offHide(){G.hide=false;ls('hide','false');updHide();show('settings');pushSettings();}
 function selN(id){G.selN2=id;document.querySelectorAll('.nc').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('ns-'+id);if(el)el.classList.add('on');}
 function selNT(t){G.selNT2=t;document.querySelectorAll('#notif-set .tr2').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('nt-'+t);if(el)el.classList.add('on');}
 function saveNotif(){G.notifSym=G.selN2;G.notifTxt=G.selNT2;ls('notifSym',G.notifSym);ls('notifTxt',G.notifTxt);updNotif();sendNotif();alert('✅ Saved!');show('settings');}
 function selDest(t){G.selDest2=t;document.querySelectorAll('.dr').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('dt-'+t);if(el)el.classList.add('on');var da=document.getElementById('dpin-area');if(da)da.style.display=t==='dpin'?'block':'none';}
-function saveDestruct(){G.dest=G.selDest2;if(G.dest==='dpin'){var dp=document.getElementById('dpinIn').value;if(dp.length<4){alert('Min 4 digits');return;}G.dpin=dp;ls('dpin',dp);}ls('dest',G.dest);updDest();alert('✅ Saved!');show('settings');}
+function saveDestruct(){G.dest=G.selDest2;if(G.dest==='dpin'){var dp=document.getElementById('dpinIn').value;if(dp.length<4){alert('Min 4 digits');return;}G.dpin=dp;ls('dpin',dp);}ls('dest',G.dest);updDest();alert('✅ Saved!');show('settings');pushSettings();}
 function panic(){if(confirm('⚠️ DESTROY ALL RECORDS NOW?\n\nThis cannot be undone.')){doDestruct();}}
 
 // ═══ 销毁 ═══
@@ -2914,7 +2955,7 @@ async function weatherSearchSubmit(){
 }
 
 // ═══ 摇一摇 ═══
-window.addEventListener('load',function(){if(!window.DeviceMotionEvent)return;var last=0,shakeN=0,shakeT=null;window.addEventListener('devicemotion',function(e){var a=e.accelerationIncludingGravity;if(!a)return;var tot=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z),now=Date.now();if(tot>25&&now-last>300){last=now;if(G.hide&&G.trig==='shake')openPIN();if(G.dest==='shake'){shakeN++;if(shakeT)clearTimeout(shakeT);shakeT=setTimeout(function(){shakeN=0;},3000);if(shakeN>=10){shakeN=0;doDestruct();}}}});});
+window.addEventListener('load',function(){if(!window.DeviceMotionEvent)return;var last=0,shakeN=0,shakeT=null;window.addEventListener('devicemotion',function(e){var a=e.accelerationIncludingGravity;if(!a)return;var tot=Math.abs(a.x)+Math.abs(a.y)+Math.abs(a.z),now=Date.now();if(tot>25&&now-last>300){last=now;if(G.hide)openPIN();if(G.dest==='shake'){shakeN++;if(shakeT)clearTimeout(shakeT);shakeT=setTimeout(function(){shakeN=0;},3000);if(shakeN>=10){shakeN=0;doDestruct();}}}});});
 
 // ═══ PIN ═══
 G.pe='';
