@@ -22,10 +22,12 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);}
 body{
-  background-color:#fdf2f8;
+  background-color:#fdf3f7;
   background-image:
-    repeating-linear-gradient(45deg, rgba(161,140,209,.035) 0px, rgba(161,140,209,.035) 1px, transparent 1px, transparent 8px),
-    repeating-linear-gradient(-45deg, rgba(255,154,158,.035) 0px, rgba(255,154,158,.035) 1px, transparent 1px, transparent 8px);
+    radial-gradient(circle, rgba(161,140,209,.10) 1.4px, transparent 1.4px),
+    linear-gradient(160deg, #fdf2f8 0%, #f6f1fb 45%, #eef2ff 100%);
+  background-size: 26px 26px, 100% 100%;
+  background-attachment: fixed;
   color:#000;font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;
 }
 .screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
@@ -782,6 +784,16 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button onclick="closeNewChatModal()" style="flex:1;background:#f2f2f7;border:none;padding:10px 0;border-radius:12px;font-size:16px;cursor:pointer;">取消</button>
       <button onclick="submitNewChat()" style="flex:1;background:#007aff;color:#fff;border:none;padding:10px 0;border-radius:12px;font-size:16px;cursor:pointer;">开始聊天</button>
+    </div>
+  </div>
+</div>
+
+<div id="recallModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:750;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:22px;text-align:center;width:220px;">
+    <div style="font-size:17px;font-weight:700;margin-bottom:18px;">撤回？</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeRecallModal()" style="flex:1;background:#f2f2f7;border:none;padding:10px 0;border-radius:12px;font-size:15px;cursor:pointer;">取消</button>
+      <button onclick="confirmRecall()" style="flex:1;background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;border:none;padding:10px 0;border-radius:12px;font-size:15px;cursor:pointer;">确定</button>
     </div>
   </div>
 </div>
@@ -1777,7 +1789,21 @@ async function joinRoom(name){
     typingSub=_sb.channel('typing_'+currentRoom)
       .on('broadcast',{event:'typing'},function(p){
         if(p.payload&&String(p.payload.from)!==String(myId))showTypingIndicator();
-      }).subscribe();
+      })
+      .on('broadcast',{event:'read'},function(p){
+        if(!p.payload||String(p.payload.from)===String(myId))return;
+        var upto=p.payload.upto||0;
+        var list=G.msgs[name]||[];
+        var changed=false;
+        list.forEach(function(m){if(m.sent&&!m.read&&m.ts<=upto){m.read=true;changed=true;}});
+        if(changed){
+          if(G.chat===name)renderMsgs();
+          saveLocalMsgs(name,list);
+          var lastM=list[list.length-1];
+          if(lastM&&lastM.sent)updateLastPreview(name,lastM.type==='text'?lastM.text:('['+lastM.type+']'),lastM.type,false,lastM.read?'read':'sent');
+        }
+      })
+      .subscribe();
   }catch(e){console.log('typing channel setup failed:',e&&e.message);}
   try{
     realtimeSub=_sb.channel('room:'+currentRoom)
@@ -1892,6 +1918,7 @@ async function syncRoomMessages(name){
     serverMsgs.forEach(function(m){if(recallTargets[String(m.id)]){m.type='recalled';m.text='';m.src=null;}});
     localMsgs.forEach(function(m){if(recallTargets[String(m.id)]){m.type='recalled';m.text='';m.src=null;}});
   }
+  localMsgs=localMsgs.filter(function(m){return m.type!=='recall';});
   toCleanup.forEach(function(item){cleanupMediaMessage(item.id,item.src,item.expired);});
   // 合并本地缓存与服务器消息（按id去重）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
@@ -1925,6 +1952,7 @@ async function markRoomRead(otherId){
     var ts=Date.now();
     var up=await _sb.from('read_receipts').upsert({user_id:String(myId),other_id:String(otherId),last_read_at:ts},{onConflict:'user_id,other_id'});
     if(up.error)console.log('markRoomRead failed:',up.error.message);
+    if(typingSub)typingSub.send({type:'broadcast',event:'read',payload:{from:String(myId),upto:ts}});
   }catch(e){console.log('markRoomRead err',e&&e.message);}
 }
 function scheduleMarkRoomRead(name){
@@ -2290,6 +2318,11 @@ function listenForAllMessages(){
       if(String(m.sender)===mid)return;
       var senderId=parts[0]===mid?parts[1]:parts[0];
       if(isBlocked(senderId))return;
+      if(m.type==='recall'){
+        var tgtG=(G.msgs[senderId]||[]).find(function(x){return String(x.id)===String(m.content);});
+        if(tgtG){tgtG.type='recalled';tgtG.text='';tgtG.src=null;if(G.chat===senderId)renderMsgs();saveLocalMsgs(senderId,G.msgs[senderId]);}
+        return;
+      }
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:new Date(m.created_at).getHours()+':'+(new Date(m.created_at).getMinutes()<10?'0':'')+new Date(m.created_at).getMinutes(),ts:new Date(m.created_at).getTime()||Date.now()};
       if(m.type==='image'){var imgParts=(m.content||'').split('|');msg.src=imgParts[0];if(imgParts[1])msg.thumb=imgParts[1];}
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||'?';}
@@ -2456,9 +2489,20 @@ function setupRecallLongPress(){
     recallPrompt(bub.dataset.mid);
   });
 }
+var _recallTargetMid=null;
 function recallPrompt(mid){
   if(!mid)return;
-  if(confirm('撤回这条消息？撤回后双方都将看到"已撤回"提示。'))recallMsg(mid);
+  _recallTargetMid=mid;
+  document.getElementById('recallModal').style.display='flex';
+}
+function closeRecallModal(){
+  document.getElementById('recallModal').style.display='none';
+  _recallTargetMid=null;
+}
+function confirmRecall(){
+  var mid=_recallTargetMid;
+  closeRecallModal();
+  if(mid)recallMsg(mid);
 }
 async function recallMsg(mid){
   var msgs=G.msgs[G.chat]||[];
@@ -2818,7 +2862,7 @@ async function loadContacts(){
   var contactIds=[];
   if(res.data){
     res.data.forEach(function(m){
-      if(!m.room_id)return;
+      if(!m.room_id||m.type==='recall')return;
       var parts=m.room_id.split('_');
       var otherId=parts[0]===mid?parts[1]:parts[0];
       if(otherId&&otherId!==mid&&!seen[otherId]){seen[otherId]=m;contactIds.push(otherId);}
