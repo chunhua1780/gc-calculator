@@ -59,14 +59,12 @@ html,body{height:100%;margin:0;padding:0;}
 .mr{display:flex;flex-direction:column;margin-bottom:2px;}
 .mr.s{align-items:flex-end;}.mr.r{align-items:flex-start;}
 .bub{max-width:72%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.45;word-break:break-word;position:relative;}
-.mr.s .bub{background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;border-bottom-right-radius:5px;font-weight:700;transition:background .6s,color .6s,font-weight .3s;}
-.mr.s .bub.bub-read{background:linear-gradient(135deg,#ffd6e8,#c9e4ff);color:#5b5470;font-weight:400;}
+.mr.s .bub{background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;border-bottom-right-radius:5px;font-weight:700;border:1px solid transparent;transition:background .6s,color .6s,font-weight .3s,border-color .6s;}
+.mr.s .bub.bub-read{background:linear-gradient(135deg,#fdeef0,#ece6f7);color:#9a8fae;font-weight:400;border:1px solid #ecd9e2;}
 .mr.r .bub{background:#fff;color:#3a3a3c;border-bottom-left-radius:5px;box-shadow:0 1px 4px rgba(161,140,209,.12);}
 .mt{font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;}
 .msg-tick{margin-left:4px;font-size:13px;display:inline-block;vertical-align:middle;}
-.msg-cat{position:absolute;top:-16px;right:-12px;width:30px;height:30px;border-radius:50%;background:#fff5e6;box-shadow:0 1px 3px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;animation:catBounce 1.4s ease-in-out infinite;}
 .msg-paw{display:inline-block;font-size:14px;vertical-align:middle;margin-left:5px;filter:grayscale(1);opacity:.6;}
-@keyframes catBounce{0%,100%{transform:translateY(0) rotate(0deg);}25%{transform:translateY(-3px) rotate(-9deg);}50%{transform:translateY(0) rotate(0deg);}75%{transform:translateY(-3px) rotate(9deg);}}
 .typing-dots span{display:inline-block;animation:typingBounce 1.2s infinite;}
 .typing-dots span:nth-child(2){animation-delay:.2s;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
@@ -79,6 +77,11 @@ html,body{height:100%;margin:0;padding:0;}
 .itxt{flex:1;background:#fff;border:0.5px solid rgba(60,60,67,0.18);border-radius:18px;padding:8px 14px;color:#000;font-size:16px;outline:none;resize:none;max-height:100px;font-family:inherit;line-height:1.4;}
 .isend{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#ff9a9e,#a18cd1);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .xp{background:#fff;border-top:0.5px solid var(--theme-border);padding:16px;display:none;}
+.ep{background:#fff;border-top:0.5px solid var(--theme-border);padding:10px 12px;display:none;max-height:200px;overflow-y:auto;}
+.ep.on{display:block;}
+.ep-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;}
+.ep-grid span{font-size:24px;text-align:center;cursor:pointer;padding:6px 0;border-radius:8px;line-height:1;}
+.ep-grid span:active{background:rgba(161,140,209,.15);}
 .xp.on{display:block;}
 .xg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 .xi{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
@@ -333,6 +336,7 @@ html,body{height:100%;margin:0;padding:0;}
 <div class="irow">
       <div class="ibtn" onclick="toggleDirectUpload()" title="Upload file">📎</div>
       <div class="ibtn" onclick="togXP()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+      <div class="ibtn" onclick="togEmoji()" title="Emoji" style="font-size:20px;">😊</div>
       <textarea class="itxt" id="mi" placeholder="Message..." rows="1" onkeydown="hk(event)" oninput="notifyTyping()"></textarea>
       <div class="ibtn" onmousedown="recStart()" onmouseup="recStop()" ontouchstart="recStart(event)" ontouchend="recStop()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg></div>
       <button class="isend" onclick="sendMsg()"><svg viewBox="0 0 24 24" width="16" height="16" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
@@ -350,6 +354,7 @@ html,body{height:100%;margin:0;padding:0;}
         <div class="xi" onclick="panic()"><div class="xib" style="background:#ff3b30">🚨</div><span class="xil">Destroy</span></div>
       </div>
     </div>
+    <div class="ep" id="emojiPanel"><div class="ep-grid" id="emojiGrid"></div></div>
   </div>
 </div>
 
@@ -1805,7 +1810,10 @@ function scheduleMarkRead(name,ids){
   if(!ids||!ids.length)return;
   setTimeout(function(){
     if(G.chat!==name)return;
-    _sb.from('messages').update({delivered:true,read:true}).in('id',ids).then(function(){});
+    _sb.from('messages').update({delivered:true,read:true}).in('id',ids).then(function(r){
+      if(r.error)console.log('mark read failed:',r.error.message);
+      else console.log('marked read ok, ids=',ids);
+    });
   },2000);
 }
 
@@ -1999,14 +2007,44 @@ async function createPC(){
         st.textContent='Connected';
         startCallTimer();
         RTC.startTime=new Date();
+        logActiveCandidatePair(pc);
       } else if(pc.iceConnectionState==='failed'){
         st.textContent='连接失败，请检查网络后重试';
+        logIceFailureDetails(pc);
       } else if(pc.iceConnectionState==='disconnected'){
         st.textContent='网络不稳定，正在重连...';
       }
     }
   };
   return pc;
+}
+
+// 诊断：连接成功后查看实际使用的是直连/STUN/TURN中转，便于排查跨国连不上的问题
+async function logActiveCandidatePair(pc){
+  try{
+    var stats=await pc.getStats();
+    stats.forEach(function(r){
+      if(r.type==='candidate-pair'&&r.state==='succeeded'){
+        var local=stats.get(r.localCandidateId);
+        var remote=stats.get(r.remoteCandidateId);
+        console.log('[通话诊断] 连接成功，使用的线路: local='+(local&&local.candidateType)+'('+(local&&local.protocol)+') remote='+(remote&&remote.candidateType)+'('+(remote&&remote.protocol)+')');
+      }
+    });
+  }catch(e){console.log('getStats err',e&&e.message);}
+}
+// 诊断：连接失败时列出本机收集到的所有候选地址类型，看TURN候选有没有被收集到
+async function logIceFailureDetails(pc){
+  try{
+    var stats=await pc.getStats();
+    var types={};
+    stats.forEach(function(r){
+      if(r.type==='local-candidate'){
+        var k=r.candidateType+'/'+r.protocol;
+        types[k]=(types[k]||0)+1;
+      }
+    });
+    console.log('[通话诊断] 连接失败，本机收集到的候选类型: '+JSON.stringify(types));
+  }catch(e){console.log('getStats err',e&&e.message);}
 }
 
 async function initiateCall(name,isVideo){
@@ -2346,7 +2384,6 @@ function renderMsgs(){
       if(m.failed){statusTick='';}
       else if(m.loading){statusTick='<span class="msg-tick" title="发送中">🌱</span>';}
       else if(m.read){bubExtra='<span class="msg-paw" title="对方已读">🐾</span>';}
-      else{bubExtra='<span class="msg-cat" title="对方还没看">🐱</span>';}
     }
     var bubCls='bub'+(s&&m.read?' bub-read':'');
     html+='<div class="mr '+(s?'s':'r')+'"><div class="'+bubCls+'">'+(s&&!m.read?bubExtra:'')+b+(s&&m.read?bubExtra:'')+'</div><div class="mt">'+m.t+statusTick+'</div></div>';
@@ -2389,9 +2426,8 @@ function updateLastPreview(cid,content,type,highlight,readState){
   else{lastEl.style.color='';lastEl.style.fontWeight='';}
   var prefixEl=lastEl.parentElement&&lastEl.parentElement.querySelector('.last-prefix');
   if(prefixEl){
-    if(readState==null){prefixEl.innerHTML='';}
-    else if(readState==='read'){prefixEl.innerHTML='<span class="msg-paw" style="margin-left:0;margin-right:4px;">🐾</span>';}
-    else{prefixEl.innerHTML='<span class="msg-cat" style="position:static;width:20px;height:20px;margin-right:4px;font-size:13px;">🐱</span>';}
+    if(readState==null||readState!=='read'){prefixEl.innerHTML='';}
+    else{prefixEl.innerHTML='<span class="msg-paw" style="margin-left:0;margin-right:4px;">🐾</span>';}
   }
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
@@ -2735,7 +2771,7 @@ async function loadContacts(){
     var lastStyle=hasUnread?'font-size:14px;color:#d4537e;font-weight:600;margin-top:2px;':'font-size:14px;color:#8e8e93;margin-top:2px;';
     var lastPrefix='';
     if(lm&&String(lm.sender)===mid){
-      lastPrefix=lm.read?'<span class="msg-paw" style="margin-left:0;margin-right:4px;">🐾</span>':'<span class="msg-cat" style="position:static;width:20px;height:20px;margin-right:4px;font-size:13px;">🐱</span>';
+      lastPrefix=lm.read?'<span class="msg-paw" style="margin-left:0;margin-right:4px;">🐾</span>':'';
     }
 
     var wrap=document.createElement('div');
@@ -2822,7 +2858,28 @@ async function addContactById(inputId){
 }
 
 
-function togXP(){document.getElementById('xpanel').classList.toggle('on');}
+function togXP(){document.getElementById('emojiPanel').classList.remove('on');document.getElementById('xpanel').classList.toggle('on');}
+var EMOJI_LIST=['😀','😁','😂','🤣','😊','😍','🥰','😘','😎','🤩','🥳','😇','🙂','😉','😋','😜','🤪','😏','😭','😢','🥺','😡','😱','😴','🤔','🙄','😬','🥶','🤗','🤭','🤫','🤤','😷','🤧','🥵','🤯','😈','👻','💀','👽','🤖','🎃','🐱','🐶','🐰','🐻','🐼','🐨','🦊','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🦄','🐝','🦋','🐢','🐠','🐳','👍','👎','👏','🙏','💪','🤝','✌️','🤞','👋','🤙','❤️','🧡','💛','💚','💙','💜','🖤','🤍','💕','💞','💗','💖','💘','💔','💯','🔥','✨','🎉','🎁','🌟','⭐','🌈','☀️','🌙','☁️','⚡','❄️','🍀','🌸','🌹','🍎','🍕','🍔','🍟','🍦','🍩','🍰','☕','🍺','✈️','🚗','⏰','📍','📞','💤','😴'];
+function buildEmojiGrid(){
+  var g=document.getElementById('emojiGrid');
+  if(!g||g.children.length)return;
+  g.innerHTML=EMOJI_LIST.map(function(e){return '<span onclick="insertEmoji(\''+e+'\')">'+e+'</span>';}).join('');
+}
+function togEmoji(){
+  document.getElementById('xpanel').classList.remove('on');
+  buildEmojiGrid();
+  document.getElementById('emojiPanel').classList.toggle('on');
+}
+function insertEmoji(e){
+  var ta=document.getElementById('mi');
+  var start=ta.selectionStart||ta.value.length;
+  var end=ta.selectionEnd||ta.value.length;
+  ta.value=ta.value.slice(0,start)+e+ta.value.slice(end);
+  var pos=start+e.length;
+  ta.focus();
+  ta.setSelectionRange(pos,pos);
+  notifyTyping();
+}
 
 function doPhoto(){
   document.getElementById('imgIn').setAttribute('capture','camera');
