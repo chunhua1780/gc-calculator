@@ -1640,9 +1640,11 @@ async function joinRoom(name){
       if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
     }).subscribe(function(status){console.log('Realtime:',status);});
 
+  var localMsgs=loadLocalMsgs(name);
   var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).order('created_at',{ascending:true}).limit(50);
+  var serverMsgs=[];
   if(res.data&&res.data.length>0){
-    G.msgs[name]=res.data.map(function(m){
+    serverMsgs=res.data.map(function(m){
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:gt()};
       if(m.type==='image')msg.src=m.content;
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
@@ -1652,8 +1654,13 @@ async function joinRoom(name){
       if(msg.type==='text'&&msg.text&&msg.text.length>2000)msg.text='[Message]';
       return msg;
     });
-    renderMsgs();
   }
+  // 合并本地缓存与服务器消息（按id去重）
+  var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
+  var merged=localMsgs.filter(function(m){return !(m.id!=null&&serverIds[m.id]);}).concat(serverMsgs);
+  G.msgs[name]=merged;
+  renderMsgs();
+  saveLocalMsgs(name,merged);
 }
 
 // ═══ WebRTC MODULE v2.0 ═══
@@ -1898,6 +1905,7 @@ function listenForAllMessages(){
       var already=G.msgs[senderId].some(function(x){return x.id===m.id;});
       if(!already){
         G.msgs[senderId].push(msg);
+        saveLocalMsgs(senderId,G.msgs[senderId]);
         if(G.chat===senderId){renderMsgs();}
         var lastEl=document.getElementById('last-'+senderId);
         if(lastEl){
@@ -1929,7 +1937,9 @@ function listenForCalls(){
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'calls'},function(p){
       var msg=p.new;
       if(!msg||String(msg.sender)===String(myId))return;
-      if(msg.type==='offer'&&msg.room_id&&msg.room_id.includes(String(myId))){
+      // 精确匹配房间号里的两个ID，避免"2"误匹配到"12_25"这种房间
+      var roomParts=(msg.room_id||'').split('_call');
+      if(msg.type==='offer'&&roomParts.indexOf(String(myId))>=0){
         console.log('Incoming call from:',msg.sender);
         showIncoming(msg.sender,JSON.parse(msg.data));
       }
@@ -1992,7 +2002,15 @@ function renderMsgs(){
   c.scrollTop=c.scrollHeight;
 }
 
-function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];G.msgs[G.chat].push(m);renderMsgs();}
+// ═══ 本地消息缓存（服务器上消息送达后即删除，长期保存在收件人本机） ═══
+function loadLocalMsgs(name){
+  try{var a=JSON.parse(lg('msgcache_'+name)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}
+}
+function saveLocalMsgs(name,arr){
+  try{ls('msgcache_'+String(name),JSON.stringify((arr||[]).slice(-200)));}catch(e){console.log('saveLocalMsgs failed',e);}
+}
+
+function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];G.msgs[G.chat].push(m);renderMsgs();saveLocalMsgs(G.chat,G.msgs[G.chat]);}
 async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
   if(G.chat&&isBlocked(G.chat)){alert('对方已被你拉黑，请先在通讯录中解除拉黑');return;}
