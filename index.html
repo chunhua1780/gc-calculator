@@ -308,7 +308,7 @@ html,body{height:100%;margin:0;padding:0;}
 <!-- 聊天 -->
 <div id="chat" class="screen">
   <div class="nav-bar nav-sm">
-    <span class="nav-btn" onclick="show('main')">‹ Back</span>
+    <span class="nav-btn" onclick="leaveChat()">‹ Back</span>
     <span class="t" id="chatName" onclick="showProfile(G.chat,this.textContent)" style="cursor:pointer;text-decoration:underline dotted;">Friend</span>
     <div style="display:flex;">
       <span class="nav-btn" onclick="startCall()"><svg viewBox="0 0 24 24" width="20" height="20" stroke="#007aff" fill="none" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z"/></svg></span>
@@ -1655,6 +1655,27 @@ function roomIdOf(a,b){
   var ids=[String(a),String(b)].sort(function(x,y){return (parseInt(x)||0)-(parseInt(y)||0)||x.localeCompare(y);});
   return ids.join('_');
 }
+function leaveChat(){
+  G.chat=null;
+  if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}realtimeSub=null;}
+  currentRoom=null;
+  show('main');
+  loadContacts();
+}
+
+// 定期兜底刷新：即使实时推送有问题，也能保证消息及时同步
+setInterval(function(){
+  if(!lg('registered'))return;
+  var chatEl=document.getElementById('chat');
+  if(chatEl&&chatEl.classList.contains('active')&&G.chat){
+    syncRoomMessages(G.chat);
+  }
+  var mainEl=document.getElementById('main');
+  if(mainEl&&mainEl.classList.contains('active')){
+    loadContacts();
+  }
+},5000);
+
 async function joinRoom(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
   currentRoom=roomIdOf(a,b);
@@ -1678,8 +1699,15 @@ async function joinRoom(name){
       if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
     }).subscribe(function(status){console.log('Realtime:',status);});
 
+  await syncRoomMessages(name);
+}
+
+// 拉取服务器上该房间的消息，与本地缓存合并去重，并刷新界面
+async function syncRoomMessages(name){
+  var a=parseInt(myId)||myId, b=parseInt(name)||name;
+  var room=roomIdOf(a,b);
   var localMsgs=loadLocalMsgs(name);
-  var res=await _sb.from('messages').select('*').eq('room_id',currentRoom).order('created_at',{ascending:true}).limit(50);
+  var res=await _sb.from('messages').select('*').eq('room_id',room).order('created_at',{ascending:true}).limit(50);
   var serverMsgs=[];
   if(res.data&&res.data.length>0){
     serverMsgs=res.data.map(function(m){
@@ -1696,9 +1724,16 @@ async function joinRoom(name){
   // 合并本地缓存与服务器消息（按id去重）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
   var merged=localMsgs.filter(function(m){return !(m.id!=null&&serverIds[m.id]);}).concat(serverMsgs);
+  var prevLen=(G.msgs[name]||[]).length;
   G.msgs[name]=merged;
-  renderMsgs();
+  if(G.chat===name)renderMsgs();
   saveLocalMsgs(name,merged);
+  if(merged.length>prevLen){
+    var last=merged[merged.length-1];
+    var isUnread=!last.sent&&G.chat!==name;
+    updateLastPreview(name,last.type==='text'?last.text:('['+last.type+']'),last.type,isUnread);
+    if(isUnread){addUnread(name);sendNotif();}
+  }
 }
 
 // ═══ WebRTC MODULE v2.0 ═══
@@ -2053,7 +2088,19 @@ async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
   if(G.chat&&isBlocked(G.chat)){alert('对方已被你拉黑，请先在通讯录中解除拉黑');return;}
   addMsg({text:t,sent:true,t:gt()});inp.value='';
+  updateLastPreview(G.chat,t,'text',false);
   if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'});
+}
+function updateLastPreview(cid,content,type,highlight){
+  var lastEl=document.getElementById('last-'+String(cid));
+  if(!lastEl)return;
+  var label;
+  if(type==='text')label=content;
+  else if(type==='contact')label='[名片]';
+  else label='['+type+']';
+  lastEl.textContent=label;
+  if(highlight){lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
+  else{lastEl.style.color='';lastEl.style.fontWeight='';}
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 async function loadFriendsList(){
@@ -2466,6 +2513,7 @@ function onImg(e){
   var fname='img_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.]/g,'_');
   var localUrl=URL.createObjectURL(f);
   addMsg({type:'image',src:localUrl,sent:true,t:gt()});
+  updateLastPreview(G.chat,'[Image]','image',false);
   _sb.storage.from('media').upload(fname,f,{contentType:f.type||'image/jpeg',upsert:true}).then(function(up){
     if(up.error){console.log('img upload err:',up.error.message);return;}
     var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
@@ -2499,6 +2547,7 @@ function doLoc(){
     var addr=lat+','+lng;
     var mapUrl='https://maps.google.com/?q='+lat+','+lng;
     addMsg({type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt()});
+    updateLastPreview(G.chat,'[Location]','location',false);
     if(currentRoom){
       _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:addr+'|'+mapUrl,type:'location'}).then(function(r){
         if(r.error)alert('Location send error: '+r.error.message);
@@ -2572,6 +2621,7 @@ function recStop(){
         if(msgs[i].type==='voice'&&msgs[i].src===localUrl){msgs[i].src=url;break;}
       }
       renderMsgs();
+      updateLastPreview(chatAtStop,'[Voice]','voice',false);
       if(roomAtStop){
         _sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:url,type:'voice',duration:dur}).then(function(r){
           console.log('Voice insert:',r.error?r.error.message:'OK');
