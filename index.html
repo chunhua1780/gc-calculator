@@ -1865,12 +1865,17 @@ async function syncRoomMessages(name){
   var toCleanup=[]; // 视频/文件：已查看 或 超过7天未查看，从服务器删除（已保存在本机）
   var chatOpen=(G.chat===name);
   var weekAgo=Date.now()-7*24*60*60*1000;
-  // 获取对方的"已读到"时间点（来自read_receipts表，避免之前jsonb方案的写覆盖问题）
+  // 获取对方的"已读到"时间点：从messages表里type='read_receipt'的记录中取最大值
+  // (复用已验证可用的messages写入路径，不依赖额外的表/列)
   var otherLastRead=0;
-  try{
-    var rr=await _sb.from('read_receipts').select('last_read_at').eq('user_id',String(name)).eq('other_id',String(myId)).maybeSingle();
-    otherLastRead=(rr.data&&rr.data.last_read_at)||0;
-  }catch(e){console.log('fetch read_receipts failed',e&&e.message);}
+  if(res.data){
+    res.data.forEach(function(m){
+      if(m.type==='read_receipt'&&String(m.sender)===String(name)){
+        var v=parseInt(m.content)||0;
+        if(v>otherLastRead)otherLastRead=v;
+      }
+    });
+  }
   // 已读状态只能从"未读"变"已读"，不能反过来：即时广播标记为已读后，
   // 即使本轮数据库查询结果是"未读"也不再回退，避免颜色/爪印来回闪烁
   var prevReadIds={};
@@ -1922,7 +1927,8 @@ async function syncRoomMessages(name){
     serverMsgs.forEach(function(m){if(recallTargets[String(m.id)]){m.type='recalled';m.text='';m.src=null;}});
     localMsgs.forEach(function(m){if(recallTargets[String(m.id)]){m.type='recalled';m.text='';m.src=null;}});
   }
-  localMsgs=localMsgs.filter(function(m){return m.type!=='recall';});
+  localMsgs=localMsgs.filter(function(m){return m.type!=='recall'&&m.type!=='read_receipt';});
+  serverMsgs=serverMsgs.filter(function(m){return m.type!=='read_receipt';});
   toCleanup.forEach(function(item){cleanupMediaMessage(item.id,item.src,item.expired);});
   // 合并本地缓存与服务器消息（按id去重）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
@@ -1954,14 +1960,18 @@ async function syncRoomMessages(name){
 async function markRoomRead(otherId){
   try{
     var ts=Date.now();
-    var up=await _sb.from('read_receipts').upsert({user_id:String(myId),other_id:String(otherId),last_read_at:ts},{onConflict:'user_id,other_id'});
-    if(up.error)console.log('markRoomRead failed:',up.error.message);
+    var room=roomIdOf(parseInt(myId)||myId,parseInt(otherId)||otherId);
+    var ins=await _sb.from('messages').insert({room_id:room,sender:String(myId),type:'read_receipt',content:String(ts)});
+    if(ins.error)console.log('markRoomRead failed:',ins.error.message);
     if(typingSub)typingSub.send({type:'broadcast',event:'read',payload:{from:String(myId),upto:ts}});
   }catch(e){console.log('markRoomRead err',e&&e.message);}
 }
+var _lastMarkReadAt={};
 function scheduleMarkRoomRead(name){
   setTimeout(function(){
     if(G.chat!==name)return;
+    if(Date.now()-(_lastMarkReadAt[name]||0)<15000)return; // 节流，避免每次轮询都插入新记录
+    _lastMarkReadAt[name]=Date.now();
     markRoomRead(name);
   },2000);
 }
@@ -2864,11 +2874,20 @@ async function loadContacts(){
   var res=await _sb.from('messages').select('sender,room_id,content,type,created_at,read,delivered').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(200);
   console.log('loadContacts messages query, error:',res.error,'count:',res.data?res.data.length:0);
   var contactIds=[];
+  var receiptMap={};
   if(res.data){
     res.data.forEach(function(m){
-      if(!m.room_id||m.type==='recall')return;
+      if(!m.room_id)return;
       var parts=m.room_id.split('_');
       var otherId=parts[0]===mid?parts[1]:parts[0];
+      if(m.type==='read_receipt'){
+        if(String(m.sender)===otherId){
+          var v=parseInt(m.content)||0;
+          if(v>(receiptMap[otherId]||0))receiptMap[otherId]=v;
+        }
+        return;
+      }
+      if(m.type==='recall')return;
       if(otherId&&otherId!==mid&&!seen[otherId]){seen[otherId]=m;contactIds.push(otherId);}
     });
   }
@@ -2883,11 +2902,6 @@ async function loadContacts(){
   var userMap={};
   var avatarMap={};
   if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;if(u.avatar_url)avatarMap[String(u.id)]=u.avatar_url;});
-  var receiptMap={};
-  try{
-    var rrAll=await _sb.from('read_receipts').select('user_id,last_read_at').eq('other_id',mid).in('user_id',contactIds);
-    if(rrAll.data)rrAll.data.forEach(function(r){receiptMap[String(r.user_id)]=r.last_read_at;});
-  }catch(e){console.log('read_receipts batch fetch failed',e&&e.message);}
   var hiddenSet=getHiddenContacts();
   list.innerHTML='';
   contactIds.forEach(function(cid){
