@@ -1810,6 +1810,7 @@ async function joinRoom(name){
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
         var m=p.new;
         if(String(m.sender)===String(myId))return;
+        if(m.type==='read_receipt')return;
         var createdMs1=new Date(m.created_at).getTime()||Date.now();
         var dl1=new Date(createdMs1);
         var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:dl1.getHours()+':'+(dl1.getMinutes()<10?'0':'')+dl1.getMinutes(),ts:createdMs1};
@@ -2330,6 +2331,7 @@ function listenForAllMessages(){
       var parts=m.room_id.split('_');
       if(parts.indexOf(mid)<0)return;
       if(String(m.sender)===mid)return;
+      if(m.type==='read_receipt')return;
       var senderId=parts[0]===mid?parts[1]:parts[0];
       if(isBlocked(senderId))return;
       if(m.type==='recall'){
