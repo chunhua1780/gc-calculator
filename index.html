@@ -450,6 +450,11 @@ html,body{height:100%;margin:0;padding:0;}
         <div style="flex:1;"><div style="font-size:17px;">自动锁屏时间</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="lockTimeoutShow">-</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
+      <div class="row">
+        <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">🔒</div>
+        <div style="flex:1;"><div style="font-size:17px;">离开APP自动锁屏</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">切到其他软件或锁屏后，回来需要输入锁屏密码</div></div>
+        <div class="tog" id="autoLockToggle" onclick="toggleAutoLockLeave()"><div class="td"></div></div>
+      </div>
       <div class="row" onclick="showQR()">
         <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="21" y2="14"/><line x1="14" y1="21" x2="21" y2="21"/><line x1="17.5" y1="14" x2="17.5" y2="21"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;">我的二维码</div></div>
@@ -911,7 +916,7 @@ document.addEventListener('visibilitychange',function(){
     if(sessionStorage.getItem('testGatePassed')==='1'){
       // 系统锁屏/切到后台再回来，重新要求内测密码
       triggerTestGate();
-    }else if(lg('appLockPin')){
+    }else if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
       var last=parseInt(lg('lastHiddenAt')||'0');
       var timeout=parseInt(lg('lockTimeout')||'0')*60000;
       if(last>0&&Date.now()-last>=timeout){
@@ -942,6 +947,7 @@ window.onload=function(){
       var n2=document.getElementById('nickShow2');if(n2)n2.textContent=savedName||'-';
       var id2=document.getElementById('idShow2');if(id2)id2.textContent=myId;
       updateLockTimeoutShow();
+      updateAutoLockToggle();
     }
   }catch(e){console.log('avatar load err',e);}
   // 计算器全局事件
@@ -1309,7 +1315,7 @@ function forceLogout(){
 }
 
 // ═══ 设置同步到中央数据库：锁屏密码/隐藏模式/伪装方式/激活方式/销毁方式 ═══
-var SYNCED_SETTING_KEYS=['appLockPin','hide','dis','trig','dest','dpin','testGatePin','lockTimeout'];
+var SYNCED_SETTING_KEYS=['appLockPin','hide','dis','trig','dest','dpin','testGatePin','lockTimeout','autoLockLeave'];
 async function pushSettings(){
   if(!lg('registered')||!myId)return;
   var obj={};
@@ -1331,6 +1337,8 @@ async function pullSettings(){
     G.trig=lg('trig')||G.trig;
     G.dest=lg('dest')||G.dest;
     G.dpin=lg('dpin')||G.dpin;
+    updateLockTimeoutShow();
+    updateAutoLockToggle();
   }catch(e){console.log('pullSettings failed',e);}
 }
 
@@ -2050,7 +2058,7 @@ function renderMsgs(){
     var s=m.sent;
     var b='';
     if(m.type==='image'&&m.src){
-      if(m.loading){b='<div style="opacity:.6;font-size:13px;">Sending...</div>';}
+      if(m.loading){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.6;"><div style="font-size:12px;opacity:.7;">发送中...</div></div>';}
       else if(m.failed){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.5;" onclick="window.open(this.src)"><div style="font-size:12px;color:#ff3b30;">⚠️ 发送失败</div></div>';}
       else if(m.src.length>4){b='<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';}
       else{b='<div>📷 Image</div>';}
@@ -2243,10 +2251,19 @@ function proceedStartup(){
 
 var _lockReturnScreen=null;
 function triggerLock(){
-  if(G.hide)return;
   if(!lg('appLockPin'))return;
   var active=document.querySelector('.screen.active');
-  if(active&&active.id!=='applock')_lockReturnScreen=active.id;
+  if(active&&(active.id==='applock'||active.id==='testgate'))return;
+  if(G.hide){
+    // 隐藏模式下，离开后回来直接切回伪装界面，而不是锁屏界面
+    var dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
+    var target=dm[G.dis]||'dcalc';
+    if(active&&active.id===target)return;
+    if(active)_lockReturnScreen=active.id;
+    show(target);
+    return;
+  }
+  if(active)_lockReturnScreen=active.id;
   show('applock');
   var p=document.getElementById('lockPinInput');if(p){p.value='';setTimeout(function(){p.focus();},200);}
 }
@@ -2310,6 +2327,20 @@ function updateLockTimeoutShow(){
   if(!d)return;
   var t=lg('lockTimeout')||'0';
   d.textContent=(t==='0')?'离开应用后立即锁定':t+' 分钟后锁定';
+}
+function toggleAutoLockLeave(){
+  if(!lg('appLockPin')){alert('请先设置锁屏密码');return;}
+  var cur=lg('autoLockLeave')!=='false';
+  var nv=!cur;
+  ls('autoLockLeave',nv?'true':'false');
+  updateAutoLockToggle();
+  pushSettings();
+}
+function updateAutoLockToggle(){
+  var t=document.getElementById('autoLockToggle');
+  if(!t)return;
+  var on=lg('appLockPin')&&lg('autoLockLeave')!=='false';
+  if(on)t.classList.add('on');else t.classList.remove('on');
 }
 
 function getHiddenContacts(){
@@ -2523,23 +2554,57 @@ function doImg(){
   document.getElementById('imgIn').click();
 }
 
-function onImg(e){
+// 把图片(包括iPhone拍照的HEIC格式)统一转换成JPEG，并限制最大尺寸，
+// 避免对方设备/浏览器无法解码HEIC而显示成一个破图标
+function prepareImageBlob(file){
+  return new Promise(function(resolve){
+    var img=new Image();
+    var url=URL.createObjectURL(file);
+    img.onload=function(){
+      var w=img.naturalWidth,h=img.naturalHeight;
+      if(!w||!h){URL.revokeObjectURL(url);resolve({blob:file,localUrl:url,ok:false});return;}
+      var maxDim=1600;
+      var scale=Math.min(1,maxDim/Math.max(w,h));
+      var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(h*scale));
+      var canvas=document.createElement('canvas');
+      canvas.width=cw;canvas.height=ch;
+      var ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,cw,ch);
+      canvas.toBlob(function(blob){
+        if(!blob){URL.revokeObjectURL(url);resolve({blob:file,localUrl:url,ok:false});return;}
+        var newLocalUrl=URL.createObjectURL(blob);
+        URL.revokeObjectURL(url);
+        resolve({blob:blob,localUrl:newLocalUrl,ok:true});
+      },'image/jpeg',0.85);
+    };
+    img.onerror=function(){URL.revokeObjectURL(url);resolve({blob:file,localUrl:url,ok:false});};
+    img.src=url;
+  });
+}
+
+async function onImg(e){
   var f=e.target.files[0];
   if(!f)return;
   document.getElementById('xpanel').classList.remove('on');
-  var fname='img_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.]/g,'_');
-  var localUrl=URL.createObjectURL(f);
   var roomAtSend=currentRoom;
   var chatAtSend=G.chat;
-  addMsg({type:'image',src:localUrl,sent:true,t:gt()});
+  var prep=await prepareImageBlob(f);
+  var blob=prep.blob,localUrl=prep.localUrl;
+  var ext=prep.ok?'jpg':(f.name.match(/\.(\w+)$/)||[,'jpg'])[1];
+  var ctype=prep.ok?'image/jpeg':(f.type||'image/jpeg');
+  var fname='img_'+Date.now()+'.'+ext;
+  addMsg({type:'image',src:localUrl,sent:true,t:gt(),loading:true});
   updateLastPreview(chatAtSend,'[Image]','image',false);
-  _sb.storage.from('media').upload(fname,f,{contentType:f.type||'image/jpeg',upsert:true}).then(function(up){
+  if(!prep.ok){
+    alert('提示：该照片格式可能无法在对方设备正常显示（如HEIC），已尝试原样发送。');
+  }
+  _sb.storage.from('media').upload(fname,blob,{contentType:ctype,upsert:true}).then(function(up){
     if(up.error){
       console.log('img upload err:',up.error.message);
       alert('图片发送失败: '+up.error.message);
       var msgs2=G.msgs[chatAtSend]||[];
       for(var j=msgs2.length-1;j>=0;j--){
-        if(msgs2[j].type==='image'&&msgs2[j].src===localUrl){msgs2[j].failed=true;break;}
+        if(msgs2[j].type==='image'&&msgs2[j].src===localUrl){msgs2[j].loading=false;msgs2[j].failed=true;break;}
       }
       if(G.chat===chatAtSend)renderMsgs();
       return;
@@ -2547,7 +2612,7 @@ function onImg(e){
     var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
     var msgs=G.msgs[chatAtSend]||[];
     for(var i=msgs.length-1;i>=0;i--){
-      if(msgs[i].type==='image'&&msgs[i].src===localUrl){msgs[i].src=url;break;}
+      if(msgs[i].type==='image'&&msgs[i].src===localUrl){msgs[i].src=url;msgs[i].loading=false;break;}
     }
     if(G.chat===chatAtSend)renderMsgs();
     saveLocalMsgs(chatAtSend,msgs);
@@ -2925,7 +2990,8 @@ function cp(b){
       if(expr)expr.textContent='';
       if(!lg('registered')){show('reg');}
       else{
-        show('main');listenForCalls();listenForAllMessages();loadContacts();claimSession(false);
+        if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}else{show('main');}
+        listenForCalls();listenForAllMessages();loadContacts();claimSession(false);
         if(lg('pinReset')==='true'){
           ls('pinReset','');
           setTimeout(function(){
@@ -3078,7 +3144,10 @@ async function weatherSearchSubmit(){
     inp.value='';
     document.getElementById('wxResults').style.display='none';
     if(!lg('registered')){show('reg');}
-    else{show('main');listenForCalls();listenForAllMessages();loadContacts();claimSession(false);}
+    else{
+      if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}else{show('main');}
+      listenForCalls();listenForAllMessages();loadContacts();claimSession(false);
+    }
     return;
   }
   try{
