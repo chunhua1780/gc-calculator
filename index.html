@@ -1895,8 +1895,27 @@ var ICE={iceServers:[
   {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
 ]};
 
-function createPC(){
-  var pc=new RTCPeerConnection(ICE);
+// ═══ 免费TURN服务器：注册 metered.ca 免费账号(每月50GB免费额度)后，
+// 把"App名称(子域名)"和"API Key"填到下面两行，通话打通率会大幅提升。
+// 不填的话会自动使用上面的公共TURN作为兜底（不稳定但能用）。
+var METERED_APP='ghostchat88';     // 例如 'ghostchat' -> 对应 https://ghostchat.metered.live
+var METERED_API_KEY='12jRYlmtbX7D_DFkmtkVGGi4nR5LTMBDNeAfDtRmZmD3n2MT';
+async function getIceServers(){
+  if(METERED_APP&&METERED_API_KEY){
+    try{
+      var r=await fetch('https://'+METERED_APP+'.metered.live/api/v1/turn/credentials?apiKey='+METERED_API_KEY);
+      if(r.ok){
+        var servers=await r.json();
+        if(servers&&servers.length){console.log('Using metered.ca TURN servers');return {iceServers:servers};}
+      }
+    }catch(e){console.log('metered turn fetch failed, using fallback:',e&&e.message);}
+  }
+  return ICE;
+}
+
+async function createPC(){
+  var iceServers=await getIceServers();
+  var pc=new RTCPeerConnection(iceServers);
   pc.ontrack=function(e){
     console.log('ontrack fired, streams:',e.streams.length);
     var ra=document.getElementById('remoteAudio');
@@ -1924,14 +1943,16 @@ function createPC(){
     console.log('ICE state:',pc.iceConnectionState);
     var st=document.getElementById('callSt');
     if(st){
-      if(pc.iceConnectionState==='connected'||pc.iceConnectionState==='completed'){
+      if(pc.iceConnectionState==='checking'){
+        st.textContent='正在连接...';
+      } else if(pc.iceConnectionState==='connected'||pc.iceConnectionState==='completed'){
         st.textContent='Connected';
         startCallTimer();
         RTC.startTime=new Date();
       } else if(pc.iceConnectionState==='failed'){
-        st.textContent='Connection failed';
+        st.textContent='连接失败，请检查网络后重试';
       } else if(pc.iceConnectionState==='disconnected'){
-        st.textContent='Disconnected';
+        st.textContent='网络不稳定，正在重连...';
       }
     }
   };
@@ -1947,7 +1968,7 @@ async function initiateCall(name,isVideo){
     RTC.localStream=await navigator.mediaDevices.getUserMedia(constraints);
     console.log('Local stream tracks:',RTC.localStream.getTracks().length);
     if(isVideo){var lv=document.getElementById('localVideo');if(lv)lv.srcObject=RTC.localStream;}
-    RTC.pc=createPC();
+    RTC.pc=await createPC();
     RTC.localStream.getTracks().forEach(function(t){
       console.log('Adding track:',t.kind);
       RTC.pc.addTrack(t,RTC.localStream);
@@ -2034,7 +2055,7 @@ async function acceptCall(){
     var constraints={audio:{echoCancellation:true,noiseSuppression:true,sampleRate:44100},video:false};
     RTC.localStream=await navigator.mediaDevices.getUserMedia(constraints);
     console.log('Local stream for answer:',RTC.localStream.getTracks().length);
-    RTC.pc=createPC();
+    RTC.pc=await createPC();
     RTC.localStream.getTracks().forEach(function(t){
       console.log('Adding track for answer:',t.kind);
       RTC.pc.addTrack(t,RTC.localStream);
