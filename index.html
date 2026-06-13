@@ -2135,10 +2135,11 @@ function renderMsgs(){
     var m=msgs[i];
     var s=m.sent;
     var b='';
-    if(m.type==='image'&&m.src){
-      if(m.loading){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.6;"><div style="font-size:12px;opacity:.7;">发送中...</div></div>';}
+    if(m.type==='image'){
+      if(m.loading&&!m.src){b='<div style="width:160px;height:120px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:13px;opacity:.8;">📷 处理中...</div>';}
+      else if(m.loading){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.6;"><div style="font-size:12px;opacity:.7;">发送中...</div></div>';}
       else if(m.failed){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.5;" onclick="openImgViewer(this.src)"><div style="font-size:12px;color:#ff3b30;">⚠️ 发送失败</div></div>';}
-      else if(m.src.length>4){b='<img class="msg-img" src="'+m.src+'" onclick="openImgViewer(this.src)">';}
+      else if(m.src&&m.src.length>4){b='<img class="msg-img" src="'+m.src+'" onclick="openImgViewer(this.src)">';}
       else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
       if(m.src&&(m.src.startsWith('http')||m.src.startsWith('blob'))){
@@ -2642,14 +2643,31 @@ function doImg(){
 
 // 把图片(包括iPhone拍照的HEIC格式)统一转换成JPEG，并限制最大尺寸，
 // 避免对方设备/浏览器无法解码HEIC而显示成一个破图标
-function prepareImageBlob(file){
+// 把图片(包括iPhone拍照的HEIC格式)统一转换成JPEG，并限制最大尺寸，
+// 避免对方设备/浏览器无法解码HEIC而显示成一个破图标。
+// 用createImageBitmap做"解码+缩放"，比new Image()+canvas快很多，
+// 拍照(超大原图)和选图走同一条路径，速度一致。
+async function prepareImageBlob(file){
+  var maxDim=1280;
+  try{
+    if(window.createImageBitmap){
+      var bmp=await createImageBitmap(file,{resizeWidth:maxDim,resizeHeight:maxDim,resizeQuality:'medium'});
+      var canvas=document.createElement('canvas');
+      canvas.width=bmp.width;canvas.height=bmp.height;
+      var ctx=canvas.getContext('2d');
+      ctx.drawImage(bmp,0,0);
+      bmp.close&&bmp.close();
+      var blob1=await new Promise(function(res){canvas.toBlob(res,'image/jpeg',0.82);});
+      if(blob1)return {blob:blob1,localUrl:URL.createObjectURL(blob1),ok:true};
+    }
+  }catch(e){console.log('createImageBitmap failed, fallback:',e&&e.message);}
+  // 兜底方案：兼容性更好但稍慢
   return new Promise(function(resolve){
     var img=new Image();
     var url=URL.createObjectURL(file);
     img.onload=function(){
       var w=img.naturalWidth,h=img.naturalHeight;
       if(!w||!h){URL.revokeObjectURL(url);resolve({blob:file,localUrl:url,ok:false});return;}
-      var maxDim=1600;
       var scale=Math.min(1,maxDim/Math.max(w,h));
       var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(h*scale));
       var canvas=document.createElement('canvas');
@@ -2661,7 +2679,7 @@ function prepareImageBlob(file){
         var newLocalUrl=URL.createObjectURL(blob);
         URL.revokeObjectURL(url);
         resolve({blob:blob,localUrl:newLocalUrl,ok:true});
-      },'image/jpeg',0.85);
+      },'image/jpeg',0.82);
     };
     img.onerror=function(){URL.revokeObjectURL(url);resolve({blob:file,localUrl:url,ok:false});};
     img.src=url;
@@ -2674,13 +2692,20 @@ async function onImg(e){
   document.getElementById('xpanel').classList.remove('on');
   var roomAtSend=currentRoom;
   var chatAtSend=G.chat;
+  // 立刻显示"处理中"占位，不等图片处理完成才有反应
+  addMsg({type:'image',src:null,sent:true,t:gt(),loading:true});
+  updateLastPreview(chatAtSend,'[Image]','image',false);
   var prep=await prepareImageBlob(f);
   var blob=prep.blob,localUrl=prep.localUrl;
   var ext=prep.ok?'jpg':(f.name.match(/\.(\w+)$/)||[,'jpg'])[1];
   var ctype=prep.ok?'image/jpeg':(f.type||'image/jpeg');
   var fname='img_'+Date.now()+'.'+ext;
-  addMsg({type:'image',src:localUrl,sent:true,t:gt(),loading:true});
-  updateLastPreview(chatAtSend,'[Image]','image',false);
+  // 用真实预览图替换占位
+  var msgsP=G.msgs[chatAtSend]||[];
+  for(var p=msgsP.length-1;p>=0;p--){
+    if(msgsP[p].type==='image'&&msgsP[p].loading&&msgsP[p].src==null){msgsP[p].src=localUrl;break;}
+  }
+  if(G.chat===chatAtSend)renderMsgs();
   if(!prep.ok){
     alert('提示：该照片格式可能无法在对方设备正常显示（如HEIC），已尝试原样发送。');
   }
