@@ -373,25 +373,25 @@ html,body{height:100%;margin:0;padding:0;}
 </div>
 
 <!-- 语音通话 -->
-<div id="callscr" class="screen" style="background:linear-gradient(170deg,#1c1c1e,#2c2c2e);align-items:center;justify-content:space-between;padding:80px 0 60px;">
-  <div style="display:flex;flex-direction:column;align-items:center;gap:16px;">
-    <div id="callAv" style="width:100px;height:100px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:700;color:#fff;box-shadow:0 0 0 12px rgba(0,122,255,.15);"></div>
-    <div id="callNm" style="font-size:28px;font-weight:600;color:#fff;"></div>
-    <div id="callSt" style="font-size:16px;color:#8e8e93;">Calling...</div>
-    <div id="callTimer" style="font-size:14px;color:#636366;font-variant-numeric:tabular-nums;"></div>
+<div id="callscr" class="screen" style="background:linear-gradient(170deg,#fdf2f8,#eef2ff);align-items:center;justify-content:space-between;padding:80px 0 60px;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:30px;">
+    <div id="callAv" style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,#ff9a9e,#a18cd1);display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:700;color:#fff;box-shadow:0 0 0 14px rgba(161,140,209,.12);"></div>
+    <div id="callNm" style="font-size:26px;font-weight:700;color:#3a3a3c;"></div>
+    <div id="callSt" style="font-size:15px;color:#a18cd1;">📞 Calling...</div>
+    <div id="callTimer" style="font-size:14px;color:#8e8e93;font-variant-numeric:tabular-nums;"></div>
   </div>
-  <div style="display:flex;gap:32px;">
+  <div style="display:flex;gap:28px;">
     <div style="text-align:center;cursor:pointer;" onclick="toggleMic()">
-      <div id="micBtn" style="width:68px;height:68px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center;font-size:28px;">🎤</div>
-      <div style="font-size:12px;color:#8e8e93;margin-top:8px;" id="mute-lbl">Mute</div>
+      <div id="micBtn" style="width:64px;height:64px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(161,140,209,.18);display:flex;align-items:center;justify-content:center;font-size:26px;">🎤</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:8px;" id="mute-lbl">静音</div>
     </div>
     <div style="text-align:center;cursor:pointer;" onclick="endCall()">
-      <div style="width:68px;height:68px;border-radius:50%;background:#ff3b30;display:flex;align-items:center;justify-content:center;font-size:28px;">📵</div>
-      <div style="font-size:12px;color:#ff3b30;margin-top:8px;" id="end-lbl">End</div>
+      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ff9a9e,#ff6b6b);box-shadow:0 4px 14px rgba(255,107,107,.35);display:flex;align-items:center;justify-content:center;font-size:26px;">📵</div>
+      <div style="font-size:12px;color:#ff6b6b;margin-top:8px;" id="end-lbl">挂断</div>
     </div>
     <div style="text-align:center;cursor:pointer;">
-      <div style="width:68px;height:68px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center;font-size:28px;">🔊</div>
-      <div style="font-size:12px;color:#8e8e93;margin-top:8px;" id="spk-lbl">Speaker</div>
+      <div style="width:64px;height:64px;border-radius:50%;background:#fff;box-shadow:0 2px 10px rgba(161,140,209,.18);display:flex;align-items:center;justify-content:center;font-size:26px;">🔊</div>
+      <div style="font-size:12px;color:#8e8e93;margin-top:8px;" id="spk-lbl">扬声器</div>
     </div>
   </div>
 </div>
@@ -1799,25 +1799,13 @@ async function joinRoom(name){
           addMsg(msg);
           sendNotif();
           _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
-          scheduleMarkRead(name,[m.id]);
+          if(G.chat===name)scheduleMarkRoomRead(name);
         }
         updateLastPreview(m.sender,m.type==='text'?m.content:('['+m.type+']'),m.type,true,null);
       }).subscribe(function(status){console.log('Realtime:',status);});
   }catch(e){console.log('realtime channel setup failed:',e&&e.message);}
 
   await syncRoomMessages(name);
-}
-
-// 打开聊天2秒后才标记为"已读"（而不是一打开就算已读），更接近真实"看到了"的体验
-function scheduleMarkRead(name,ids){
-  if(!ids||!ids.length)return;
-  setTimeout(function(){
-    if(G.chat!==name)return;
-    _sb.from('messages').update({delivered:true,read:true}).in('id',ids).then(function(r){
-      if(r.error)console.log('mark read failed:',r.error.message);
-      else console.log('marked read ok, ids=',ids);
-    });
-  },2000);
 }
 
 // 视频/文件已送达对方本机（或超过7天无人查看），从服务器存储清除，腾出空间
@@ -1843,10 +1831,15 @@ async function syncRoomMessages(name){
   var room=roomIdOf(a,b);
   var res=await _sb.from('messages').select('*').eq('room_id',room).order('created_at',{ascending:false}).limit(50);
   var serverMsgs=[];
-  var toMarkDelivered=[],toMarkRead=[];
-  var toCleanup=[]; // 视频/文件：对方已读 或 超过7天未读，从服务器删除（已保存在本机）
+  var toCleanup=[]; // 视频/文件：已查看 或 超过7天未查看，从服务器删除（已保存在本机）
   var chatOpen=(G.chat===name);
   var weekAgo=Date.now()-7*24*60*60*1000;
+  // 获取对方的"已读到"时间点（对方写在自己账号上的last_read，不依赖跨用户写权限）
+  var otherLastRead=0;
+  try{
+    var rr=await _sb.from('users').select('last_read').eq('id',parseInt(name)||name).maybeSingle();
+    otherLastRead=(rr.data&&rr.data.last_read&&rr.data.last_read['r_'+myId])||0;
+  }catch(e){console.log('fetch last_read failed',e&&e.message);}
   if(res.data&&res.data.length>0){
     serverMsgs=res.data.map(function(m){
       try{
@@ -1863,21 +1856,18 @@ async function syncRoomMessages(name){
       // 过滤掉异常长的text消息
       if(msg.type==='text'&&msg.text&&msg.text.length>2000)msg.text='[Message]';
       if(msg.sent){
-        // 我发出的消息：记录对方是否已送达/已读，用于显示状态图标
-        msg.delivered=!!m.delivered;
-        msg.read=!!m.read;
+        // 我发出的消息：用对方的last_read时间点判断对方是否已读
+        msg.delivered=true;
+        msg.read=otherLastRead>=msg.ts;
       }else{
-        // 对方发来的消息：标记为已送达；如果聊天界面是打开的，2秒后标记为已读
-        if(!m.delivered)toMarkDelivered.push(m.id);
-        if(chatOpen&&!m.read)toMarkRead.push(m.id);
-        msg.delivered=true;msg.read=!!m.read;
+        msg.delivered=true;msg.read=true;
       }
-      // 视频/文件清理：对方刚读到（已存入本机），或超过7天没人看，从服务器删掉腾空间
+      // 视频/文件清理：我刚看到（已存入本机），或超过7天没人看，从服务器删掉腾空间
       if((m.type==='video'||m.type==='file')&&msg.src){
         var isMediaUrl=msg.src.indexOf('/storage/v1/object/public/media/')>=0;
         if(isMediaUrl){
-          var justRead=!msg.sent&&chatOpen&&!m.read;
-          var expired=new Date(m.created_at).getTime()<weekAgo&&!m.read;
+          var justRead=!msg.sent&&chatOpen;
+          var expired=createdMs<weekAgo;
           if(justRead||expired)toCleanup.push({id:m.id,src:msg.src,expired:expired&&!justRead});
         }
       }
@@ -1888,8 +1878,7 @@ async function syncRoomMessages(name){
       }
     });
   }
-  if(toMarkDelivered.length)_sb.from('messages').update({delivered:true}).in('id',toMarkDelivered).then(function(){});
-  if(toMarkRead.length)scheduleMarkRead(name,toMarkRead);
+  if(chatOpen)scheduleMarkRoomRead(name);
   toCleanup.forEach(function(item){cleanupMediaMessage(item.id,item.src,item.expired);});
   // 合并本地缓存与服务器消息（按id去重）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
@@ -1902,7 +1891,7 @@ async function syncRoomMessages(name){
   if(merged.length>prevLen){
     var last=merged[merged.length-1];
     var isUnread=!last.sent&&G.chat!==name;
-    var rs=last.sent?(last.read?'read':(last.delivered?'delivered':'sent')):null;
+    var rs=last.sent?(last.read?'read':'sent'):null;
     updateLastPreview(name,last.type==='text'?last.text:('['+last.type+']'),last.type,isUnread,rs);
     if(isUnread){addUnread(name);sendNotif();}
   }
@@ -1914,6 +1903,24 @@ async function syncRoomMessages(name){
       if(G.chat===name)renderMsgs();
     }
   }
+}
+
+// 把"我读到哪了"写到自己账号的last_read里(只写自己的数据，不依赖跨用户写权限)
+async function markRoomRead(otherId){
+  try{
+    var ts=Date.now();
+    var r=await _sb.from('users').select('last_read').eq('id',parseInt(myId)||myId).maybeSingle();
+    var lr=(r.data&&r.data.last_read&&typeof r.data.last_read==='object')?r.data.last_read:{};
+    lr['r_'+otherId]=ts;
+    var up=await _sb.from('users').update({last_read:lr}).eq('id',parseInt(myId)||myId);
+    if(up.error)console.log('markRoomRead failed:',up.error.message);
+  }catch(e){console.log('markRoomRead err',e&&e.message);}
+}
+function scheduleMarkRoomRead(name){
+  setTimeout(function(){
+    if(G.chat!==name)return;
+    markRoomRead(name);
+  },2000);
 }
 
 // ═══ WebRTC MODULE v2.0 ═══
@@ -2057,6 +2064,7 @@ async function initiateCall(name,isVideo){
   RTC.quotaRemainingSec=remain*60;
   RTC.isCaller=true;
   RTC.callRoom=[String(myId),String(name)].sort().join('_call');
+  RTC.sigSince=new Date(Date.now()-1000).toISOString();
   try{
     var constraints={audio:{echoCancellation:true,noiseSuppression:true,sampleRate:44100},video:isVideo};
     RTC.localStream=await navigator.mediaDevices.getUserMedia(constraints);
@@ -2084,23 +2092,37 @@ async function initiateCall(name,isVideo){
 }
 
 var _callSigSub=null;
-var _callStartTime=0;
+var _processedSigIds={};
 function subCallSig(){
-  _callStartTime=Date.now();
   if(_callSigSub){try{_callSigSub.unsubscribe();}catch(e){}}
+  _processedSigIds={};
   _callSigSub=_sb.channel('call:'+RTC.callRoom+'_'+Date.now())
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'calls',filter:'room_id=eq.'+RTC.callRoom},function(payload){
       var msg=payload.new;
       if(!msg||String(msg.sender)===String(myId))return;
-      // 只处理订阅之后产生的信号
-      var msgTime=new Date(msg.created_at).getTime();
-      if(msgTime<_callStartTime-2000){
-        console.log('Ignoring old signal:',msg.type,'age:'+(Date.now()-msgTime)+'ms');
-        return;
-      }
+      if(_processedSigIds[msg.id])return;
+      _processedSigIds[msg.id]=true;
       handleCallSig(payload);
     })
-    .subscribe(function(s){console.log('Call sig channel:',s);});
+    .subscribe(function(s){
+      console.log('Call sig channel:',s);
+      if(s==='SUBSCRIBED')loadExistingCallSig();
+    });
+}
+// 补上"我订阅之前对方已经发出"的信令（尤其是对方在我接听前就生成的ICE候选），
+// 否则在接听耗时较长时这些候选会被漏掉，导致ICE协商失败、即使同一局域网也连不上
+async function loadExistingCallSig(){
+  try{
+    var since=RTC.sigSince||new Date(Date.now()-30000).toISOString();
+    var res=await _sb.from('calls').select('*').eq('room_id',RTC.callRoom).gte('created_at',since).order('created_at',{ascending:true});
+    if(!res.data)return;
+    res.data.forEach(function(row){
+      if(String(row.sender)===String(myId))return;
+      if(_processedSigIds[row.id])return;
+      _processedSigIds[row.id]=true;
+      handleCallSig({new:row});
+    });
+  }catch(e){console.log('loadExistingCallSig err',e&&e.message);}
 }
 
 async function handleCallSig(payload){
@@ -2120,7 +2142,7 @@ async function handleCallSig(payload){
       console.log('ICE candidate added');
     }catch(e){console.log('addIceCandidate error:',e);}
   }
-  if(msg.type==='offer'){showIncoming(msg.sender,JSON.parse(msg.data));}
+  if(msg.type==='offer'){showIncoming(msg.sender,JSON.parse(msg.data),msg.created_at);}
   if(msg.type==='hangup'){
     console.log('Remote hangup received at:',msg.created_at);
     // 忽略超过10秒的旧hangup信号
@@ -2134,8 +2156,8 @@ async function handleCallSig(payload){
   }
 }
 
-function showIncoming(from,offer){
-  RTC.pendingFrom=from;RTC.pendingOffer=offer;
+function showIncoming(from,offer,createdAt){
+  RTC.pendingFrom=from;RTC.pendingOffer=offer;RTC.sigSince=createdAt||new Date().toISOString();
   document.getElementById('incAv').textContent=String(from)[0]||'?';
   document.getElementById('incNm').textContent=from;
   document.getElementById('incCall').classList.add('on');
@@ -2273,7 +2295,7 @@ function listenForAllMessages(){
         G.msgs[senderId].sort(function(a,b){return (a.ts||0)-(b.ts||0);});
         saveLocalMsgs(senderId,G.msgs[senderId]);
         _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
-        if(chatOpenNow)scheduleMarkRead(senderId,[m.id]);
+        if(chatOpenNow)scheduleMarkRoomRead(senderId);
         if(G.chat===senderId){renderMsgs();}
         var lastEl=document.getElementById('last-'+senderId);
         if(lastEl){
@@ -2309,7 +2331,7 @@ function listenForCalls(){
       var roomParts=(msg.room_id||'').split('_call');
       if(msg.type==='offer'&&roomParts.indexOf(String(myId))>=0){
         console.log('Incoming call from:',msg.sender);
-        showIncoming(msg.sender,JSON.parse(msg.data));
+        showIncoming(msg.sender,JSON.parse(msg.data),msg.created_at);
       }
     }).subscribe();
 }
@@ -2341,6 +2363,10 @@ function renderMsgs(){
     var m=msgs[i];
     var s=m.sent;
     var b='';
+    if(m.type==='recalled'){
+      html+='<div style="text-align:center;color:#aaa;font-size:12px;margin:6px 0;">'+(s?'你撤回了一条消息':'对方撤回了一条消息')+'</div>';
+      continue;
+    }
     if(m.type==='image'){
       if(m.loading&&!m.src){b='<div style="width:160px;height:120px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:13px;opacity:.8;">📷 处理中...</div>';}
       else if(m.loading){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.6;"><div style="font-size:12px;opacity:.7;">发送中...</div></div>';}
@@ -2389,10 +2415,54 @@ function renderMsgs(){
       else if(m.read){bubExtra='<span class="msg-paw" title="对方已读">🐾</span>';}
     }
     var bubCls='bub'+(s&&m.read?' bub-read':'');
-    html+='<div class="mr '+(s?'s':'r')+'"><div class="'+bubCls+'">'+(s&&!m.read?bubExtra:'')+b+(s&&m.read?bubExtra:'')+'</div><div class="mt">'+m.t+statusTick+'</div></div>';
+    var midAttr=(s&&m.id!=null)?(' data-mid="'+m.id+'"'):'';
+    html+='<div class="mr '+(s?'s':'r')+'"><div class="'+bubCls+'"'+midAttr+'>'+(s&&!m.read?bubExtra:'')+b+(s&&m.read?bubExtra:'')+'</div><div class="mt">'+m.t+statusTick+'</div></div>';
   }
   c.innerHTML=html;
   c.scrollTop=c.scrollHeight;
+  setupRecallLongPress();
+}
+
+// ═══ 消息撤回 ═══
+function setupRecallLongPress(){
+  var c=document.getElementById('chatMsgs');
+  if(!c||c.dataset.recallBound)return;
+  c.dataset.recallBound='1';
+  var timer=null;
+  c.addEventListener('touchstart',function(e){
+    var bub=e.target.closest('.mr.s .bub[data-mid]');
+    if(!bub)return;
+    var mid=bub.dataset.mid;
+    timer=setTimeout(function(){timer=null;recallPrompt(mid);},600);
+  },{passive:true});
+  c.addEventListener('touchend',function(){if(timer){clearTimeout(timer);timer=null;}});
+  c.addEventListener('touchmove',function(){if(timer){clearTimeout(timer);timer=null;}});
+  c.addEventListener('contextmenu',function(e){
+    var bub=e.target.closest('.mr.s .bub[data-mid]');
+    if(!bub)return;
+    e.preventDefault();
+    recallPrompt(bub.dataset.mid);
+  });
+}
+function recallPrompt(mid){
+  if(!mid)return;
+  if(confirm('撤回这条消息？撤回后双方都将看到"已撤回"提示。'))recallMsg(mid);
+}
+async function recallMsg(mid){
+  var msgs=G.msgs[G.chat]||[];
+  var m=msgs.find(function(x){return String(x.id)===String(mid);});
+  if(!m)return;
+  var backup={type:m.type,text:m.text,src:m.src};
+  m.type='recalled';m.text='';
+  renderMsgs();
+  saveLocalMsgs(G.chat,msgs);
+  var up=await _sb.from('messages').update({type:'recalled',content:''}).eq('id',parseInt(mid)||mid);
+  if(up.error){
+    alert('撤回失败: '+up.error.message);
+    m.type=backup.type;m.text=backup.text;m.src=backup.src;
+    renderMsgs();
+    saveLocalMsgs(G.chat,msgs);
+  }
 }
 
 // ═══ 本地消息缓存（服务器上消息送达后即删除，长期保存在收件人本机） ═══
@@ -2795,7 +2865,9 @@ async function loadContacts(){
     var avHtml=avUrl
       ? '<div class="av" style="background:'+color+';overflow:hidden;padding:0;position:relative;"><img src="'+avUrl+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><span style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;align-items:center;justify-content:center;color:#fff;font-weight:700;">'+esc(name[0].toUpperCase())+'</span></div>'
       : '<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div>';
-    div.innerHTML=avHtml+'<div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="'+lastStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span class="last-prefix">'+lastPrefix+'</span><span id="last-'+cid+'">'+lastText+'</span></div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
+    var unreadCount=_unread[cid]||0;
+    var badgeHtml=unreadCount>0?'<span style="background:#ff3b30;color:#fff;font-size:12px;font-weight:600;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 6px;margin-left:8px;flex-shrink:0;">'+(unreadCount>99?'99+':unreadCount)+'</span>':'';
+    div.innerHTML=avHtml+'<div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="'+lastStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span class="last-prefix">'+lastPrefix+'</span><span id="last-'+cid+'">'+lastText+'</span></div></div>'+badgeHtml+'<span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
 
     div.onclick=(function(c,n,col){return function(e){
       if(parseFloat(div.style.transform.replace(/[^-\d.]/g,''))<-5)return;
