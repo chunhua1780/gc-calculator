@@ -761,6 +761,18 @@ html,body{height:100%;margin:0;padding:0;}
   </div>
 </div>
 
+<div id="newChatModal" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:none;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:24px;text-align:center;width:280px;">
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px;">发起新聊天</div>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:14px;">输入对方的 ID 或昵称</div>
+    <input id="newChatInput" type="text" placeholder="例如: 12 或 张三" autocomplete="off" style="width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid #e5e5ea;font-size:16px;outline:none;" onkeydown="if(event.key==='Enter')submitNewChat()">
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="closeNewChatModal()" style="flex:1;background:#f2f2f7;border:none;padding:10px 0;border-radius:12px;font-size:16px;cursor:pointer;">取消</button>
+      <button onclick="submitNewChat()" style="flex:1;background:#007aff;color:#fff;border:none;padding:10px 0;border-radius:12px;font-size:16px;cursor:pointer;">开始聊天</button>
+    </div>
+  </div>
+</div>
+
 <!-- 扫码弹窗 -->
 <div id="scanModal" style="position:fixed;inset:0;background:#000;z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;">
   <video id="scanVideo" autoplay playsinline muted style="width:100%;max-width:360px;border-radius:16px;background:#111;"></video>
@@ -1103,17 +1115,27 @@ function afterTestGate(){
   }
 }
 
-async function showNewChat(){
-  var input=prompt('Enter user ID or username to chat:');
-  if(!input||!input.trim())return;
-  input=input.trim();
+function showNewChat(){
+  var inp=document.getElementById('newChatInput');
+  if(inp)inp.value='';
+  document.getElementById('newChatModal').style.display='flex';
+  setTimeout(function(){if(inp)inp.focus();},100);
+}
+function closeNewChatModal(){
+  document.getElementById('newChatModal').style.display='none';
+}
+async function submitNewChat(){
+  var inp=document.getElementById('newChatInput');
+  var input=(inp&&inp.value||'').trim();
+  if(!input)return;
   // 按ID或用户名查找
   var res=await _sb.from('users').select('id,name').eq('id',parseInt(input)||0).single();
   if(res.error||!res.data){
     res=await _sb.from('users').select('id,name').ilike('name',input).single();
   }
-  if(res.error||!res.data){alert('User not found');return;}
+  if(res.error||!res.data){alert('未找到该用户，请确认ID或昵称是否正确');return;}
   var u=res.data;
+  closeNewChatModal();
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
   var color=colors[parseInt(u.id)%colors.length];
   var fres=await _sb.from('friends').select('nickname').eq('user_id',String(myId)).eq('friend_id',String(u.id)).maybeSingle();
