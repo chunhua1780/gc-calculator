@@ -64,6 +64,10 @@ html,body{height:100%;margin:0;padding:0;}
 .mt{font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;}
 .msg-tick{margin-left:4px;font-size:11px;letter-spacing:-1px;color:#b0b0b8;}
 .msg-tick.tick-read{color:#ff6b9d;}
+.typing-dots span{display:inline-block;animation:typingBounce 1.2s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.2s;}
+.typing-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes typingBounce{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-2px);}}
 .msg-img{max-width:220px;border-radius:16px;display:block;}
 .ibar{background:rgba(253,242,248,0.95);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
@@ -326,7 +330,7 @@ html,body{height:100%;margin:0;padding:0;}
 <div class="irow">
       <div class="ibtn" onclick="toggleDirectUpload()" title="Upload file">📎</div>
       <div class="ibtn" onclick="togXP()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
-      <textarea class="itxt" id="mi" placeholder="Message..." rows="1" onkeydown="hk(event)"></textarea>
+      <textarea class="itxt" id="mi" placeholder="Message..." rows="1" onkeydown="hk(event)" oninput="notifyTyping()"></textarea>
       <div class="ibtn" onmousedown="recStart()" onmouseup="recStop()" ontouchstart="recStart(event)" ontouchend="recStop()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg></div>
       <button class="isend" onclick="sendMsg()"><svg viewBox="0 0 24 24" width="16" height="16" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
     </div>
@@ -1120,6 +1124,18 @@ function afterTestGate(){
   }
 }
 
+function upgradeImg(img){
+  if(img.dataset.upgrading||!img.dataset.full)return;
+  img.dataset.upgrading='1';
+  var hi=new Image();
+  hi.onload=function(){
+    img.src=img.dataset.full;
+    img.style.filter='';
+    img.removeAttribute('data-full');
+  };
+  hi.onerror=function(){img.dataset.upgrading='';};
+  hi.src=img.dataset.full;
+}
 function openImgViewer(src){
   var img=document.getElementById('imgViewerSrc');
   img.src=src;
@@ -1691,7 +1707,7 @@ function pickLang(code){
 
 // ═══ Supabase ═══
 var _sb=supabase.createClient('https://mztoenhgfuomzrashrqk.supabase.co','sb_publishable_pOM3IfVWYiscQ-cz9vAwvA_F2Ht6zg1');
-var currentRoom=null,realtimeSub=null;
+var currentRoom=null,realtimeSub=null,typingSub=null,_typingTimeout=null,_typingSendAt=0;
 function roomIdOf(a,b){
   var ids=[String(a),String(b)].sort(function(x,y){return (parseInt(x)||0)-(parseInt(y)||0)||x.localeCompare(y);});
   return ids.join('_');
@@ -1699,9 +1715,30 @@ function roomIdOf(a,b){
 function leaveChat(){
   G.chat=null;
   if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}realtimeSub=null;}
+  if(typingSub){try{typingSub.unsubscribe();}catch(e){}typingSub=null;}
+  if(_typingTimeout){clearTimeout(_typingTimeout);_typingTimeout=null;}
   currentRoom=null;
   show('main');
   loadContacts();
+}
+// 对方正在输入提示
+function notifyTyping(){
+  if(!typingSub||!G.chat)return;
+  var now=Date.now();
+  if(now-_typingSendAt<1500)return; // 节流，最多1.5秒发一次
+  _typingSendAt=now;
+  typingSub.send({type:'broadcast',event:'typing',payload:{from:String(myId)}});
+}
+function showTypingIndicator(){
+  var el=document.getElementById('chatName');
+  if(!el)return;
+  if(!el.dataset.origName)el.dataset.origName=el.textContent;
+  el.innerHTML='<span style="color:#ff6b9d;">对方正在输入<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></span>';
+  if(_typingTimeout)clearTimeout(_typingTimeout);
+  _typingTimeout=setTimeout(function(){
+    if(el.dataset.origName)el.textContent=el.dataset.origName;
+    _typingTimeout=null;
+  },3000);
 }
 
 // 定期兜底刷新：即使实时推送有问题，也能保证消息及时同步
@@ -1720,8 +1757,12 @@ setInterval(function(){
 async function joinRoom(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
   currentRoom=roomIdOf(a,b);
-  if(realtimeSub)realtimeSub.unsubscribe();
   if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}}
+  if(typingSub){try{typingSub.unsubscribe();}catch(e){}}
+  typingSub=_sb.channel('typing_'+currentRoom)
+    .on('broadcast',{event:'typing'},function(p){
+      if(p.payload&&String(p.payload.from)!==String(myId))showTypingIndicator();
+    }).subscribe();
   realtimeSub=_sb.channel('room:'+currentRoom)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
       var m=p.new;
@@ -1729,7 +1770,7 @@ async function joinRoom(name){
       var createdMs1=new Date(m.created_at).getTime()||Date.now();
       var dl1=new Date(createdMs1);
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:dl1.getHours()+':'+(dl1.getMinutes()<10?'0':'')+dl1.getMinutes(),ts:createdMs1};
-      if(m.type==='image')msg.src=m.content;
+      if(m.type==='image'){var imgParts=(m.content||'').split('|');msg.src=imgParts[0];if(imgParts[1])msg.thumb=imgParts[1];}
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
       if(m.type==='contact'){try{var cc1=JSON.parse(m.content);msg.cid=cc1.id;msg.cname=cc1.name;}catch(e){}}
@@ -1737,16 +1778,28 @@ async function joinRoom(name){
       if(m.type==='file'){var fp1=(m.content||'').split('|');msg.src=fp1[0];msg.fname=decodeURIComponent(fp1[1]||'File');}
       var already=(G.msgs[name]||[]).some(function(x){return x.id===m.id;});
       if(!already){
-        msg.delivered=true;msg.read=true;
+        msg.delivered=true;msg.read=false;
         addMsg(msg);
         sendNotif();
-        _sb.from('messages').update({delivered:true,read:true}).eq('id',m.id).then(function(){});
+        _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
+        scheduleMarkRead(name,[m.id]);
       }
       var lastEl=document.getElementById('last-'+String(m.sender));
       if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
     }).subscribe(function(status){console.log('Realtime:',status);});
 
   await syncRoomMessages(name);
+}
+
+// 打开聊天2秒后才标记为"已读"（而不是一打开就算已读），更接近真实"看到了"的体验
+var _readTimer=null;
+function scheduleMarkRead(name,ids){
+  if(!ids||!ids.length)return;
+  if(_readTimer)clearTimeout(_readTimer);
+  _readTimer=setTimeout(function(){
+    if(G.chat!==name)return;
+    _sb.from('messages').update({delivered:true,read:true}).in('id',ids).then(function(){});
+  },2000);
 }
 
 // 视频/文件已送达对方本机（或超过7天无人查看），从服务器存储清除，腾出空间
@@ -1769,7 +1822,7 @@ async function syncRoomMessages(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
   var room=roomIdOf(a,b);
   var localMsgs=loadLocalMsgs(name);
-  var res=await _sb.from('messages').select('*').eq('room_id',room).order('created_at',{ascending:true}).limit(50);
+  var res=await _sb.from('messages').select('*').eq('room_id',room).order('created_at',{ascending:false}).limit(50);
   var serverMsgs=[];
   var toMarkDelivered=[],toMarkRead=[];
   var toCleanup=[]; // 视频/文件：对方已读 或 超过7天未读，从服务器删除（已保存在本机）
@@ -1780,7 +1833,7 @@ async function syncRoomMessages(name){
       var createdMs=new Date(m.created_at).getTime();
       var dlocal=new Date(createdMs);
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:dlocal.getHours()+':'+(dlocal.getMinutes()<10?'0':'')+dlocal.getMinutes(),ts:createdMs};
-      if(m.type==='image')msg.src=m.content;
+      if(m.type==='image'){var imgParts=(m.content||'').split('|');msg.src=imgParts[0];if(imgParts[1])msg.thumb=imgParts[1];}
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
       if(m.type==='contact'){try{var cc2=JSON.parse(m.content);msg.cid=cc2.id;msg.cname=cc2.name;}catch(e){}}
@@ -1793,10 +1846,10 @@ async function syncRoomMessages(name){
         msg.delivered=!!m.delivered;
         msg.read=!!m.read;
       }else{
-        // 对方发来的消息：标记为已送达，如果聊天界面是打开的就标记为已读
+        // 对方发来的消息：标记为已送达；如果聊天界面是打开的，2秒后标记为已读
         if(!m.delivered)toMarkDelivered.push(m.id);
         if(chatOpen&&!m.read)toMarkRead.push(m.id);
-        msg.delivered=true;msg.read=chatOpen||!!m.read;
+        msg.delivered=true;msg.read=!!m.read;
       }
       // 视频/文件清理：对方刚读到（已存入本机），或超过7天没人看，从服务器删掉腾空间
       if((m.type==='video'||m.type==='file')&&msg.src){
@@ -1811,7 +1864,7 @@ async function syncRoomMessages(name){
     });
   }
   if(toMarkDelivered.length)_sb.from('messages').update({delivered:true}).in('id',toMarkDelivered).then(function(){});
-  if(toMarkRead.length)_sb.from('messages').update({delivered:true,read:true}).in('id',toMarkRead).then(function(){});
+  if(toMarkRead.length)scheduleMarkRead(name,toMarkRead);
   toCleanup.forEach(function(item){cleanupMediaMessage(item.id,item.src,item.expired);});
   // 合并本地缓存与服务器消息（按id去重）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
@@ -2062,7 +2115,7 @@ function listenForAllMessages(){
       var senderId=parts[0]===mid?parts[1]:parts[0];
       if(isBlocked(senderId))return;
       var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:new Date(m.created_at).getHours()+':'+(new Date(m.created_at).getMinutes()<10?'0':'')+new Date(m.created_at).getMinutes(),ts:new Date(m.created_at).getTime()||Date.now()};
-      if(m.type==='image')msg.src=m.content;
+      if(m.type==='image'){var imgParts=(m.content||'').split('|');msg.src=imgParts[0];if(imgParts[1])msg.thumb=imgParts[1];}
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||'?';}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
       if(m.type==='contact'){try{var cc3=JSON.parse(m.content);msg.cid=cc3.id;msg.cname=cc3.name;}catch(e){}}
@@ -2073,11 +2126,12 @@ function listenForAllMessages(){
       var already=G.msgs[senderId].some(function(x){return x.id===m.id;});
       if(!already){
         var chatOpenNow=(G.chat===senderId)&&document.getElementById('chat')&&document.getElementById('chat').classList.contains('active');
-        msg.delivered=true;msg.read=chatOpenNow;
+        msg.delivered=true;msg.read=false;
         G.msgs[senderId].push(msg);
         G.msgs[senderId].sort(function(a,b){return (a.ts||0)-(b.ts||0);});
         saveLocalMsgs(senderId,G.msgs[senderId]);
-        _sb.from('messages').update(chatOpenNow?{delivered:true,read:true}:{delivered:true}).eq('id',m.id).then(function(){});
+        _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
+        if(chatOpenNow)scheduleMarkRead(senderId,[m.id]);
         if(G.chat===senderId){renderMsgs();}
         var lastEl=document.getElementById('last-'+senderId);
         if(lastEl){
@@ -2125,6 +2179,8 @@ function openChat(name,ini,color,displayName){
   G.chat=name;
   var dn=displayName||name;
   document.getElementById('chatName').textContent=dn;
+  document.getElementById('chatName').dataset.origName=dn;
+  if(_typingTimeout){clearTimeout(_typingTimeout);_typingTimeout=null;}
   document.getElementById('callAv').textContent=ini||dn[0];document.getElementById('callAv').style.background=color||'#007aff';
   document.getElementById('callNm').textContent=dn;document.getElementById('vidNm').textContent=dn;
   resolveDisplayName(name);
@@ -2145,7 +2201,10 @@ function renderMsgs(){
       if(m.loading&&!m.src){b='<div style="width:160px;height:120px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:13px;opacity:.8;">📷 处理中...</div>';}
       else if(m.loading){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.6;"><div style="font-size:12px;opacity:.7;">发送中...</div></div>';}
       else if(m.failed){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.5;" onclick="openImgViewer(this.src)"><div style="font-size:12px;color:#ff3b30;">⚠️ 发送失败</div></div>';}
-      else if(m.src&&m.src.length>4){b='<img class="msg-img" src="'+m.src+'" onclick="openImgViewer(this.src)">';}
+      else if(m.src&&m.src.length>4){
+        if(m.thumb&&!m.sent){b='<img class="msg-img" src="'+m.thumb+'" style="filter:blur(3px);transition:filter .3s;" data-full="'+m.src+'" onload="upgradeImg(this)" onclick="openImgViewer(this.dataset.full||this.src)">';}
+        else{b='<img class="msg-img" src="'+m.src+'" onclick="openImgViewer(this.src)">';}
+      }
       else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
       if(m.src&&(m.src.startsWith('http')||m.src.startsWith('blob'))){
@@ -2659,6 +2718,18 @@ function doImg(){
 // 避免对方设备/浏览器无法解码HEIC而显示成一个破图标。
 // 用createImageBitmap做"解码+缩放"，比new Image()+canvas快很多，
 // 拍照(超大原图)和选图走同一条路径，速度一致。
+// 生成一张极小的内嵌缩略图(base64)，让对方一打开聊天就能秒看到模糊预览，
+// 原图在后台/点击时再加载
+function makeThumb(canvas){
+  try{
+    var tw=28,th=Math.max(1,Math.round(28*canvas.height/canvas.width));
+    var tc=document.createElement('canvas');
+    tc.width=tw;tc.height=th;
+    tc.getContext('2d').drawImage(canvas,0,0,tw,th);
+    return tc.toDataURL('image/jpeg',0.35);
+  }catch(e){return null;}
+}
+
 async function prepareImageBlob(file){
   var maxDim=1280;
   try{
@@ -2670,7 +2741,7 @@ async function prepareImageBlob(file){
       ctx.drawImage(bmp,0,0);
       bmp.close&&bmp.close();
       var blob1=await new Promise(function(res){canvas.toBlob(res,'image/jpeg',0.82);});
-      if(blob1)return {blob:blob1,localUrl:URL.createObjectURL(blob1),ok:true};
+      if(blob1)return {blob:blob1,localUrl:URL.createObjectURL(blob1),ok:true,thumb:makeThumb(canvas)};
     }
   }catch(e){console.log('createImageBitmap failed, fallback:',e&&e.message);}
   // 兜底方案：兼容性更好但稍慢
@@ -2690,7 +2761,7 @@ async function prepareImageBlob(file){
         if(!blob){URL.revokeObjectURL(url);resolve({blob:file,localUrl:url,ok:false});return;}
         var newLocalUrl=URL.createObjectURL(blob);
         URL.revokeObjectURL(url);
-        resolve({blob:blob,localUrl:newLocalUrl,ok:true});
+        resolve({blob:blob,localUrl:newLocalUrl,ok:true,thumb:makeThumb(canvas)});
       },'image/jpeg',0.82);
     };
     img.onerror=function(){URL.revokeObjectURL(url);resolve({blob:file,localUrl:url,ok:false});};
@@ -2733,13 +2804,14 @@ async function onImg(e){
       return;
     }
     var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
+    var content=prep.thumb?(url+'|'+prep.thumb):url;
     var msgs=G.msgs[chatAtSend]||[];
     for(var i=msgs.length-1;i>=0;i--){
       if(msgs[i].type==='image'&&msgs[i].src===localUrl){msgs[i].src=url;msgs[i].loading=false;break;}
     }
     if(G.chat===chatAtSend)renderMsgs();
     saveLocalMsgs(chatAtSend,msgs);
-    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url,type:'image'}).select().single().then(function(r){
+    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:content,type:'image'}).select().single().then(function(r){
       if(r.error){console.log('img insert err:',r.error.message);alert('图片发送失败: '+r.error.message);return;}
       if(r.data){
         var msgs3=G.msgs[chatAtSend]||[];
