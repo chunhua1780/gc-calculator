@@ -800,7 +800,8 @@ html,body{height:100%;margin:0;padding:0;}
 
 <audio id="remoteAudio" autoplay playsinline style="display:none;"></audio>
 <input type="file" id="imgIn" accept="image/*" style="display:none" onchange="onImg(event)">
-<input type="file" id="vidIn" accept="video/*" style="display:none" onchange="onVid()">
+<input type="file" id="vidIn" accept="video/*" style="display:none" onchange="onVid(event)">
+<input type="file" id="fileIn" style="display:none" onchange="onFile(event)">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -1690,6 +1691,8 @@ async function joinRoom(name){
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
       if(m.type==='contact'){try{var cc1=JSON.parse(m.content);msg.cid=cc1.id;msg.cname=cc1.name;}catch(e){}}
+      if(m.type==='video')msg.src=m.content;
+      if(m.type==='file'){var fp1=(m.content||'').split('|');msg.src=fp1[0];msg.fname=decodeURIComponent(fp1[1]||'File');}
       var already=(G.msgs[name]||[]).some(function(x){return x.id===m.id;});
       if(!already){
         addMsg(msg);
@@ -1716,6 +1719,8 @@ async function syncRoomMessages(name){
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
       if(m.type==='contact'){try{var cc2=JSON.parse(m.content);msg.cid=cc2.id;msg.cname=cc2.name;}catch(e){}}
+      if(m.type==='video')msg.src=m.content;
+      if(m.type==='file'){var fp2=(m.content||'').split('|');msg.src=fp2[0];msg.fname=decodeURIComponent(fp2[1]||'File');}
       // 过滤掉异常长的text消息
       if(msg.type==='text'&&msg.text&&msg.text.length>2000)msg.text='[Message]';
       return msg;
@@ -1973,6 +1978,8 @@ function listenForAllMessages(){
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||'?';}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
       if(m.type==='contact'){try{var cc3=JSON.parse(m.content);msg.cid=cc3.id;msg.cname=cc3.name;}catch(e){}}
+      if(m.type==='video')msg.src=m.content;
+      if(m.type==='file'){var fp3=(m.content||'').split('|');msg.src=fp3[0];msg.fname=decodeURIComponent(fp3[1]||'File');}
       // 加入消息队列
       if(!G.msgs[senderId])G.msgs[senderId]=[];
       var already=G.msgs[senderId].some(function(x){return x.id===m.id;});
@@ -2044,7 +2051,8 @@ function renderMsgs(){
     var b='';
     if(m.type==='image'&&m.src){
       if(m.loading){b='<div style="opacity:.6;font-size:13px;">Sending...</div>';}
-      else if(m.src.length>100){b='<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';}
+      else if(m.failed){b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.5;" onclick="window.open(this.src)"><div style="font-size:12px;color:#ff3b30;">⚠️ 发送失败</div></div>';}
+      else if(m.src.length>4){b='<img class="msg-img" src="'+m.src+'" onclick="window.open(this.src)">';}
       else{b='<div>📷 Image</div>';}
     }else if(m.type==='voice'){
       if(m.src&&(m.src.startsWith('http')||m.src.startsWith('blob'))){
@@ -2062,7 +2070,15 @@ function renderMsgs(){
         +'<div><div style="font-weight:600;">'+esc(ccName)+'</div><div style="font-size:12px;opacity:.7;">名片 · 点击查看</div></div>'
         +'</div>';
     }else if(m.type==='video'){
-      b='<div>🎬 Video</div>';
+      if(m.loading){b='<div style="opacity:.6;font-size:13px;">Sending...</div>';}
+      else if(m.failed){b='<div style="font-size:12px;color:#ff3b30;">⚠️ 视频发送失败</div>';}
+      else if(m.src){b='<video class="msg-img" src="'+m.src+'" controls style="max-width:220px;border-radius:10px;"></video>';}
+      else{b='<div>🎬 Video</div>';}
+    }else if(m.type==='file'){
+      if(m.loading){b='<div style="opacity:.6;font-size:13px;">📄 '+esc(m.fname||'File')+' (Sending...)</div>';}
+      else if(m.failed){b='<div style="font-size:12px;color:#ff3b30;">⚠️ '+esc(m.fname||'File')+' 发送失败</div>';}
+      else if(m.src){b='<a href="'+m.src+'" target="_blank" download style="display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;min-width:160px;"><span style="font-size:24px;">📄</span><div style="overflow:hidden;"><div style="font-weight:600;word-break:break-all;">'+esc(m.fname||'File')+'</div><div style="font-size:12px;opacity:.7;">点击下载</div></div></a>';}
+      else{b='<div>📄 File</div>';}
     }else{
       var txt=m.text||m.content||'';
       // 防止base64显示
@@ -2309,18 +2325,17 @@ function hideContact(cid){
   loadContacts();
 }
 async function deleteContact(cid){
-  if(!confirm('确定要删除这段聊天记录吗？此操作不可恢复。'))return;
+  if(!confirm('确定要删除这段聊天记录吗？此操作不可恢复。\n（联系人不会被删除，仍在通讯录里）'))return;
   var mid=String(myId);
   var room=roomIdOf(mid,cid);
   var legacyRoom=[mid,cid].sort().join('_'); // 兼容旧版本可能用过字符串排序生成的room_id，一并清理
   await _sb.from('messages').delete().eq('room_id',room);
   if(legacyRoom!==room)await _sb.from('messages').delete().eq('room_id',legacyRoom);
-  await _sb.from('friends').delete().eq('user_id',mid).eq('friend_id',cid);
-  var h=getHiddenContacts();
-  h=h.filter(function(x){return x!==cid;});
-  setHiddenContacts(h);
   if(G.msgs&&G.msgs[cid])delete G.msgs[cid];
+  saveLocalMsgs(cid,[]);
   if(_unread)_unread[cid]=0;
+  var h=getHiddenContacts();
+  if(h.indexOf(cid)>=0){h=h.filter(function(x){return x!==cid;});setHiddenContacts(h);}
   if(currentRoom===room||currentRoom===legacyRoom){
     if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}realtimeSub=null;}
     currentRoom=null;
@@ -2405,6 +2420,8 @@ async function loadContacts(){
       else if(lm.type==='voice')lastText='[Voice]';
       else if(lm.type==='location')lastText='[Location]';
       else if(lm.type==='contact')lastText='[名片]';
+      else if(lm.type==='video')lastText='[Video]';
+      else if(lm.type==='file')lastText='[File]';
       else lastText='[Media]';
     }
     var hasUnread=(_unread[cid]||0)>0;
@@ -2512,26 +2529,70 @@ function onImg(e){
   document.getElementById('xpanel').classList.remove('on');
   var fname='img_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.]/g,'_');
   var localUrl=URL.createObjectURL(f);
+  var roomAtSend=currentRoom;
+  var chatAtSend=G.chat;
   addMsg({type:'image',src:localUrl,sent:true,t:gt()});
-  updateLastPreview(G.chat,'[Image]','image',false);
+  updateLastPreview(chatAtSend,'[Image]','image',false);
   _sb.storage.from('media').upload(fname,f,{contentType:f.type||'image/jpeg',upsert:true}).then(function(up){
-    if(up.error){console.log('img upload err:',up.error.message);return;}
+    if(up.error){
+      console.log('img upload err:',up.error.message);
+      alert('图片发送失败: '+up.error.message);
+      var msgs2=G.msgs[chatAtSend]||[];
+      for(var j=msgs2.length-1;j>=0;j--){
+        if(msgs2[j].type==='image'&&msgs2[j].src===localUrl){msgs2[j].failed=true;break;}
+      }
+      if(G.chat===chatAtSend)renderMsgs();
+      return;
+    }
     var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
-    var msgs=G.msgs[G.chat]||[];
+    var msgs=G.msgs[chatAtSend]||[];
     for(var i=msgs.length-1;i>=0;i--){
       if(msgs[i].type==='image'&&msgs[i].src===localUrl){msgs[i].src=url;break;}
     }
-    renderMsgs();
-    if(currentRoom)_sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:url,type:'image'}).then(function(r){
-      if(r.error)console.log('img insert err:',r.error.message);
+    if(G.chat===chatAtSend)renderMsgs();
+    saveLocalMsgs(chatAtSend,msgs);
+    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url,type:'image'}).then(function(r){
+      if(r.error){console.log('img insert err:',r.error.message);alert('图片发送失败: '+r.error.message);}
     });
   });
   e.target.value='';
 }
 
-function onVid(){
-  addMsg({type:'video',sent:true,t:gt()});
+function doVid(){
+  document.getElementById('vidIn').click();
+}
+function onVid(e){
+  var f=e&&e.target&&e.target.files&&e.target.files[0];
+  if(!f)return;
   document.getElementById('xpanel').classList.remove('on');
+  var fname='vid_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.]/g,'_');
+  var localUrl=URL.createObjectURL(f);
+  var roomAtSend=currentRoom;
+  var chatAtSend=G.chat;
+  addMsg({type:'video',src:localUrl,sent:true,t:gt(),loading:true});
+  updateLastPreview(chatAtSend,'[Video]','video',false);
+  _sb.storage.from('media').upload(fname,f,{contentType:f.type||'video/mp4',upsert:true}).then(function(up){
+    var msgs=G.msgs[chatAtSend]||[];
+    if(up.error){
+      console.log('video upload err:',up.error.message);
+      alert('视频发送失败: '+up.error.message);
+      for(var j=msgs.length-1;j>=0;j--){
+        if(msgs[j].type==='video'&&msgs[j].src===localUrl){msgs[j].loading=false;msgs[j].failed=true;break;}
+      }
+      if(G.chat===chatAtSend)renderMsgs();
+      return;
+    }
+    var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
+    for(var i=msgs.length-1;i>=0;i--){
+      if(msgs[i].type==='video'&&msgs[i].src===localUrl){msgs[i].src=url;msgs[i].loading=false;break;}
+    }
+    if(G.chat===chatAtSend)renderMsgs();
+    saveLocalMsgs(chatAtSend,msgs);
+    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url,type:'video'}).then(function(r){
+      if(r.error){console.log('video insert err:',r.error.message);alert('视频发送失败: '+r.error.message);}
+    });
+  });
+  if(e&&e.target)e.target.value='';
 }
 
 function doLoc(){
@@ -2558,7 +2619,43 @@ function doLoc(){
   },{enableHighAccuracy:false,timeout:30000,maximumAge:300000});
 }
 
-function doFile(){alert('Coming soon');}
+function doFile(){
+  document.getElementById('xpanel').classList.remove('on');
+  document.getElementById('fileIn').click();
+}
+function onFile(e){
+  var f=e&&e.target&&e.target.files&&e.target.files[0];
+  if(!f)return;
+  if(f.size>20*1024*1024){alert('文件太大，限制20MB以内');e.target.value='';return;}
+  var fname='file_'+Date.now()+'_'+f.name.replace(/[^a-zA-Z0-9.]/g,'_');
+  var origName=f.name;
+  var roomAtSend=currentRoom;
+  var chatAtSend=G.chat;
+  addMsg({type:'file',fname:origName,sent:true,t:gt(),loading:true});
+  updateLastPreview(chatAtSend,'[File]','file',false);
+  _sb.storage.from('media').upload(fname,f,{contentType:f.type||'application/octet-stream',upsert:true}).then(function(up){
+    var msgs=G.msgs[chatAtSend]||[];
+    if(up.error){
+      console.log('file upload err:',up.error.message);
+      alert('文件发送失败: '+up.error.message);
+      for(var j=msgs.length-1;j>=0;j--){
+        if(msgs[j].type==='file'&&msgs[j].fname===origName&&msgs[j].loading){msgs[j].loading=false;msgs[j].failed=true;break;}
+      }
+      if(G.chat===chatAtSend)renderMsgs();
+      return;
+    }
+    var url='https://mztoenhgfuomzrashrqk.supabase.co/storage/v1/object/public/media/'+fname;
+    for(var i=msgs.length-1;i>=0;i--){
+      if(msgs[i].type==='file'&&msgs[i].fname===origName&&msgs[i].loading){msgs[i].src=url;msgs[i].loading=false;break;}
+    }
+    if(G.chat===chatAtSend)renderMsgs();
+    saveLocalMsgs(chatAtSend,msgs);
+    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url+'|'+encodeURIComponent(origName),type:'file'}).then(function(r){
+      if(r.error){console.log('file insert err:',r.error.message);alert('文件发送失败: '+r.error.message);}
+    });
+  });
+  e.target.value='';
+}
 function doBurn(){alert('Coming soon');}
 
 var _mediaRec=null;
