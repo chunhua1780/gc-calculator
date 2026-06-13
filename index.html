@@ -17,45 +17,18 @@
   --theme-bub-other-text:#3a3a3c;
   --theme-field-border:rgba(225,200,225,.4);
   --theme-font-serif:-apple-system,sans-serif;
-  --pattern-size:42px;
-  --pattern-dot-size:84px;
-  --pattern-line1:rgba(161,140,209,.09);
-  --pattern-line2:rgba(255,154,158,.09);
-  --pattern-dot:rgba(255,209,102,.22);
-  --pattern-grad:linear-gradient(160deg, #fdf2f8 0%, #f6f1fb 45%, #eef2ff 100%);
-  --body-text:#000;
-}
-body.dark-theme{
-  --theme-bg:#2a2733;
-  --theme-bg2:#262333;
-  --theme-navbar:rgba(34,31,43,0.92);
-  --theme-border:rgba(180,160,200,.18);
-  --theme-bub-other:#3a3640;
-  --theme-bub-other-text:#ececf2;
-  --theme-field-border:rgba(180,160,200,.22);
-  --pattern-line1:rgba(161,140,209,.14);
-  --pattern-line2:rgba(255,154,158,.07);
-  --pattern-dot:rgba(255,209,102,.10);
-  --pattern-grad:linear-gradient(160deg, #211f2b 0%, #262333 45%, #1e2030 100%);
-  --body-text:#ececf2;
 }
 
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);}
 body{
+  background-color:#fdf3f7;
   background-image:
-    repeating-linear-gradient(45deg, var(--pattern-line1) 0px, var(--pattern-line1) 2px, transparent 2px, transparent var(--pattern-size)),
-    repeating-linear-gradient(-45deg, var(--pattern-line2) 0px, var(--pattern-line2) 2px, transparent 2px, transparent var(--pattern-size)),
-    radial-gradient(circle, var(--pattern-dot) 2.5px, transparent 3px),
-    var(--pattern-grad);
-  background-size: var(--pattern-size) var(--pattern-size), var(--pattern-size) var(--pattern-size), var(--pattern-dot-size) var(--pattern-dot-size), 100% 100%;
-  background-position: 0 0, 0 0, calc(var(--pattern-dot-size)/2) calc(var(--pattern-dot-size)/2), 0 0;
+    radial-gradient(circle, rgba(161,140,209,.10) 1.4px, transparent 1.4px),
+    linear-gradient(160deg, #fdf2f8 0%, #f6f1fb 45%, #eef2ff 100%);
+  background-size: 26px 26px, 100% 100%;
   background-attachment: fixed;
-  color:var(--body-text);font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;
-  transition: background .6s ease, color .6s ease;
-}
-@media (max-width:600px){
-  :root{ --pattern-size:60px; --pattern-dot-size:120px; }
+  color:#000;font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;
 }
 .screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
 html,body{height:100%;margin:0;padding:0;}
@@ -90,7 +63,7 @@ html,body{height:100%;margin:0;padding:0;}
 .bub{max-width:72%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.45;word-break:break-word;position:relative;}
 .mr.s .bub{background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;border-bottom-right-radius:5px;font-weight:700;border:1px solid transparent;transition:background .6s,color .6s,font-weight .3s,border-color .6s;}
 .mr.s .bub.bub-read{background:linear-gradient(135deg,#fdeef0,#ece6f7);color:#9a8fae;font-weight:400;border:1px solid #ecd9e2;}
-.mr.r .bub{background:var(--theme-bub-other,#fff);color:var(--theme-bub-other-text,#3a3a3c);border-bottom-left-radius:5px;box-shadow:0 1px 4px rgba(161,140,209,.12);}
+.mr.r .bub{background:#fff;color:#3a3a3c;border-bottom-left-radius:5px;box-shadow:0 1px 4px rgba(161,140,209,.12);}
 .mt{font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;}
 .msg-tick{margin-left:4px;font-size:13px;display:inline-block;vertical-align:middle;}
 .msg-paw{display:inline-block;font-size:16px;vertical-align:middle;margin-left:6px;opacity:.85;}
@@ -998,15 +971,7 @@ window.addEventListener('pagehide',function(){
   ls('lastHiddenAt',String(Date.now()));
 });
 
-// 根据手机本地时间自动切换深色模式（晚7点-早7点）
-function applyTimeBasedTheme(){
-  var h=new Date().getHours();
-  var isNight=(h>=19||h<7);
-  document.body.classList.toggle('dark-theme',isNight);
-}
 window.onload=function(){
-  applyTimeBasedTheme();
-  setInterval(applyTimeBasedTheme,10*60*1000);
   try{applyI18n();var rls=document.getElementById('regLangSelect');if(rls)rls.value=curLang;}catch(e){console.log('i18n err',e);}
   try{
     if(lg('registered')){
