@@ -1793,6 +1793,11 @@ async function joinRoom(name){
         if(m.type==='contact'){try{var cc1=JSON.parse(m.content);msg.cid=cc1.id;msg.cname=cc1.name;}catch(e){}}
         if(m.type==='video')msg.src=m.content;
         if(m.type==='file'){var fp1=(m.content||'').split('|');msg.src=fp1[0];msg.fname=decodeURIComponent(fp1[1]||'File');}
+        if(m.type==='recall'){
+          var tgt=(G.msgs[name]||[]).find(function(x){return String(x.id)===String(m.content);});
+          if(tgt){tgt.type='recalled';tgt.text='';tgt.src=null;if(G.chat===name)renderMsgs();saveLocalMsgs(name,G.msgs[name]);}
+          return;
+        }
         var already=(G.msgs[name]||[]).some(function(x){return x.id===m.id;});
         if(!already){
           msg.delivered=true;msg.read=false;
@@ -1879,6 +1884,14 @@ async function syncRoomMessages(name){
     });
   }
   if(chatOpen)scheduleMarkRoomRead(name);
+  // 处理"撤回"标记消息：找到被撤回的原消息并标记为recalled，标记行本身不显示
+  var recallTargets={};
+  serverMsgs.forEach(function(m){if(m.type==='recall'&&m.text)recallTargets[String(m.text)]=true;});
+  if(Object.keys(recallTargets).length){
+    serverMsgs=serverMsgs.filter(function(m){return m.type!=='recall';});
+    serverMsgs.forEach(function(m){if(recallTargets[String(m.id)]){m.type='recalled';m.text='';m.src=null;}});
+    localMsgs.forEach(function(m){if(recallTargets[String(m.id)]){m.type='recalled';m.text='';m.src=null;}});
+  }
   toCleanup.forEach(function(item){cleanupMediaMessage(item.id,item.src,item.expired);});
   // 合并本地缓存与服务器消息（按id去重）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
@@ -2432,7 +2445,7 @@ function setupRecallLongPress(){
     var bub=e.target.closest('.mr.s .bub[data-mid]');
     if(!bub)return;
     var mid=bub.dataset.mid;
-    timer=setTimeout(function(){timer=null;recallPrompt(mid);},600);
+    timer=setTimeout(function(){timer=null;recallPrompt(mid);},350);
   },{passive:true});
   c.addEventListener('touchend',function(){if(timer){clearTimeout(timer);timer=null;}});
   c.addEventListener('touchmove',function(){if(timer){clearTimeout(timer);timer=null;}});
@@ -2455,9 +2468,10 @@ async function recallMsg(mid){
   m.type='recalled';m.text='';
   renderMsgs();
   saveLocalMsgs(G.chat,msgs);
-  var up=await _sb.from('messages').update({type:'recalled',content:''}).eq('id',parseInt(mid)||mid);
-  if(up.error){
-    alert('撤回失败: '+up.error.message);
+  var room=roomIdOf(parseInt(myId)||myId,parseInt(G.chat)||G.chat);
+  var ins=await _sb.from('messages').insert({room_id:room,sender:String(myId),content:String(mid),type:'recall'});
+  if(ins.error){
+    alert('撤回失败: '+ins.error.message);
     m.type=backup.type;m.text=backup.text;m.src=backup.src;
     renderMsgs();
     saveLocalMsgs(G.chat,msgs);
@@ -2821,6 +2835,11 @@ async function loadContacts(){
   var userMap={};
   var avatarMap={};
   if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;if(u.avatar_url)avatarMap[String(u.id)]=u.avatar_url;});
+  var receiptMap={};
+  try{
+    var rrAll=await _sb.from('read_receipts').select('user_id,last_read_at').eq('other_id',mid).in('user_id',contactIds);
+    if(rrAll.data)rrAll.data.forEach(function(r){receiptMap[String(r.user_id)]=r.last_read_at;});
+  }catch(e){console.log('read_receipts batch fetch failed',e&&e.message);}
   var hiddenSet=getHiddenContacts();
   list.innerHTML='';
   contactIds.forEach(function(cid){
@@ -2840,10 +2859,14 @@ async function loadContacts(){
       else lastText='[Media]';
     }
     var hasUnread=(_unread[cid]||0)>0;
-    var lastStyle=hasUnread?'font-size:14px;color:#d4537e;font-weight:600;margin-top:2px;':'font-size:14px;color:#8e8e93;margin-top:2px;';
+    var mineUnread=lm&&String(lm.sender)===mid&&lm.created_at&&(receiptMap[cid]||0)<new Date(lm.created_at).getTime();
+    var lastStyle;
+    if(hasUnread)lastStyle='font-size:14px;color:#d4537e;font-weight:600;margin-top:2px;';
+    else if(mineUnread)lastStyle='font-size:14px;color:#a18cd1;font-weight:600;margin-top:2px;';
+    else lastStyle='font-size:14px;color:#8e8e93;margin-top:2px;';
     var lastPrefix='';
     if(lm&&String(lm.sender)===mid){
-      lastPrefix=lm.read?'<span class="msg-paw" style="margin-left:0;margin-right:4px;">🐾</span>':'';
+      lastPrefix=mineUnread?'':'<span class="msg-paw" style="margin-left:0;margin-right:4px;">🐾</span>';
     }
 
     var wrap=document.createElement('div');
