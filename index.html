@@ -1726,7 +1726,9 @@ async function joinRoom(name){
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
       var m=p.new;
       if(String(m.sender)===String(myId))return;
-      var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:gt()};
+      var createdMs1=new Date(m.created_at).getTime()||Date.now();
+      var dl1=new Date(createdMs1);
+      var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:dl1.getHours()+':'+(dl1.getMinutes()<10?'0':'')+dl1.getMinutes(),ts:createdMs1};
       if(m.type==='image')msg.src=m.content;
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
@@ -1775,7 +1777,9 @@ async function syncRoomMessages(name){
   var weekAgo=Date.now()-7*24*60*60*1000;
   if(res.data&&res.data.length>0){
     serverMsgs=res.data.map(function(m){
-      var msg={id:m.id,text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:gt()};
+      var createdMs=new Date(m.created_at).getTime();
+      var dlocal=new Date(createdMs);
+      var msg={id:m.id,text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:dlocal.getHours()+':'+(dlocal.getMinutes()<10?'0':'')+dlocal.getMinutes(),ts:createdMs};
       if(m.type==='image')msg.src=m.content;
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
@@ -1812,6 +1816,7 @@ async function syncRoomMessages(name){
   // 合并本地缓存与服务器消息（按id去重）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
   var merged=localMsgs.filter(function(m){return !(m.id!=null&&serverIds[m.id]);}).concat(serverMsgs);
+  merged.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
   var prevLen=(G.msgs[name]||[]).length;
   G.msgs[name]=merged;
   if(G.chat===name)renderMsgs();
@@ -2056,7 +2061,7 @@ function listenForAllMessages(){
       if(String(m.sender)===mid)return;
       var senderId=parts[0]===mid?parts[1]:parts[0];
       if(isBlocked(senderId))return;
-      var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:new Date(m.created_at).getHours()+':'+(new Date(m.created_at).getMinutes()<10?'0':'')+new Date(m.created_at).getMinutes()};
+      var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:new Date(m.created_at).getHours()+':'+(new Date(m.created_at).getMinutes()<10?'0':'')+new Date(m.created_at).getMinutes(),ts:new Date(m.created_at).getTime()||Date.now()};
       if(m.type==='image')msg.src=m.content;
       if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||'?';}
       if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
@@ -2070,6 +2075,7 @@ function listenForAllMessages(){
         var chatOpenNow=(G.chat===senderId)&&document.getElementById('chat')&&document.getElementById('chat').classList.contains('active');
         msg.delivered=true;msg.read=chatOpenNow;
         G.msgs[senderId].push(msg);
+        G.msgs[senderId].sort(function(a,b){return (a.ts||0)-(b.ts||0);});
         saveLocalMsgs(senderId,G.msgs[senderId]);
         _sb.from('messages').update(chatOpenNow?{delivered:true,read:true}:{delivered:true}).eq('id',m.id).then(function(){});
         if(G.chat===senderId){renderMsgs();}
@@ -2194,13 +2200,19 @@ function saveLocalMsgs(name,arr){
   try{ls('msgcache_'+String(name),JSON.stringify((arr||[]).slice(-200)));}catch(e){console.log('saveLocalMsgs failed',e);}
 }
 
-function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];G.msgs[G.chat].push(m);renderMsgs();saveLocalMsgs(G.chat,G.msgs[G.chat]);}
+function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];if(m.ts==null)m.ts=Date.now();G.msgs[G.chat].push(m);renderMsgs();saveLocalMsgs(G.chat,G.msgs[G.chat]);}
 async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
   if(G.chat&&isBlocked(G.chat)){alert('对方已被你拉黑，请先在通讯录中解除拉黑');return;}
-  addMsg({text:t,sent:true,t:gt()});inp.value='';
-  updateLastPreview(G.chat,t,'text',false);
-  if(currentRoom)await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'});
+  var chatAtSend=G.chat;
+  var msgObj={text:t,sent:true,t:gt(),ts:Date.now()};
+  addMsg(msgObj);
+  updateLastPreview(chatAtSend,t,'text',false);
+  inp.value='';
+  if(currentRoom){
+    var r=await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'}).select().single();
+    if(r.data){msgObj.id=r.data.id;saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);}
+  }
 }
 function updateLastPreview(cid,content,type,highlight){
   var lastEl=document.getElementById('last-'+String(cid));
@@ -2727,8 +2739,15 @@ async function onImg(e){
     }
     if(G.chat===chatAtSend)renderMsgs();
     saveLocalMsgs(chatAtSend,msgs);
-    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url,type:'image'}).then(function(r){
-      if(r.error){console.log('img insert err:',r.error.message);alert('图片发送失败: '+r.error.message);}
+    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url,type:'image'}).select().single().then(function(r){
+      if(r.error){console.log('img insert err:',r.error.message);alert('图片发送失败: '+r.error.message);return;}
+      if(r.data){
+        var msgs3=G.msgs[chatAtSend]||[];
+        for(var k=msgs3.length-1;k>=0;k--){
+          if(msgs3[k].type==='image'&&msgs3[k].src===url){msgs3[k].id=r.data.id;break;}
+        }
+        saveLocalMsgs(chatAtSend,msgs3);
+      }
     });
   });
   e.target.value='';
@@ -2762,8 +2781,15 @@ function onVid(e){
     }
     if(G.chat===chatAtSend)renderMsgs();
     saveLocalMsgs(chatAtSend,msgs);
-    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url,type:'video'}).then(function(r){
-      if(r.error){console.log('video insert err:',r.error.message);alert('视频发送失败: '+r.error.message);}
+    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url,type:'video'}).select().single().then(function(r){
+      if(r.error){console.log('video insert err:',r.error.message);alert('视频发送失败: '+r.error.message);return;}
+      if(r.data){
+        var msgs3=G.msgs[chatAtSend]||[];
+        for(var k=msgs3.length-1;k>=0;k--){
+          if(msgs3[k].type==='video'&&msgs3[k].src===url){msgs3[k].id=r.data.id;break;}
+        }
+        saveLocalMsgs(chatAtSend,msgs3);
+      }
     });
   });
   if(e&&e.target)e.target.value='';
@@ -2781,11 +2807,14 @@ function doLoc(){
     var lng=pos.coords.longitude.toFixed(5);
     var addr=lat+','+lng;
     var mapUrl='https://maps.google.com/?q='+lat+','+lng;
-    addMsg({type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt()});
-    updateLastPreview(G.chat,'[Location]','location',false);
-    if(currentRoom){
-      _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:addr+'|'+mapUrl,type:'location'}).then(function(r){
-        if(r.error)alert('Location send error: '+r.error.message);
+    var chatAtLoc=G.chat,roomAtLoc=currentRoom;
+    var locMsg={type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt(),ts:Date.now()};
+    addMsg(locMsg);
+    updateLastPreview(chatAtLoc,'[Location]','location',false);
+    if(roomAtLoc){
+      _sb.from('messages').insert({room_id:roomAtLoc,sender:String(myId),content:addr+'|'+mapUrl,type:'location'}).select().single().then(function(r){
+        if(r.error){alert('Location send error: '+r.error.message);return;}
+        if(r.data){locMsg.id=r.data.id;saveLocalMsgs(chatAtLoc,G.msgs[chatAtLoc]||[]);}
       });
     }
   },function(err){
@@ -2821,8 +2850,15 @@ function onFile(e){
     }
     if(G.chat===chatAtSend)renderMsgs();
     saveLocalMsgs(chatAtSend,msgs);
-    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url+'|'+encodeURIComponent(origName),type:'file'}).then(function(r){
-      if(r.error){console.log('file insert err:',r.error.message);alert('文件发送失败: '+r.error.message);}
+    if(roomAtSend)_sb.from('messages').insert({room_id:roomAtSend,sender:String(myId),content:url+'|'+encodeURIComponent(origName),type:'file'}).select().single().then(function(r){
+      if(r.error){console.log('file insert err:',r.error.message);alert('文件发送失败: '+r.error.message);return;}
+      if(r.data){
+        var msgs3=G.msgs[chatAtSend]||[];
+        for(var k=msgs3.length-1;k>=0;k--){
+          if(msgs3[k].type==='file'&&msgs3[k].src===url){msgs3[k].id=r.data.id;break;}
+        }
+        saveLocalMsgs(chatAtSend,msgs3);
+      }
     });
   });
   e.target.value='';
@@ -2891,8 +2927,15 @@ function recStop(){
       renderMsgs();
       updateLastPreview(chatAtStop,'[Voice]','voice',false);
       if(roomAtStop){
-        _sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:url,type:'voice',duration:dur}).then(function(r){
+        _sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:url,type:'voice',duration:dur}).select().single().then(function(r){
           console.log('Voice insert:',r.error?r.error.message:'OK');
+          if(r.data){
+            var msgs3=G.msgs[chatAtStop]||[];
+            for(var k=msgs3.length-1;k>=0;k--){
+              if(msgs3[k].type==='voice'&&msgs3[k].src===url){msgs3[k].id=r.data.id;break;}
+            }
+            saveLocalMsgs(chatAtStop,msgs3);
+          }
         });
       } else {
         console.log('ERROR: no room!');
