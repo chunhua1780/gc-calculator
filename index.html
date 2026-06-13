@@ -63,8 +63,10 @@ html,body{height:100%;margin:0;padding:0;}
 .mr.s .bub.bub-read{background:linear-gradient(135deg,#ffd6e8,#c9e4ff);color:#5b5470;font-weight:400;}
 .mr.r .bub{background:#fff;color:#3a3a3c;border-bottom-left-radius:5px;box-shadow:0 1px 4px rgba(161,140,209,.12);}
 .mt{font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;}
-.msg-tick{margin-left:4px;font-size:11px;letter-spacing:-1px;color:#b0b0b8;}
-.msg-tick.tick-read{color:#ff6b9d;}
+.msg-tick{margin-left:4px;font-size:13px;display:inline-block;vertical-align:middle;}
+.msg-tick.tick-unread{animation:catWiggle 1.6s ease-in-out infinite;}
+.msg-tick.tick-read{filter:grayscale(1);opacity:.55;}
+@keyframes catWiggle{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-8deg);}75%{transform:rotate(8deg);}}
 .typing-dots span{display:inline-block;animation:typingBounce 1.2s infinite;}
 .typing-dots span:nth-child(2){animation-delay:.2s;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
@@ -1558,7 +1560,8 @@ async function showProfile(uid,fallbackName){
     av.style.background='transparent';
     av.style.padding='0';
     av.style.overflow='hidden';
-    av.innerHTML='<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;display:block;">';
+    av.style.position='relative';
+    av.innerHTML='<img src="'+avatarUrl+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><span style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;align-items:center;justify-content:center;background:'+colors[parseInt(uid)%colors.length]+';color:#fff;font-weight:700;font-size:42px;">'+esc(dispName[0].toUpperCase())+'</span>';
   }else{
     av.style.background=colors[parseInt(uid)%colors.length];
     av.style.padding='';
@@ -1790,8 +1793,7 @@ async function joinRoom(name){
           _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
           scheduleMarkRead(name,[m.id]);
         }
-        var lastEl=document.getElementById('last-'+String(m.sender));
-        if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
+        updateLastPreview(m.sender,m.type==='text'?m.content:('['+m.type+']'),m.type,true,null);
       }).subscribe(function(status){console.log('Realtime:',status);});
   }catch(e){console.log('realtime channel setup failed:',e&&e.message);}
 
@@ -1891,7 +1893,8 @@ async function syncRoomMessages(name){
   if(merged.length>prevLen){
     var last=merged[merged.length-1];
     var isUnread=!last.sent&&G.chat!==name;
-    updateLastPreview(name,last.type==='text'?last.text:('['+last.type+']'),last.type,isUnread);
+    var rs=last.sent?(last.read?'read':(last.delivered?'delivered':'sent')):null;
+    updateLastPreview(name,last.type==='text'?last.text:('['+last.type+']'),last.type,isUnread,rs);
     if(isUnread){addUnread(name);sendNotif();}
   }
   }catch(e){
@@ -2235,7 +2238,7 @@ function listenForAllMessages(){
         if(G.chat===senderId){renderMsgs();}
         var lastEl=document.getElementById('last-'+senderId);
         if(lastEl){
-          lastEl.textContent=msg.type==='text'?msg.text:'['+msg.type+']';
+          updateLastPreview(senderId,msg.type==='text'?msg.text:'['+msg.type+']',msg.type,false,null);
           lastEl.style.color='#d4537e';
           lastEl.style.fontWeight='600';
         }
@@ -2341,9 +2344,8 @@ function renderMsgs(){
     if(s){
       if(m.failed){statusTick='';}
       else if(m.loading){statusTick='<span class="msg-tick" title="发送中">🌱</span>';}
-      else if(m.read){statusTick='<span class="msg-tick tick-read" title="对方已读">✓✓</span>';}
-      else if(m.delivered){statusTick='<span class="msg-tick" title="已送达">✓✓</span>';}
-      else{statusTick='<span class="msg-tick" title="已发送">✓</span>';}
+      else if(m.read){statusTick='<span class="msg-tick tick-read" title="对方已读">🐾</span>';}
+      else{statusTick='<span class="msg-tick tick-unread" title="对方还没看">🐱</span>';}
     }
     var bubCls='bub'+(s&&m.read?' bub-read':'');
     html+='<div class="mr '+(s?'s':'r')+'"><div class="'+bubCls+'">'+b+'</div><div class="mt">'+m.t+statusTick+'</div></div>';
@@ -2367,14 +2369,14 @@ async function sendMsg(){
   var chatAtSend=G.chat;
   var msgObj={text:t,sent:true,t:gt(),ts:Date.now()};
   addMsg(msgObj);
-  updateLastPreview(chatAtSend,t,'text',false);
+  updateLastPreview(chatAtSend,t,'text',false,'sent');
   inp.value='';
   if(currentRoom){
     var r=await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'}).select().single();
     if(r.data){msgObj.id=r.data.id;saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);}
   }
 }
-function updateLastPreview(cid,content,type,highlight){
+function updateLastPreview(cid,content,type,highlight,readState){
   var lastEl=document.getElementById('last-'+String(cid));
   if(!lastEl)return;
   var label;
@@ -2384,6 +2386,12 @@ function updateLastPreview(cid,content,type,highlight){
   lastEl.textContent=label;
   if(highlight){lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
   else{lastEl.style.color='';lastEl.style.fontWeight='';}
+  var prefixEl=lastEl.parentElement&&lastEl.parentElement.querySelector('.last-prefix');
+  if(prefixEl){
+    if(readState==null){prefixEl.innerHTML='';}
+    else if(readState==='read'){prefixEl.innerHTML='<span class="msg-tick tick-read" style="margin-left:0;margin-right:3px;">🐾</span>';}
+    else{prefixEl.innerHTML='<span class="msg-tick tick-unread" style="margin-left:0;margin-right:3px;">🐱</span>';}
+  }
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 async function loadFriendsList(){
@@ -2397,9 +2405,10 @@ async function loadFriendsList(){
     return;
   }
   var uids=fr.data.map(function(f){return parseInt(f.friend_id)||0;});
-  var users=await _sb.from('users').select('id,name').in('id',uids);
+  var users=await _sb.from('users').select('id,name,avatar_url').in('id',uids);
   var userMap={};
-  if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;});
+  var avatarMap2={};
+  if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;if(u.avatar_url)avatarMap2[String(u.id)]=u.avatar_url;});
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
   var blocked=getBlockedContacts();
   var sorted=fr.data.slice().sort(function(a,b){
@@ -2436,7 +2445,11 @@ async function loadFriendsList(){
       show('main');openChat(c,n[0].toUpperCase(),col,n);
     };})(cid,name,color,isBlk);
 
-    div.innerHTML='<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div><div style="flex:1;min-width:0;"><div style="font-size:17px;">'+rowName+'</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">ID: '+cid+'</div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
+    var avUrl2=avatarMap2[cid];
+    var avHtml2=avUrl2
+      ? '<div class="av" style="background:'+color+';overflow:hidden;padding:0;position:relative;"><img src="'+avUrl2+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><span style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;align-items:center;justify-content:center;color:#fff;font-weight:700;">'+esc(name[0].toUpperCase())+'</span></div>'
+      : '<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div>';
+    div.innerHTML=avHtml2+'<div style="flex:1;min-width:0;"><div style="font-size:17px;">'+rowName+'</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">ID: '+cid+'</div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
 
     attachSwipe(div,actions);
     wrap.appendChild(actions);
@@ -2496,6 +2509,9 @@ async function resolveDisplayName(cid){
 
 function proceedStartup(){
   if(lg('registered')){loadContacts();listenForCalls();listenForAllMessages();claimSession(false);}
+  if('Notification' in window&&Notification.permission==='default'){
+    try{Notification.requestPermission();}catch(e){}
+  }
   var _dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
   if(!lg('registered')){
     show('reg');
@@ -2674,7 +2690,7 @@ async function loadContacts(){
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   var friendMap={};
   if(fr.data)fr.data.forEach(function(f){friendMap[String(f.friend_id)]=f.nickname||'';});
-  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(200);
+  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at,read,delivered').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(200);
   console.log('loadContacts messages query, error:',res.error,'count:',res.data?res.data.length:0);
   var contactIds=[];
   if(res.data){
@@ -2716,6 +2732,10 @@ async function loadContacts(){
     }
     var hasUnread=(_unread[cid]||0)>0;
     var lastStyle=hasUnread?'font-size:14px;color:#d4537e;font-weight:600;margin-top:2px;':'font-size:14px;color:#8e8e93;margin-top:2px;';
+    var lastPrefix='';
+    if(lm&&String(lm.sender)===mid){
+      lastPrefix=lm.read?'<span class="msg-tick tick-read" style="margin-left:0;margin-right:3px;">🐾</span>':'<span class="msg-tick tick-unread" style="margin-left:0;margin-right:3px;">🐱</span>';
+    }
 
     var wrap=document.createElement('div');
     wrap.className='swipe-wrap';
@@ -2733,9 +2753,9 @@ async function loadContacts(){
     div.dataset.cid=cid;
     var avUrl=avatarMap[cid];
     var avHtml=avUrl
-      ? '<div class="av" style="background:'+color+';overflow:hidden;padding:0;"><img src="'+avUrl+'" style="width:100%;height:100%;object-fit:cover;display:block;"></div>'
+      ? '<div class="av" style="background:'+color+';overflow:hidden;padding:0;position:relative;"><img src="'+avUrl+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><span style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;align-items:center;justify-content:center;color:#fff;font-weight:700;">'+esc(name[0].toUpperCase())+'</span></div>'
       : '<div class="av" style="background:'+color+'">'+name[0].toUpperCase()+'</div>';
-    div.innerHTML=avHtml+'<div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="'+lastStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="last-'+cid+'">'+lastText+'</div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
+    div.innerHTML=avHtml+'<div style="flex:1;min-width:0;"><div style="font-size:17px;">'+name+'</div><div style="'+lastStyle+'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span class="last-prefix">'+lastPrefix+'</span><span id="last-'+cid+'">'+lastText+'</span></div></div><span style="color:#c7c7cc;font-size:18px;">&#x203A;</span>';
 
     div.onclick=(function(c,n,col){return function(e){
       if(parseFloat(div.style.transform.replace(/[^-\d.]/g,''))<-5)return;
@@ -2878,7 +2898,7 @@ async function onImg(e){
   var chatAtSend=G.chat;
   // 立刻显示"处理中"占位，不等图片处理完成才有反应
   addMsg({type:'image',src:null,sent:true,t:gt(),loading:true});
-  updateLastPreview(chatAtSend,'[Image]','image',false);
+  updateLastPreview(chatAtSend,'[Image]','image',false,'sent');
   var prep=await prepareImageBlob(f);
   var blob=prep.blob,localUrl=prep.localUrl;
   var ext=prep.ok?'jpg':(f.name.match(/\.(\w+)$/)||[,'jpg'])[1];
@@ -2936,7 +2956,7 @@ function onVid(e){
   var roomAtSend=currentRoom;
   var chatAtSend=G.chat;
   addMsg({type:'video',src:localUrl,sent:true,t:gt(),loading:true});
-  updateLastPreview(chatAtSend,'[Video]','video',false);
+  updateLastPreview(chatAtSend,'[Video]','video',false,'sent');
   _sb.storage.from('media').upload(fname,f,{contentType:f.type||'video/mp4',upsert:true}).then(function(up){
     var msgs=G.msgs[chatAtSend]||[];
     if(up.error){
@@ -2983,7 +3003,7 @@ function doLoc(){
     var chatAtLoc=G.chat,roomAtLoc=currentRoom;
     var locMsg={type:'location',addr:addr,mapUrl:mapUrl,sent:true,t:gt(),ts:Date.now()};
     addMsg(locMsg);
-    updateLastPreview(chatAtLoc,'[Location]','location',false);
+    updateLastPreview(chatAtLoc,'[Location]','location',false,'sent');
     if(roomAtLoc){
       _sb.from('messages').insert({room_id:roomAtLoc,sender:String(myId),content:addr+'|'+mapUrl,type:'location'}).select().single().then(function(r){
         if(r.error){alert('Location send error: '+r.error.message);return;}
@@ -3005,7 +3025,7 @@ function onFile(e){
   var roomAtSend=currentRoom;
   var chatAtSend=G.chat;
   addMsg({type:'file',fname:origName,sent:true,t:gt(),loading:true});
-  updateLastPreview(chatAtSend,'[File]','file',false);
+  updateLastPreview(chatAtSend,'[File]','file',false,'sent');
   _sb.storage.from('media').upload(fname,f,{contentType:f.type||'application/octet-stream',upsert:true}).then(function(up){
     var msgs=G.msgs[chatAtSend]||[];
     if(up.error){
@@ -3098,7 +3118,7 @@ function recStop(){
         if(msgs[i].type==='voice'&&msgs[i].src===localUrl){msgs[i].src=url;break;}
       }
       renderMsgs();
-      updateLastPreview(chatAtStop,'[Voice]','voice',false);
+      updateLastPreview(chatAtStop,'[Voice]','voice',false,'sent');
       if(roomAtStop){
         _sb.from('messages').insert({room_id:roomAtStop,sender:String(myId),content:url,type:'voice',duration:dur}).select().single().then(function(r){
           console.log('Voice insert:',r.error?r.error.message:'OK');
