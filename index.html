@@ -1871,6 +1871,10 @@ async function syncRoomMessages(name){
     var rr=await _sb.from('read_receipts').select('last_read_at').eq('user_id',String(name)).eq('other_id',String(myId)).maybeSingle();
     otherLastRead=(rr.data&&rr.data.last_read_at)||0;
   }catch(e){console.log('fetch read_receipts failed',e&&e.message);}
+  // 已读状态只能从"未读"变"已读"，不能反过来：即时广播标记为已读后，
+  // 即使本轮数据库查询结果是"未读"也不再回退，避免颜色/爪印来回闪烁
+  var prevReadIds={};
+  (G.msgs[name]||[]).forEach(function(m){if(m.sent&&m.read&&m.id!=null)prevReadIds[m.id]=true;});
   if(res.data&&res.data.length>0){
     serverMsgs=res.data.map(function(m){
       try{
@@ -1889,7 +1893,7 @@ async function syncRoomMessages(name){
       if(msg.sent){
         // 我发出的消息：用对方的last_read时间点判断对方是否已读
         msg.delivered=true;
-        msg.read=otherLastRead>=msg.ts;
+        msg.read=(otherLastRead>=msg.ts)||!!prevReadIds[m.id];
       }else{
         msg.delivered=true;msg.read=true;
       }
