@@ -1761,34 +1761,39 @@ async function joinRoom(name){
   currentRoom=roomIdOf(a,b);
   if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}}
   if(typingSub){try{typingSub.unsubscribe();}catch(e){}}
-  typingSub=_sb.channel('typing_'+currentRoom)
-    .on('broadcast',{event:'typing'},function(p){
-      if(p.payload&&String(p.payload.from)!==String(myId))showTypingIndicator();
-    }).subscribe();
-  realtimeSub=_sb.channel('room:'+currentRoom)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
-      var m=p.new;
-      if(String(m.sender)===String(myId))return;
-      var createdMs1=new Date(m.created_at).getTime()||Date.now();
-      var dl1=new Date(createdMs1);
-      var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:dl1.getHours()+':'+(dl1.getMinutes()<10?'0':'')+dl1.getMinutes(),ts:createdMs1};
-      if(m.type==='image'){var imgParts=(m.content||'').split('|');msg.src=imgParts[0];if(imgParts[1])msg.thumb=imgParts[1];}
-      if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
-      if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
-      if(m.type==='contact'){try{var cc1=JSON.parse(m.content);msg.cid=cc1.id;msg.cname=cc1.name;}catch(e){}}
-      if(m.type==='video')msg.src=m.content;
-      if(m.type==='file'){var fp1=(m.content||'').split('|');msg.src=fp1[0];msg.fname=decodeURIComponent(fp1[1]||'File');}
-      var already=(G.msgs[name]||[]).some(function(x){return x.id===m.id;});
-      if(!already){
-        msg.delivered=true;msg.read=false;
-        addMsg(msg);
-        sendNotif();
-        _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
-        scheduleMarkRead(name,[m.id]);
-      }
-      var lastEl=document.getElementById('last-'+String(m.sender));
-      if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
-    }).subscribe(function(status){console.log('Realtime:',status);});
+  realtimeSub=null;typingSub=null;
+  try{
+    typingSub=_sb.channel('typing_'+currentRoom)
+      .on('broadcast',{event:'typing'},function(p){
+        if(p.payload&&String(p.payload.from)!==String(myId))showTypingIndicator();
+      }).subscribe();
+  }catch(e){console.log('typing channel setup failed:',e&&e.message);}
+  try{
+    realtimeSub=_sb.channel('room:'+currentRoom)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
+        var m=p.new;
+        if(String(m.sender)===String(myId))return;
+        var createdMs1=new Date(m.created_at).getTime()||Date.now();
+        var dl1=new Date(createdMs1);
+        var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:dl1.getHours()+':'+(dl1.getMinutes()<10?'0':'')+dl1.getMinutes(),ts:createdMs1};
+        if(m.type==='image'){var imgParts=(m.content||'').split('|');msg.src=imgParts[0];if(imgParts[1])msg.thumb=imgParts[1];}
+        if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content&&m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
+        if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1]||('https://maps.google.com/?q='+pts[0]);}
+        if(m.type==='contact'){try{var cc1=JSON.parse(m.content);msg.cid=cc1.id;msg.cname=cc1.name;}catch(e){}}
+        if(m.type==='video')msg.src=m.content;
+        if(m.type==='file'){var fp1=(m.content||'').split('|');msg.src=fp1[0];msg.fname=decodeURIComponent(fp1[1]||'File');}
+        var already=(G.msgs[name]||[]).some(function(x){return x.id===m.id;});
+        if(!already){
+          msg.delivered=true;msg.read=false;
+          addMsg(msg);
+          sendNotif();
+          _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
+          scheduleMarkRead(name,[m.id]);
+        }
+        var lastEl=document.getElementById('last-'+String(m.sender));
+        if(lastEl){lastEl.textContent=(m.type==='text'?m.content:'['+m.type+']');lastEl.style.color='#007aff';lastEl.style.fontWeight='600';}
+      }).subscribe(function(status){console.log('Realtime:',status);});
+  }catch(e){console.log('realtime channel setup failed:',e&&e.message);}
 
   await syncRoomMessages(name);
 }
@@ -1821,9 +1826,10 @@ function cleanupMediaMessage(id,url,expired){
 
 // 拉取服务器上该房间的消息，与本地缓存合并去重，并刷新界面
 async function syncRoomMessages(name){
+  var localMsgs=loadLocalMsgs(name);
+  try{
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
   var room=roomIdOf(a,b);
-  var localMsgs=loadLocalMsgs(name);
   var res=await _sb.from('messages').select('*').eq('room_id',room).order('created_at',{ascending:false}).limit(50);
   var serverMsgs=[];
   var toMarkDelivered=[],toMarkRead=[];
@@ -1832,15 +1838,17 @@ async function syncRoomMessages(name){
   var weekAgo=Date.now()-7*24*60*60*1000;
   if(res.data&&res.data.length>0){
     serverMsgs=res.data.map(function(m){
-      var createdMs=new Date(m.created_at).getTime();
+      try{
+      var content=m.content||'';
+      var createdMs=new Date(m.created_at).getTime()||Date.now();
       var dlocal=new Date(createdMs);
-      var msg={id:m.id,text:m.content,type:m.type||'text',sent:String(m.sender)===String(myId),t:dlocal.getHours()+':'+(dlocal.getMinutes()<10?'0':'')+dlocal.getMinutes(),ts:createdMs};
-      if(m.type==='image'){var imgParts=(m.content||'').split('|');msg.src=imgParts[0];if(imgParts[1])msg.thumb=imgParts[1];}
-      if(m.type==='voice'){msg.src=m.content&&m.content.startsWith('http')?m.content:null;msg.dur=m.duration||(m.content.match(/\d+/)?m.content.match(/\d+/)[0]:'?');}
-      if(m.type==='location'){var pts=(m.content||'').split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
-      if(m.type==='contact'){try{var cc2=JSON.parse(m.content);msg.cid=cc2.id;msg.cname=cc2.name;}catch(e){}}
-      if(m.type==='video')msg.src=m.content;
-      if(m.type==='file'){var fp2=(m.content||'').split('|');msg.src=fp2[0];msg.fname=decodeURIComponent(fp2[1]||'File');}
+      var msg={id:m.id,text:content,type:m.type||'text',sent:String(m.sender)===String(myId),t:dlocal.getHours()+':'+(dlocal.getMinutes()<10?'0':'')+dlocal.getMinutes(),ts:createdMs};
+      if(m.type==='image'){var imgParts=content.split('|');msg.src=imgParts[0];if(imgParts[1])msg.thumb=imgParts[1];}
+      if(m.type==='voice'){msg.src=content.startsWith('http')?content:null;var vm=content.match(/\d+/);msg.dur=m.duration||(vm?vm[0]:'?');}
+      if(m.type==='location'){var pts=content.split('|');msg.addr=pts[0];msg.mapUrl=pts[1];}
+      if(m.type==='contact'){try{var cc2=JSON.parse(content);msg.cid=cc2.id;msg.cname=cc2.name;}catch(e){}}
+      if(m.type==='video')msg.src=content;
+      if(m.type==='file'){var fp2=content.split('|');msg.src=fp2[0];msg.fname=decodeURIComponent(fp2[1]||'File');}
       // 过滤掉异常长的text消息
       if(msg.type==='text'&&msg.text&&msg.text.length>2000)msg.text='[Message]';
       if(msg.sent){
@@ -1863,6 +1871,10 @@ async function syncRoomMessages(name){
         }
       }
       return msg;
+      }catch(e){
+        console.log('parse msg failed, id='+m.id,e&&e.message);
+        return {id:m.id,text:'[Message]',type:'text',sent:String(m.sender)===String(myId),t:gt(),ts:new Date(m.created_at).getTime()||Date.now()};
+      }
     });
   }
   if(toMarkDelivered.length)_sb.from('messages').update({delivered:true}).in('id',toMarkDelivered).then(function(){});
@@ -1881,6 +1893,14 @@ async function syncRoomMessages(name){
     var isUnread=!last.sent&&G.chat!==name;
     updateLastPreview(name,last.type==='text'?last.text:('['+last.type+']'),last.type,isUnread);
     if(isUnread){addUnread(name);sendNotif();}
+  }
+  }catch(e){
+    console.log('syncRoomMessages failed, falling back to local cache:',e&&e.message);
+    if(localMsgs.length){
+      localMsgs.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+      G.msgs[name]=localMsgs;
+      if(G.chat===name)renderMsgs();
+    }
   }
 }
 
@@ -2266,7 +2286,7 @@ function openChat(name,ini,color,displayName){
   resolveDisplayName(name);
   if(!G.msgs[name])G.msgs[name]=[{text:'👋',sent:false,t:gt()}];
   renderMsgs();show('chat');document.getElementById('xpanel').classList.remove('on');
-  joinRoom(name);
+  joinRoom(name).catch(function(e){console.log('joinRoom error:',e&&e.message);});
 }
 function renderMsgs(){
   var c=document.getElementById('chatMsgs');
