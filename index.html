@@ -1834,12 +1834,12 @@ async function syncRoomMessages(name){
   var toCleanup=[]; // 视频/文件：已查看 或 超过7天未查看，从服务器删除（已保存在本机）
   var chatOpen=(G.chat===name);
   var weekAgo=Date.now()-7*24*60*60*1000;
-  // 获取对方的"已读到"时间点（对方写在自己账号上的last_read，不依赖跨用户写权限）
+  // 获取对方的"已读到"时间点（来自read_receipts表，避免之前jsonb方案的写覆盖问题）
   var otherLastRead=0;
   try{
-    var rr=await _sb.from('users').select('last_read').eq('id',parseInt(name)||name).maybeSingle();
-    otherLastRead=(rr.data&&rr.data.last_read&&rr.data.last_read['r_'+myId])||0;
-  }catch(e){console.log('fetch last_read failed',e&&e.message);}
+    var rr=await _sb.from('read_receipts').select('last_read_at').eq('user_id',String(name)).eq('other_id',String(myId)).maybeSingle();
+    otherLastRead=(rr.data&&rr.data.last_read_at)||0;
+  }catch(e){console.log('fetch read_receipts failed',e&&e.message);}
   if(res.data&&res.data.length>0){
     serverMsgs=res.data.map(function(m){
       try{
@@ -1905,14 +1905,12 @@ async function syncRoomMessages(name){
   }
 }
 
-// 把"我读到哪了"写到自己账号的last_read里(只写自己的数据，不依赖跨用户写权限)
+// 把"我读到哪了"记录到read_receipts表（每对用户一行，upsert是原子操作，
+// 不会像之前的jsonb读-改-写方案那样在多个对话同时标记已读时互相覆盖丢失）
 async function markRoomRead(otherId){
   try{
     var ts=Date.now();
-    var r=await _sb.from('users').select('last_read').eq('id',parseInt(myId)||myId).maybeSingle();
-    var lr=(r.data&&r.data.last_read&&typeof r.data.last_read==='object')?r.data.last_read:{};
-    lr['r_'+otherId]=ts;
-    var up=await _sb.from('users').update({last_read:lr}).eq('id',parseInt(myId)||myId);
+    var up=await _sb.from('read_receipts').upsert({user_id:String(myId),other_id:String(otherId),last_read_at:ts},{onConflict:'user_id,other_id'});
     if(up.error)console.log('markRoomRead failed:',up.error.message);
   }catch(e){console.log('markRoomRead err',e&&e.message);}
 }
@@ -2118,6 +2116,7 @@ async function loadExistingCallSig(){
     if(!res.data)return;
     res.data.forEach(function(row){
       if(String(row.sender)===String(myId))return;
+      if(row.type!=='answer'&&row.type!=='ice')return;
       if(_processedSigIds[row.id])return;
       _processedSigIds[row.id]=true;
       handleCallSig({new:row});
@@ -2142,7 +2141,7 @@ async function handleCallSig(payload){
       console.log('ICE candidate added');
     }catch(e){console.log('addIceCandidate error:',e);}
   }
-  if(msg.type==='offer'){showIncoming(msg.sender,JSON.parse(msg.data),msg.created_at);}
+  if(msg.type==='offer'&&!RTC.pc){showIncoming(msg.sender,JSON.parse(msg.data),msg.created_at);}
   if(msg.type==='hangup'){
     console.log('Remote hangup received at:',msg.created_at);
     // 忽略超过10秒的旧hangup信号
