@@ -19,7 +19,7 @@
 <!-- ═══ Android / Chrome 主题色 ═══ -->
 <meta name="theme-color" content="#ff9a9e" id="metaThemeColor">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="天气">
+<meta name="application-name" content="GhostChat">
 
 <!-- ═══ 防止被搜索引擎索引 ═══ -->
 <meta name="robots" content="noindex,nofollow">
@@ -1511,13 +1511,11 @@ document.addEventListener('visibilitychange',function(){
     ls('lastHiddenAt',String(Date.now()));
     return;
   }
-  // 回到前台：在登录/密码门/锁屏页不做任何跳转
   var _cur=document.querySelector('.screen.active');
   var _cid=_cur?_cur.id:'';
   if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
-  // 只有设了锁屏密码且开了"离开自动锁"才触发锁屏，不触发密码门
+  // 只触发锁屏，不再触发 testgate（死循环根源）
   if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
-    sessionStorage.removeItem('_unlocked');
     triggerLock();
   }
 });
@@ -1602,23 +1600,24 @@ window.onload=function(){
   if(!window.navigator.standalone && !localStorage.getItem('installBannerDismissed')){
     setTimeout(showInstallBanner, 3000);
   }
-  // 启动规则：
-  // A. 从未登录 → 登录页
-  // B. 已登录 + 未开隐身 → 直接进主界面（或锁屏）
-  // C. 已登录 + 开了隐身 + 本次会话未过密码门 → 先过密码门
-  // D. 已登录 + 开了隐身 + 本次会话已过密码门 → 直接进主界面（或锁屏）
   if(!lg('registered')){
+    // 未登录：进登录页
     show('reg');
   }else{
     pullSettings().then(function(){
       if(G.hide && sessionStorage.getItem('testGatePassed')!=='1'){
-        // 隐身模式且本次会话未过密码门 → 显示密码门
+        // 开了隐身 且 本次会话未过密码门 → 显示密码门
         show('testgate');
-        var p=document.getElementById('gatePinInput');
-        if(p){p.value='';setTimeout(function(){p.focus();},200);}
+        var gp=document.getElementById('gatePinInput');
+        if(gp){gp.value='';setTimeout(function(){gp.focus();},200);}
       }else{
-        // 非隐身 or 已过密码门 → 直接进主界面
-        _proceedToMain();
+        // 已登录 + 非隐身  或  已过密码门 → 直接进主界面
+        if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
+          show('applock');
+          setTimeout(function(){var lp=document.getElementById('lockPinInput');if(lp)lp.focus();},300);
+        }else{
+          proceedStartup();
+        }
       }
     });
   }
@@ -1642,7 +1641,7 @@ function resetGateIdleTimer(){
 }
 
 function triggerTestGate(){
-  if(!G.hide)return; // 非隐身模式不需要密码门
+  if(!G.hide)return;
   var active=document.querySelector('.screen.active');
   if(active&&(active.id==='testgate'||active.id==='reg'||active.id==='applock'))return;
   if(active)_gateReturnScreen=active.id;
@@ -1703,10 +1702,14 @@ function setTestGatePin(){
   pushSettings();
 }
 function afterTestGate(){
-  // 密码门通过：标记本次会话，进入主界面
   sessionStorage.setItem('testGatePassed','1');
   if(!lg('registered')){show('reg');return;}
-  _proceedToMain();
+  if(lg('appLockPin')){
+    show('applock');
+    setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
+  }else{
+    proceedStartup();
+  }
 }
 
 function upgradeImg(img){
@@ -1988,9 +1991,8 @@ async function doLogin(){
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
     await pullSettings();
     sessionStorage.setItem('testGatePassed','1');
-    sessionStorage.setItem('_unlocked','1');
-    proceedStartup();
-    claimSession(true);return;
+    show('main');
+    listenForCalls();listenForAllMessages();loadContacts();claimSession(true);return;
   }
   // 数据库验证用户存在
   var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
@@ -2005,8 +2007,8 @@ async function doLogin(){
   ls('registered','true');
   await pullSettings();
   sessionStorage.setItem('testGatePassed','1');
-  sessionStorage.setItem('_unlocked','1');
-  proceedStartup();
+  show('main');
+  listenForCalls();listenForAllMessages();loadContacts();
   claimSession(true);
 }
 function showQR(){
@@ -3261,16 +3263,6 @@ async function resolveDisplayName(cid){
   }
 }
 
-// 统一进入主界面入口（登录成功、密码门通过、锁屏解锁后都走这里）
-function _proceedToMain(){
-  if(lg('appLockPin') && lg('autoLockLeave')!=='false' && sessionStorage.getItem('_unlocked')!=='1'){
-    show('applock');
-    setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
-    return;
-  }
-  proceedStartup();
-}
-
 function proceedStartup(){
   if(lg('registered')){loadContacts();listenForCalls();listenForAllMessages();claimSession(false);}
   if('Notification' in window&&Notification.permission==='default'){
@@ -3311,7 +3303,6 @@ function checkAppLockPin(){
   var saved=lg('appLockPin');
   if(inp.value===saved){
     ls('lastHiddenAt','0');
-    sessionStorage.setItem('_unlocked','1');
     if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
     else{proceedStartup();}
   }else{
@@ -3993,21 +3984,19 @@ function clearUnread(senderId){
 }
 
 function sendNotif(){
-  // 在顶部导航栏显示与主题色相同的小符号，3秒后消失，不弹系统通知
-  var symMap={dot:'●',line:'▏',star:'✦',tri:'▲',dia:'◆',wave:'～',sync:'↻',mail:'·'};
+  var symMap={dot:'●',line:'▏',star:'✦',tri:'▲',dia:'◆',wave:'∿',sync:'⟳',mail:'·'};
   var sym=symMap[G.notifSym]||'●';
-  // 找所有可见的 nav-bar 在标题右侧插入符号
-  var indicator=document.getElementById('_notifDot');
-  if(!indicator){
-    indicator=document.createElement('span');
-    indicator.id='_notifDot';
-    indicator.style.cssText='position:fixed;top:var(--safe-top,14px);right:18px;z-index:9999;font-size:11px;color:var(--theme-accent1);opacity:0;transition:opacity .3s;pointer-events:none;';
-    document.body.appendChild(indicator);
+  var dot=document.getElementById('_gc_notif_dot');
+  if(!dot){
+    dot=document.createElement('span');
+    dot.id='_gc_notif_dot';
+    dot.style.cssText='position:fixed;top:12px;right:16px;z-index:9999;font-size:12px;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity .25s ease;pointer-events:none;line-height:1;';
+    document.body.appendChild(dot);
   }
-  indicator.textContent=sym;
-  indicator.style.opacity='1';
-  clearTimeout(indicator._t);
-  indicator._t=setTimeout(function(){indicator.style.opacity='0';},3000);
+  dot.textContent=sym;
+  dot.style.opacity='1';
+  clearTimeout(dot._t);
+  dot._t=setTimeout(function(){dot.style.opacity='0';},3000);
 }
 
 // ═══ 设置 ═══
