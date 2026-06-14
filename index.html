@@ -841,6 +841,9 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
     <div style="background:#f7f3fa;border-radius:12px;padding:14px 16px;font-size:13.5px;color:#8e8e93;line-height:1.6;margin-bottom:14px;" id="hidePinNote">
       解锁伪装界面使用「锁屏密码」。还没设置的话，先去 设置 → 隐私与安全 → 锁屏密码 设置一个。
     </div>
+    <div style="background:#fffbea;border:1px solid #f0c040;border-radius:12px;padding:12px 14px;font-size:13px;color:#6b5000;line-height:1.6;margin-bottom:14px;">
+      💡 <b>主屏幕图标提示：</b>添加到主屏幕时，把名字改成"天气"或"计算器"，视觉上更配合伪装模式。iOS/Android 系统限制，PWA 图标样式无法通过代码动态切换。
+    </div>
     <button class="btn-blue" id="enable-hide-btn" onclick="saveHide()">Enable Hide Mode</button>
     <button class="btn-red" id="disable-hide-btn" style="margin-top:10px;" onclick="offHide()">Disable Hide Mode</button>
     <div style="height:30px;"></div>
@@ -1427,6 +1430,9 @@ document.addEventListener('visibilitychange',function(){
   if(document.hidden){
     ls('lastHiddenAt',String(Date.now()));
   }else{
+    var _activeEl=document.querySelector('.screen.active');
+    var _activeId=_activeEl?_activeEl.id:'';
+    if(_activeId==='reg'||_activeId==='testgate')return;
     if(sessionStorage.getItem('testGatePassed')==='1'){
       // 系统锁屏/切到后台再回来，重新要求内测密码
       triggerTestGate();
@@ -2425,7 +2431,14 @@ async function syncRoomMessages(name){
   toCleanup.forEach(function(item){cleanupMediaMessage(item.id,item.src,item.expired);});
   // 合并本地缓存与服务器消息（按id去重）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
-  var merged=localMsgs.filter(function(m){return !(m.id!=null&&serverIds[m.id]);}).concat(serverMsgs);
+  // 同时用 ts 做二次去重：自己发的消息 insert 完成后 ts 会和服务器返回的完全一致
+  var serverSentTs={};serverMsgs.forEach(function(m){if(m.sent&&m.ts)serverSentTs[m.ts]=true;});
+  var merged=localMsgs.filter(function(m){
+    if(m.id!=null&&serverIds[m.id])return false; // 已入库，用服务器版
+    if(m._sendKey&&typeof _sendingSet!=='undefined'&&_sendingSet.has(m._sendKey))return true; // 发送中，保留
+    if(!m.id&&m.sent&&m.ts&&serverSentTs[m.ts])return false; // 刚完成发送，用服务器版
+    return true;
+  }).concat(serverMsgs);
   merged.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
   var prevLen=(G.msgs[name]||[]).length;
   G.msgs[name]=merged;
@@ -3039,17 +3052,25 @@ function saveLocalMsgs(name,arr){
 }
 
 function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];if(m.ts==null)m.ts=Date.now();G.msgs[G.chat].push(m);renderMsgs();saveLocalMsgs(G.chat,G.msgs[G.chat]);}
+var _sendingSet=new Set();
 async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
   if(G.chat&&isBlocked(G.chat)){alert('对方已被你拉黑，请先在通讯录中解除拉黑');return;}
   var chatAtSend=G.chat;
-  var msgObj={text:t,sent:true,t:gt(),ts:Date.now()};
+  var sendKey=chatAtSend+'|'+Date.now()+'|'+t.slice(0,20);
+  _sendingSet.add(sendKey);
+  var msgObj={text:t,sent:true,t:gt(),ts:Date.now(),_sendKey:sendKey};
   addMsg(msgObj);
   updateLastPreview(chatAtSend,t,'text',false,'sent');
   inp.value='';
   if(currentRoom){
     var r=await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'}).select().single();
-    if(r.data){msgObj.id=r.data.id;saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);}
+    if(r.data){
+      msgObj.id=r.data.id;
+      msgObj._sendKey=null;
+      _sendingSet.delete(sendKey);
+      saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);
+    }
     // 触发推送通知给对方
     if(chatAtSend) triggerPushToUser(String(chatAtSend));
   }
