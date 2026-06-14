@@ -160,7 +160,7 @@ html,body{height:100%;margin:0;padding:0;}
 .typing-dots span:nth-child(2){animation-delay:.2s;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
 @keyframes typingBounce{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-2px);}}
-.msg-img{max-width:220px;border-radius:16px;display:block;}
+.msg-img{max-width:min(260px,72vw);border-radius:16px;display:block;height:auto;object-fit:contain;}
 .ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
 .ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--theme-icon);flex-shrink:0;}
@@ -775,14 +775,17 @@ html,body{height:100%;margin:0;padding:0;}
     <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">When you receive a new message, a subtle symbol appears in notifications. Only you know its meaning.</p>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Notification Symbol</div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;">
-      <div class="nc on" id="ns-dot" onclick="selN('dot','● Dot')"><div style="font-size:22px;margin-bottom:4px;">●</div><div style="font-size:11px;color:#8e8e93;">Dot</div></div>
-      <div class="nc" id="ns-line" onclick="selN('line','| Line')"><div style="font-size:22px;margin-bottom:4px;">|</div><div style="font-size:11px;color:#8e8e93;">Line</div></div>
-      <div class="nc" id="ns-star" onclick="selN('star','✦ Star')"><div style="font-size:22px;margin-bottom:4px;">✦</div><div style="font-size:11px;color:#8e8e93;">Star</div></div>
-      <div class="nc" id="ns-tri" onclick="selN('tri','▲ Tri')"><div style="font-size:22px;margin-bottom:4px;">▲</div><div style="font-size:11px;color:#8e8e93;">Triangle</div></div>
-      <div class="nc" id="ns-dia" onclick="selN('dia','◆ Dia')"><div style="font-size:22px;margin-bottom:4px;">◆</div><div style="font-size:11px;color:#8e8e93;">Diamond</div></div>
-      <div class="nc" id="ns-wave" onclick="selN('wave','～ Wave')"><div style="font-size:22px;margin-bottom:4px;">～</div><div style="font-size:11px;color:#8e8e93;">Wave</div></div>
-      <div class="nc" id="ns-sync" onclick="selN('sync','↻ Sync')"><div style="font-size:22px;margin-bottom:4px;">↻</div><div style="font-size:11px;color:#8e8e93;">Sync</div></div>
-      <div class="nc" id="ns-mail" onclick="selN('mail','✉ Mail')"><div style="font-size:22px;margin-bottom:4px;">✉</div><div style="font-size:11px;color:#8e8e93;">Mail</div></div>
+      <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.5;">选一个你收到消息时通知栏显示的符号，别人看不出含义</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+        <div class="nc on" id="ns-dot" onclick="selN('dot','，')"><div style="font-size:22px;margin-bottom:2px;">，</div><div style="font-size:10px;color:#8e8e93;">逗号</div></div>
+        <div class="nc" id="ns-period" onclick="selN('period','。')"><div style="font-size:22px;margin-bottom:2px;">。</div><div style="font-size:10px;color:#8e8e93;">句号</div></div>
+        <div class="nc" id="ns-ellip" onclick="selN('ellip','…')"><div style="font-size:22px;margin-bottom:2px;">…</div><div style="font-size:10px;color:#8e8e93;">省略号</div></div>
+        <div class="nc" id="ns-mid" onclick="selN('mid','·')"><div style="font-size:22px;margin-bottom:2px;">·</div><div style="font-size:10px;color:#8e8e93;">间隔号</div></div>
+        <div class="nc" id="ns-space" onclick="selN('space',' ')"><div style="font-size:22px;margin-bottom:2px;color:#ccc">_</div><div style="font-size:10px;color:#8e8e93;">空格</div></div>
+        <div class="nc" id="ns-star" onclick="selN('star','✦')"><div style="font-size:22px;margin-bottom:2px;">✦</div><div style="font-size:10px;color:#8e8e93;">星形</div></div>
+        <div class="nc" id="ns-wave" onclick="selN('wave','～')"><div style="font-size:22px;margin-bottom:2px;">～</div><div style="font-size:10px;color:#8e8e93;">波浪</div></div>
+        <div class="nc" id="ns-none" onclick="selN('none','')"><div style="font-size:14px;margin-bottom:2px;color:#ccc;padding-top:4px;">无</div><div style="font-size:10px;color:#8e8e93;">不显示</div></div>
+      </div>
     </div>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Notification Text (what others see)</div>
     <div class="tr2 on" id="nt-sys" onclick="selNT('sys')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">System notification</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">"System update complete"</div></div></div>
@@ -819,49 +822,116 @@ html,body{height:100%;margin:0;padding:0;}
 </div>
 
 <!-- 伪装：天气 -->
-<div id="dweather" class="screen" style="background:linear-gradient(160deg,#8EC5FC 0%,#E0C3FC 100%);flex-direction:column;overflow-y:auto;position:relative;">
-  <div class="wx-deco" style="width:90px;height:90px;top:64px;left:-24px;"></div>
-  <div class="wx-deco" style="width:46px;height:46px;top:130px;right:28px;animation-delay:4s;"></div>
-  <div class="wx-deco" style="width:32px;height:32px;top:220px;left:54px;animation-delay:8s;"></div>
-  <div style="padding:52px 16px 8px;position:relative;z-index:1;">
-    <div class="wx-search">
-      <span style="font-size:18px;">🔍</span>
-      <input id="wxSearch" type="text" placeholder="搜索城市" inputmode="text" autocomplete="off" onkeydown="if(event.key==='Enter')weatherSearchSubmit()">
-      <span onclick="weatherSearchSubmit()" style="font-size:14px;color:#fff;font-weight:700;cursor:pointer;opacity:.9;">Go</span>
+<div id="dweather" class="screen" style="flex-direction:column;overflow-y:auto;position:relative;background:#1a1a2e;">
+
+  <!-- 动态背景 -->
+  <div id="wxBg" style="position:fixed;inset:0;z-index:0;transition:background 1s;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);"></div>
+
+  <!-- 顶部搜索栏 -->
+  <div style="position:relative;z-index:2;padding:max(52px,calc(44px + var(--safe-top))) 16px 0;">
+    <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:10px 16px;">
+      <span style="font-size:16px;opacity:.7;">🔍</span>
+      <input id="wxSearch" type="text" placeholder="搜索城市..." inputmode="text" autocomplete="off"
+        style="flex:1;border:none;background:transparent;color:#fff;font-size:15px;outline:none;"
+        onkeydown="if(event.key==='Enter')weatherSearchSubmit()"
+        oninput="if(this.value.length>1)weatherSearchSubmit()">
+      <span onclick="wxGetLocation()" style="font-size:18px;cursor:pointer;opacity:.8;" title="定位">📍</span>
     </div>
-    <div id="wxResults" style="margin-top:8px;background:rgba(255,255,255,.97);border-radius:14px;overflow:hidden;display:none;"></div>
+    <div id="wxResults" style="margin-top:6px;background:rgba(20,20,40,.97);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.15);border-radius:14px;overflow:hidden;display:none;max-height:200px;overflow-y:auto;"></div>
   </div>
-  <div class="wx-card" style="position:relative;z-index:1;">
-    <div style="font-size:17px;font-weight:700;font-family:'Baloo 2',sans-serif;letter-spacing:.5px;" id="wxCityName">Dubai</div>
-    <div class="wx-icon-big" id="wxIconBig">☀️</div>
-    <div class="wx-temp" id="wxTemp">--°</div>
-    <div style="font-size:14px;opacity:.92;margin-top:2px;" id="wxDescTxt">--</div>
-    <div style="font-size:13px;opacity:.8;margin-top:6px;" id="wxHiLo">H: --°  L: --°</div>
-    <button id="wxAddBtn" onclick="addCurrentCity()" style="margin-top:14px;background:rgba(255,255,255,.28);color:#fff;border:1px solid rgba(255,255,255,.4);padding:8px 22px;border-radius:14px;font-size:13px;cursor:pointer;display:none;font-weight:600;">+ 加入常驻城市</button>
+
+  <!-- 主天气卡 -->
+  <div style="position:relative;z-index:2;padding:20px 20px 0;text-align:center;">
+    <div style="font-size:16px;color:rgba(255,255,255,.7);letter-spacing:.5px;margin-bottom:4px;" id="wxCityName">Dubai</div>
+    <div style="font-size:72px;font-weight:200;color:#fff;letter-spacing:-2px;line-height:1;" id="wxTemp">--°</div>
+    <div style="font-size:16px;color:rgba(255,255,255,.8);margin:6px 0 4px;" id="wxDescTxt">--</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.55);" id="wxHiLo">最高 --°  最低 --°</div>
+    <!-- 天气大图标 -->
+    <div class="wx-icon-big" id="wxIconBig" style="font-size:80px;margin:12px 0 0;">☀️</div>
   </div>
-  <div style="padding:4px 16px 24px;position:relative;z-index:1;">
-    <div style="font-size:12px;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-weight:700;">常驻城市</div>
-    <div id="wxCityList" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;"></div>
+
+  <!-- 今日详情条 -->
+  <div style="position:relative;z-index:2;margin:16px;background:rgba(255,255,255,.1);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:16px;">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">
+      <div>
+        <div style="font-size:18px;margin-bottom:4px;">💧</div>
+        <div style="font-size:13px;color:#fff;font-weight:600;" id="wxHumidity">--%</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);">湿度</div>
+      </div>
+      <div>
+        <div style="font-size:18px;margin-bottom:4px;">💨</div>
+        <div style="font-size:13px;color:#fff;font-weight:600;" id="wxWind">-- km/h</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);">风速</div>
+      </div>
+      <div>
+        <div style="font-size:18px;margin-bottom:4px;">👁️</div>
+        <div style="font-size:13px;color:#fff;font-weight:600;" id="wxVis">-- km</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);">能见度</div>
+      </div>
+      <div>
+        <div style="font-size:18px;margin-bottom:4px;">🌡️</div>
+        <div style="font-size:13px;color:#fff;font-weight:600;" id="wxFeels">--°</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);">体感</div>
+      </div>
+    </div>
   </div>
+
+  <!-- 24小时预报 -->
+  <div style="position:relative;z-index:2;margin:0 16px 16px;">
+    <div style="font-size:12px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-weight:600;">24 小时预报</div>
+    <div id="wxHourly" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;"></div>
+  </div>
+
+  <!-- 7天预报 -->
+  <div style="position:relative;z-index:2;margin:0 16px 16px;background:rgba(255,255,255,.08);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:14px 16px;">
+    <div style="font-size:12px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;font-weight:600;">7 天预报</div>
+    <div id="wxWeekly" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+
+  <!-- 常驻城市 -->
+  <div style="position:relative;z-index:2;padding:0 16px 32px;">
+    <div style="font-size:12px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;font-weight:600;">常驻城市</div>
+    <div id="wxCityList" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;"></div>
+    <button id="wxAddBtn" onclick="addCurrentCity()" style="display:none;margin-top:12px;width:100%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:12px;border-radius:14px;font-size:14px;cursor:pointer;">+ 加入常驻城市</button>
+  </div>
+
   <div class="thumb-zone" onclick="tapSecret()" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()"></div>
 </div>
 
-<!-- 伪装：计算器 -->
-<div id="dcalc" class="screen">
-  <div style="flex:1;display:flex;flex-direction:column;padding:56px 24px 16px;background:linear-gradient(160deg,#FFE8F0,#E8E0FF);">
-    <div style="font-size:12px;color:#B7A9D9;letter-spacing:3px;text-transform:uppercase;font-family:'Baloo 2',sans-serif;font-weight:700;">Calculator</div>
-    <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;">
-      <div id="cExpr" style="color:#B7A9D9;font-size:22px;min-height:28px;font-family:'Baloo 2',sans-serif;"></div>
-      <div id="cNum" style="font-size:76px;font-weight:300;color:#5B5470;letter-spacing:-2px;line-height:1.1;font-family:'Baloo 2',sans-serif;"></div>
-    </div>
+<!-- 伪装：计算器 iOS风格升级版 -->
+<div id="dcalc" class="screen" style="background:#000;flex-direction:column;">
+  <!-- 计算历史 -->
+  <div id="calcHistory" style="flex:0 0 auto;padding:max(48px,calc(40px + var(--safe-top))) 20px 0;max-height:80px;overflow-y:auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;"></div>
+  <!-- 显示区 -->
+  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:0 20px 12px;">
+    <div id="cExpr" style="color:rgba(255,255,255,.45);font-size:20px;min-height:26px;font-weight:300;text-align:right;word-break:break-all;"></div>
+    <div id="cNum" style="font-size:80px;font-weight:200;color:#fff;letter-spacing:-2px;line-height:1;text-align:right;word-break:break-all;transition:font-size .1s;">0</div>
   </div>
-  <div class="cg" id="calcGrid">
-    <div class="ck fn" onclick="cp('AC')" data-val="AC">AC</div><div class="ck fn" onclick="cp('+/-')" data-val="+/-">+/-</div><div class="ck fn" onclick="cp('%')" data-val="%">%</div><div class="ck op" onclick="cp('÷')" data-val="÷">÷</div>
-    <div class="ck num" onclick="cp('7')" data-val="7">7</div><div class="ck num" onclick="cp('8')" data-val="8">8</div><div class="ck num" onclick="cp('9')" data-val="9">9</div><div class="ck op" onclick="cp('×')" data-val="×">×</div>
-    <div class="ck num" onclick="cp('4')" data-val="4">4</div><div class="ck num" onclick="cp('5')" data-val="5">5</div><div class="ck num" onclick="cp('6')" data-val="6">6</div><div class="ck op" onclick="cp('-')" data-val="-">−</div>
-    <div class="ck num" onclick="cp('1')" data-val="1">1</div><div class="ck num" onclick="cp('2')" data-val="2">2</div><div class="ck num" onclick="cp('3')" data-val="3">3</div><div class="ck op" onclick="cp('+')" data-val="+">+</div>
-    <div class="ck num z" onclick="cp('0')" data-val="0">0</div><div class="ck num" onclick="cp('.')" data-val=".">.</div><div class="ck op" data-val="EQ" onclick="cp('EQ')" ontouchend="event.preventDefault();cp('EQ')">=</div>
+  <!-- 科学模式行（横屏时显示） -->
+  <div id="calcSci" style="display:none;background:#1c1c1e;padding:6px 10px;grid-template-columns:repeat(5,1fr);gap:6px;"></div>
+  <!-- 按键区 -->
+  <div style="background:#000;padding:0 10px calc(10px + var(--safe-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:10px;" id="calcGrid">
+    <div style="height:72px;border-radius:36px;background:#a5a5a5;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#000;cursor:pointer;touch-action:manipulation;transition:opacity .1s;" onclick="cp('AC')" data-val="AC" id="ckAC">AC</div>
+    <div style="height:72px;border-radius:36px;background:#a5a5a5;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#000;cursor:pointer;touch-action:manipulation;" onclick="cp('+/-')" data-val="+/-">+/-</div>
+    <div style="height:72px;border-radius:36px;background:#a5a5a5;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#000;cursor:pointer;touch-action:manipulation;" onclick="cp('%')" data-val="%">%</div>
+    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('÷')" data-val="÷" id="ckDiv">÷</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('7')" data-val="7">7</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('8')" data-val="8">8</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('9')" data-val="9">9</div>
+    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('×')" data-val="×">×</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('4')" data-val="4">4</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('5')" data-val="5">5</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('6')" data-val="6">6</div>
+    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('-')" data-val="-">−</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('1')" data-val="1">1</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('2')" data-val="2">2</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('3')" data-val="3">3</div>
+    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('+')" data-val="+">+</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;grid-column:span 2;justify-content:flex-start;padding-left:28px;" onclick="cp('0')" data-val="0">0</div>
+    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('.')" data-val=".">.</div>
+    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" data-val="EQ" onclick="cp('EQ')" ontouchend="event.preventDefault();cp('EQ')">=</div>
   </div>
+  <div class="thumb-zone" onclick="tapSecret()" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()"></div>
 </div>
 
 <!-- 伪装：世界时钟 -->
@@ -871,27 +941,32 @@ html,body{height:100%;margin:0;padding:0;}
   <div class="thumb-zone" onclick="tapSecret()" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()"></div>
 </div>
 
-<!-- 伪装：备忘录 -->
-<div id="dnote" class="screen" style="background:linear-gradient(160deg,#FFF8F3,#FBE9F0);flex-direction:column;">
-  <div style="padding:52px 20px 14px;">
-    <div style="font-size:28px;font-weight:700;color:#5B5470;font-family:'Baloo 2',sans-serif;">📝 Notes</div>
+<!-- 伪装：备忘录 升级版 真实可编辑 -->
+<div id="dnote" class="screen" style="background:#f2f2f7;flex-direction:column;">
+  <!-- 顶部导航 -->
+  <div style="background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(0,0,0,.1);padding:max(48px,calc(40px + var(--safe-top))) 16px 10px;flex-shrink:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="font-size:28px;font-weight:700;color:#000;">备忘录</div>
+      <button onclick="noteNew()" style="background:none;border:none;font-size:28px;cursor:pointer;color:#ff9500;padding:0;line-height:1;">⊕</button>
+    </div>
+    <!-- 搜索框 -->
+    <div style="background:rgba(118,118,128,.12);border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:6px;">
+      <span style="font-size:14px;color:#8e8e93;">🔍</span>
+      <input id="noteSearch" type="search" placeholder="搜索" style="flex:1;border:none;background:transparent;font-size:15px;color:#000;outline:none;" oninput="noteFilter(this.value)">
+    </div>
   </div>
-  <div style="flex:1;overflow-y:auto;padding:6px 16px 16px;display:flex;flex-direction:column;gap:18px;">
-    <div class="dnote-card">
-      <div class="dnote-tape" style="background:#FFD6E8;"></div>
-      <div style="font-size:16px;font-weight:700;color:#5B5470;">🛒 Shopping list</div>
-      <div style="font-size:13px;color:#9C93B4;margin-top:4px;">Milk, eggs, bread, apples...</div>
+  <!-- 笔记列表 -->
+  <div id="noteList" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:0;"></div>
+  <!-- 笔记编辑器弹层 -->
+  <div id="noteEditor" style="position:fixed;inset:0;background:#fff;z-index:600;display:none;flex-direction:column;">
+    <div style="background:rgba(242,242,247,0.95);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(0,0,0,.1);padding:max(48px,calc(40px + var(--safe-top))) 16px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+      <button onclick="noteSave()" style="background:none;border:none;color:#ff9500;font-size:16px;font-weight:600;cursor:pointer;padding:4px 0;">完成</button>
+      <div style="flex:1;"></div>
+      <button onclick="noteDelete()" style="background:none;border:none;color:#ff3b30;font-size:14px;cursor:pointer;">删除</button>
     </div>
-    <div class="dnote-card">
-      <div class="dnote-tape" style="background:#C9E4FF;"></div>
-      <div style="font-size:16px;font-weight:700;color:#5B5470;">📅 Meeting notes</div>
-      <div style="font-size:13px;color:#9C93B4;margin-top:4px;">Monday 10am, Room B...</div>
-    </div>
-    <div class="dnote-card">
-      <div class="dnote-tape" style="background:#D6F5E3;"></div>
-      <div style="font-size:16px;font-weight:700;color:#5B5470;">✈️ Travel plans</div>
-      <div style="font-size:13px;color:#9C93B4;margin-top:4px;">Flights, hotel bookings...</div>
-    </div>
+    <input id="noteTitleInp" placeholder="标题" style="border:none;padding:14px 20px 8px;font-size:20px;font-weight:600;color:#000;outline:none;background:#fff;font-family:inherit;">
+    <div style="padding:2px 20px 4px;font-size:12px;color:#8e8e93;" id="noteDateLabel"></div>
+    <textarea id="noteBodyInp" placeholder="备忘录" style="flex:1;border:none;padding:8px 20px 24px;font-size:16px;color:#000;outline:none;resize:none;background:#fff;line-height:1.6;font-family:inherit;"></textarea>
   </div>
   <div class="thumb-zone" onclick="tapSecret()" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()"></div>
 </div>
@@ -934,7 +1009,7 @@ html,body{height:100%;margin:0;padding:0;}
 
 <div id="imgViewer" onclick="closeImgViewer()" style="position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;">
   <span onclick="closeImgViewer()" style="position:absolute;top:16px;right:18px;color:#fff;font-size:28px;line-height:1;cursor:pointer;z-index:801;">‹ 返回</span>
-  <img id="imgViewerSrc" src="" style="max-width:94vw;max-height:88vh;object-fit:contain;" onclick="event.stopPropagation()">
+  <img id="imgViewerSrc" src="" style="max-width:96vw;max-height:86vh;object-fit:contain;border-radius:8px;touch-action:pinch-zoom;" onclick="event.stopPropagation()">
 </div>
 
 <!-- 扫码弹窗 -->
@@ -1050,7 +1125,7 @@ html,body{height:100%;margin:0;padding:0;}
 // ═══ 推送通知 ═══
 var VAPID_PUBLIC = 'BDQ8XlX1wbta3RwiuYkzXSnVs474RzEVomOsI9Q0j4Rc9s6ow9T2bMWr2ShMsMtIs6i4zyrOe9j78VTWh9JMsXU';
 // 推送服务器地址（部署后改成你的真实URL）
-var PUSH_SERVER = localStorage.getItem('pushServer') || 'https://ghostchat-push.vercel.app';
+var PUSH_SERVER = 'https://ghostchat-push.vercel.app';
 
 function urlBase64ToUint8Array(b64){
   var pad = (4 - b64.length % 4) % 4;
@@ -1367,8 +1442,11 @@ window.onload=function(){
   var av=document.getElementById('avatarDisplay');if(av&&lg('myName'))av.textContent=lg('myName')[0].toUpperCase();
   var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
   var wn=document.getElementById('welcome-name');if(wn&&lg('myName'))wn.textContent='Welcome back, '+lg('myName')+'!';
-  // 初始化推送按钮状态
-  updatePushToggleUI(lg('pushEnabled')==='1');
+  // 推送默认开启
+  if(lg('pushEnabled')!=='0'){
+    setTimeout(function(){ subscribePush(); }, 2000);
+  }
+  updatePushToggleUI(lg('pushEnabled')!=='0');
   // 显示安装横幅（如果不在standalone模式）
   if(!window.navigator.standalone && !localStorage.getItem('installBannerDismissed')){
     setTimeout(showInstallBanner, 3000);
@@ -1532,7 +1610,8 @@ async function submitNewChat(){
   openChat(String(u.id),displayName[0].toUpperCase(),color,displayName);
 }
 
-function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();}
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();if(id==='dnote')initNotes();
+if(id==='dcalc'){var en=document.getElementById('cNum');if(en&&!CALC.buf)en.textContent='0';}}
 
 // ═══ 注册/登录 ═══
 function editNickname(){
@@ -3828,7 +3907,17 @@ var CALC={buf:'',op:'',prev:'',locked:false};
 
 function calcUpdate(){
   var el=document.getElementById('cNum');
-  if(el)el.textContent=CALC.buf||'';
+  if(!el)return;
+  var v=CALC.buf||'0';
+  el.textContent=v;
+  // 数字过长时自动缩小字体
+  var fs=80;
+  if(v.length>9)fs=52;
+  else if(v.length>6)fs=64;
+  el.style.fontSize=fs+'px';
+  // AC/C切换
+  var acBtn=document.getElementById('ckAC');
+  if(acBtn)acBtn.textContent=(CALC.buf?'C':'AC');
 }
 
 function cp(b){
@@ -4008,15 +4097,67 @@ async function loadWeather(lat,lon,name){
   G_wxCurrent={lat:lat,lon:lon,name:name};
   document.getElementById('wxCityName').textContent=name;
   document.getElementById('wxResults').style.display='none';
+  // 更新背景渐变
+  var bg=document.getElementById('wxBg');
+  var h=new Date().getHours();
+  if(bg){
+    if(h>=6&&h<12)bg.style.background='linear-gradient(180deg,#1e3c72 0%,#2a5298 50%,#f6a623 100%)';
+    else if(h>=12&&h<17)bg.style.background='linear-gradient(180deg,#0f2862 0%,#1565c0 50%,#42a5f5 100%)';
+    else if(h>=17&&h<20)bg.style.background='linear-gradient(180deg,#1a237e 0%,#e64a19 50%,#ff7043 100%)';
+    else bg.style.background='linear-gradient(180deg,#0d0d1a 0%,#1a237e 60%,#283593 100%)';
+  }
   try{
-    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+'&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto');
+    var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+      +'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,visibility'
+      +'&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min'
+      +'&timezone=auto&forecast_days=7';
+    var r=await fetch(url);
     var d=await r.json();
-    var cw=d.current_weather;
-    document.getElementById('wxTemp').textContent=Math.round(cw.temperature)+'°';
-    document.getElementById('wxIconBig').textContent=wxIcon(cw.weathercode);
-    document.getElementById('wxDescTxt').textContent=wxDesc(cw.weathercode);
-    if(d.daily&&d.daily.temperature_2m_max){
-      document.getElementById('wxHiLo').textContent='H: '+Math.round(d.daily.temperature_2m_max[0])+'°  L: '+Math.round(d.daily.temperature_2m_min[0])+'°';
+    var c=d.current;
+    document.getElementById('wxTemp').textContent=Math.round(c.temperature_2m)+'°';
+    document.getElementById('wxIconBig').textContent=wxIcon(c.weather_code);
+    document.getElementById('wxDescTxt').textContent=wxDesc(c.weather_code);
+    document.getElementById('wxHiLo').textContent='最高 '+Math.round(d.daily.temperature_2m_max[0])+'°  最低 '+Math.round(d.daily.temperature_2m_min[0])+'°';
+    // 详情
+    var hum=document.getElementById('wxHumidity');if(hum)hum.textContent=c.relative_humidity_2m+'%';
+    var wind=document.getElementById('wxWind');if(wind)wind.textContent=Math.round(c.wind_speed_10m)+' km/h';
+    var vis=document.getElementById('wxVis');if(vis)vis.textContent=Math.round((c.visibility||10000)/1000)+' km';
+    var feels=document.getElementById('wxFeels');if(feels)feels.textContent=Math.round(c.apparent_temperature)+'°';
+    // 24小时预报
+    var hourlyBox=document.getElementById('wxHourly');
+    if(hourlyBox&&d.hourly){
+      var nowIdx=0;
+      var nowStr=new Date().toISOString().slice(0,13);
+      d.hourly.time.forEach(function(t,i){if(t.slice(0,13)===nowStr)nowIdx=i;});
+      var hrs=[];
+      for(var i=nowIdx;i<Math.min(nowIdx+24,d.hourly.time.length);i++){
+        var hh=new Date(d.hourly.time[i]).getHours();
+        hrs.push('<div style="display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.1);border-radius:14px;padding:10px 14px;flex-shrink:0;">'
+          +'<div style="font-size:12px;color:rgba(255,255,255,.6);">'+(i===nowIdx?'现在':hh+'时')+'</div>'
+          +'<div style="font-size:22px;">'+wxIcon(d.hourly.weather_code[i])+'</div>'
+          +'<div style="font-size:14px;color:#fff;font-weight:500;">'+Math.round(d.hourly.temperature_2m[i])+'°</div>'
+          +'</div>');
+      }
+      hourlyBox.innerHTML=hrs.join('');
+    }
+    // 7天预报
+    var weekBox=document.getElementById('wxWeekly');
+    if(weekBox&&d.daily){
+      var days=['日','一','二','三','四','五','六'];
+      weekBox.innerHTML=d.daily.time.map(function(t,i){
+        var day=new Date(t);
+        var label=i===0?'今天':(i===1?'明天':'周'+days[day.getDay()]);
+        return '<div style="display:flex;align-items:center;gap:10px;">'
+          +'<div style="font-size:14px;color:rgba(255,255,255,.7);width:44px;">'+label+'</div>'
+          +'<div style="font-size:20px;">'+wxIcon(d.daily.weather_code[i])+'</div>'
+          +'<div style="flex:1;"></div>'
+          +'<div style="font-size:14px;color:rgba(255,255,255,.5);">'+Math.round(d.daily.temperature_2m_min[i])+'°</div>'
+          +'<div style="background:rgba(255,255,255,.15);border-radius:4px;height:4px;width:60px;margin:0 8px;overflow:hidden;">'
+          +'<div style="height:100%;background:rgba(255,255,255,.7);width:'+Math.round((d.daily.temperature_2m_max[i]-d.daily.temperature_2m_min[i])/30*100)+'%;"></div>'
+          +'</div>'
+          +'<div style="font-size:14px;color:#fff;font-weight:500;">'+Math.round(d.daily.temperature_2m_max[i])+'°</div>'
+          +'</div>';
+      }).join('');
     }
   }catch(e){
     document.getElementById('wxDescTxt').textContent='无法获取天气，请检查网络';
@@ -4024,7 +4165,18 @@ async function loadWeather(lat,lon,name){
   var cities=getWxCities();
   var exists=cities.some(function(c){return Math.abs(c.lat-lat)<0.01&&Math.abs(c.lon-lon)<0.01;});
   var addBtn=document.getElementById('wxAddBtn');
-  if(addBtn)addBtn.style.display=exists?'none':'inline-block';
+  if(addBtn)addBtn.style.display=exists?'none':'block';
+}
+// GPS定位天气
+async function wxGetLocation(){
+  if(!navigator.geolocation){return;}
+  navigator.geolocation.getCurrentPosition(async function(pos){
+    var lat=pos.coords.latitude,lon=pos.coords.longitude;
+    try{
+      var r=await fetch('https://geocoding-api.open-meteo.com/v1/search?name=&latitude='+lat+'&longitude='+lon+'&count=1');
+    }catch(e){}
+    loadWeather(lat,lon,'当前位置');
+  });
 }
 function addCurrentCity(){
   if(!G_wxCurrent)return;
@@ -4067,6 +4219,87 @@ async function weatherSearchSubmit(){
   }catch(e){
     alert('搜索失败，请检查网络');
   }
+}
+
+
+// ═══ 备忘录 ═══
+var NOTE_KEY='ghostnotes';
+var _noteIdx=-1;
+function getNotes(){try{return JSON.parse(lg(NOTE_KEY)||'[]');}catch(e){return [];}}
+function saveNotes(arr){ls(NOTE_KEY,JSON.stringify(arr));}
+function initNotes(){
+  var notes=getNotes();
+  if(notes.length===0){
+    notes=[
+      {id:1,title:'Shopping list',body:'Milk\nEggs\nBread\nApples',date:new Date().toISOString()},
+      {id:2,title:'Meeting notes',body:'Monday 10am\nRoom B\nDiscuss Q3 targets',date:new Date().toISOString()},
+      {id:3,title:'Travel plans',body:'Book flights\nHotel confirmation\nPacking list',date:new Date().toISOString()}
+    ];
+    saveNotes(notes);
+  }
+  renderNotes(notes);
+}
+function renderNotes(notes){
+  var box=document.getElementById('noteList');
+  if(!box)return;
+  if(notes.length===0){box.innerHTML='<div style="text-align:center;padding:60px 0;color:#8e8e93;font-size:15px;">暂无备忘录</div>';return;}
+  var colors=['#ffd60a','#30d158','#0a84ff','#ff375f','#bf5af2','#ff9f0a'];
+  box.innerHTML=notes.map(function(n,i){
+    var d=new Date(n.date);
+    var dateStr=d.getMonth()+1+'月'+d.getDate()+'日';
+    var preview=n.body.replace(/\n/g,' ').slice(0,40);
+    return '<div onclick="noteOpen('+i+')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:2px;cursor:pointer;display:flex;align-items:center;gap:12px;">'
+      +'<div style="width:4px;height:40px;border-radius:2px;background:'+colors[i%colors.length]+';flex-shrink:0;"></div>'
+      +'<div style="flex:1;overflow:hidden;">'
+      +'<div style="font-size:16px;font-weight:600;color:#000;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(n.title||'无标题')+'</div>'
+      +'<div style="font-size:13px;color:#8e8e93;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span style="color:#000;">'+dateStr+'</span>  '+esc(preview)+'</div>'
+      +'</div>'
+      +'<div style="color:#c7c7cc;font-size:16px;">›</div>'
+      +'</div>';
+  }).join('');
+}
+function noteFilter(q){
+  var notes=getNotes();
+  if(!q){renderNotes(notes);return;}
+  renderNotes(notes.filter(function(n){return (n.title+n.body).toLowerCase().includes(q.toLowerCase());}));
+}
+function noteOpen(i){
+  _noteIdx=i;
+  var notes=getNotes();
+  var n=notes[i]||{title:'',body:'',date:new Date().toISOString()};
+  document.getElementById('noteTitleInp').value=n.title||'';
+  document.getElementById('noteBodyInp').value=n.body||'';
+  var d=new Date(n.date);
+  document.getElementById('noteDateLabel').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日 '+d.getHours()+':'+('0'+d.getMinutes()).slice(-2);
+  document.getElementById('noteEditor').style.display='flex';
+}
+function noteNew(){
+  _noteIdx=-1;
+  document.getElementById('noteTitleInp').value='';
+  document.getElementById('noteBodyInp').value='';
+  document.getElementById('noteDateLabel').textContent='';
+  document.getElementById('noteEditor').style.display='flex';
+  setTimeout(function(){document.getElementById('noteTitleInp').focus();},100);
+}
+function noteSave(){
+  var notes=getNotes();
+  var title=document.getElementById('noteTitleInp').value.trim();
+  var body=document.getElementById('noteBodyInp').value;
+  if(!title&&!body){noteDelete();return;}
+  var entry={title:title,body:body,date:new Date().toISOString()};
+  if(_noteIdx>=0){notes[_noteIdx]=entry;}else{notes.unshift(entry);}
+  saveNotes(notes);
+  renderNotes(notes);
+  document.getElementById('noteEditor').style.display='none';
+}
+function noteDelete(){
+  if(_noteIdx>=0){
+    var notes=getNotes();
+    notes.splice(_noteIdx,1);
+    saveNotes(notes);
+    renderNotes(notes);
+  }
+  document.getElementById('noteEditor').style.display='none';
 }
 
 // ═══ 摇一摇 ═══
