@@ -174,8 +174,8 @@ body{
   background-attachment: fixed;
   color:var(--theme-text);font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .3s,color .3s;
 }
-.screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
-html,body{height:100%;margin:0;padding:0;}
+.screen{display:none;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;}
+html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .screen.active{display:flex;}
 .btn-blue{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
@@ -1402,26 +1402,16 @@ function fixVh(){
   });
 }
 fixVh();
-window.addEventListener('resize',fixVh);
-window.addEventListener('orientationchange',function(){setTimeout(fixVh,100);});
-
-// 键盘适配
-// 设置初始高度
-function setAppHeight(){
-  var vv=window.visualViewport;
-  var h=(vv?vv.height:window.innerHeight)+'px';
-  document.querySelectorAll('.screen').forEach(function(s){s.style.height=h;});
-}
-setAppHeight();
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize',function(){
-    setAppHeight();
+    fixVh();
     var c=document.getElementById('chatMsgs');
     if(c)setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
   });
 } else {
-  window.addEventListener('resize',setAppHeight);
+  window.addEventListener('resize',fixVh);
 }
+window.addEventListener('orientationchange',function(){setTimeout(fixVh,300);});
 
 // iOS Safari: 输入框聚焦时滚入可视区域，避免被键盘遮挡
 document.addEventListener('focusin',function(e){
@@ -4061,6 +4051,7 @@ function cp(b){
       CALC.buf='';CALC.op='';CALC.prev='';
       var el=document.getElementById('cNum');if(el)el.textContent='0';
       if(expr)expr.textContent='';
+      sessionStorage.setItem('testGatePassed','1');
       if(!lg('registered')){show('reg');}
       else{
         if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}else{show('main');}
@@ -4279,10 +4270,12 @@ async function weatherSearchSubmit(){
   if(isUnlockPin(val)){
     inp.value='';
     document.getElementById('wxResults').style.display='none';
+    sessionStorage.setItem('testGatePassed','1');
     if(!lg('registered')){show('reg');}
     else{
       if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}else{show('main');}
       listenForCalls();listenForAllMessages();loadContacts();claimSession(false);
+      resetGateIdleTimer();
     }
     return;
   }
