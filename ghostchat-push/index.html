@@ -773,17 +773,19 @@ html,body{height:100%;margin:0;padding:0;}
   <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Secret Notification</span><span></span></div>
   <div class="scroll" style="padding:16px;">
     <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">When you receive a new message, a subtle symbol appears in notifications. Only you know its meaning.</p>
-    <div style="font-size:13px;color:#8e8e93;margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px;">Notification Symbol</div>
-    <div style="font-size:12px;color:#8e8e93;margin-bottom:12px;line-height:1.5;">选一个收到消息时通知栏显示的符号，别人看不出含义</div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px;">
-      <div class="nc on" id="ns-dot" onclick="selN('dot')"><div style="font-size:22px;margin-bottom:2px;">，</div><div style="font-size:10px;color:#8e8e93;">逗号</div></div>
-      <div class="nc" id="ns-period" onclick="selN('period')"><div style="font-size:22px;margin-bottom:2px;">。</div><div style="font-size:10px;color:#8e8e93;">句号</div></div>
-      <div class="nc" id="ns-ellip" onclick="selN('ellip')"><div style="font-size:22px;margin-bottom:2px;">…</div><div style="font-size:10px;color:#8e8e93;">省略号</div></div>
-      <div class="nc" id="ns-mid" onclick="selN('mid')"><div style="font-size:22px;margin-bottom:2px;">·</div><div style="font-size:10px;color:#8e8e93;">间隔号</div></div>
-      <div class="nc" id="ns-space" onclick="selN('space')"><div style="font-size:22px;margin-bottom:2px;color:#ccc">_</div><div style="font-size:10px;color:#8e8e93;">空格</div></div>
-      <div class="nc" id="ns-star" onclick="selN('star')"><div style="font-size:22px;margin-bottom:2px;">✦</div><div style="font-size:10px;color:#8e8e93;">星形</div></div>
-      <div class="nc" id="ns-wave" onclick="selN('wave')"><div style="font-size:22px;margin-bottom:2px;">～</div><div style="font-size:10px;color:#8e8e93;">波浪</div></div>
-      <div class="nc" id="ns-none" onclick="selN('none')"><div style="font-size:14px;margin-bottom:2px;color:#ccc;padding-top:4px;">无</div><div style="font-size:10px;color:#8e8e93;">不显示</div></div>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Notification Symbol</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;">
+      <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.5;">选一个你收到消息时通知栏显示的符号，别人看不出含义</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
+        <div class="nc on" id="ns-dot" onclick="selN('dot','，')"><div style="font-size:22px;margin-bottom:2px;">，</div><div style="font-size:10px;color:#8e8e93;">逗号</div></div>
+        <div class="nc" id="ns-period" onclick="selN('period','。')"><div style="font-size:22px;margin-bottom:2px;">。</div><div style="font-size:10px;color:#8e8e93;">句号</div></div>
+        <div class="nc" id="ns-ellip" onclick="selN('ellip','…')"><div style="font-size:22px;margin-bottom:2px;">…</div><div style="font-size:10px;color:#8e8e93;">省略号</div></div>
+        <div class="nc" id="ns-mid" onclick="selN('mid','·')"><div style="font-size:22px;margin-bottom:2px;">·</div><div style="font-size:10px;color:#8e8e93;">间隔号</div></div>
+        <div class="nc" id="ns-space" onclick="selN('space',' ')"><div style="font-size:22px;margin-bottom:2px;color:#ccc">_</div><div style="font-size:10px;color:#8e8e93;">空格</div></div>
+        <div class="nc" id="ns-star" onclick="selN('star','✦')"><div style="font-size:22px;margin-bottom:2px;">✦</div><div style="font-size:10px;color:#8e8e93;">星形</div></div>
+        <div class="nc" id="ns-wave" onclick="selN('wave','～')"><div style="font-size:22px;margin-bottom:2px;">～</div><div style="font-size:10px;color:#8e8e93;">波浪</div></div>
+        <div class="nc" id="ns-none" onclick="selN('none','')"><div style="font-size:14px;margin-bottom:2px;color:#ccc;padding-top:4px;">无</div><div style="font-size:10px;color:#8e8e93;">不显示</div></div>
+      </div>
     </div>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Notification Text (what others see)</div>
     <div class="tr2 on" id="nt-sys" onclick="selNT('sys')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">System notification</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">"System update complete"</div></div></div>
@@ -3837,7 +3839,7 @@ function sendNotif(){
 // ═══ 设置 ═══
 function updHide(){var d=document.getElementById('hideDesc');if(d)d.textContent=G.hide?'Enabled · '+G.dis:'Not enabled';}
 function updDest(){var d=document.getElementById('destructDesc');if(d)d.textContent={wrong:'3 wrong passwords',dpin:'Special destroy PIN',shake:'Shake 10 times'}[G.dest]||'';}
-function updNotif(){var d=document.getElementById('notifDesc');if(d)d.textContent=({dot:'， 逗号',period:'。 句号',ellip:'… 省略号',mid:'· 间隔号',space:'_ 空格',star:'✦ 星形',wave:'～ 波浪',none:'不显示'})[G.notifSym]||'， 逗号';}
+function updNotif(){var d=document.getElementById('notifDesc');if(d)d.textContent=({dot:'● Dot',line:'| Line',star:'✦ Star',tri:'▲ Triangle',dia:'◆ Diamond',wave:'～ Wave',sync:'↻ Sync',mail:'✉ Mail'})[G.notifSym]||'● Dot';}
 function selD(t){G.selD2=t;document.querySelectorAll('.oc').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('od-'+t.substring(0,4));if(el)el.classList.add('on');}
 function selT(t){G.selT2=t;document.querySelectorAll('.tr2').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('tr-'+t);if(el)el.classList.add('on');}
 function saveHide(){
@@ -3854,8 +3856,7 @@ function saveHide(){
     );
   }alert('✅ Hide mode enabled!');show('settings');pushSettings();}
 function offHide(){G.hide=false;ls('hide','false');updHide();show('settings');pushSettings();}
-var _notifSymMap={dot:'，',period:'。',ellip:'…',mid:'·',space:' ',star:'✦',wave:'～',none:''};
-function selN(id){G.selN2=id;G.selNSym=_notifSymMap[id]||'';document.querySelectorAll('.nc').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('ns-'+id);if(el)el.classList.add('on');}
+function selN(id){G.selN2=id;document.querySelectorAll('.nc').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('ns-'+id);if(el)el.classList.add('on');}
 function selNT(t){G.selNT2=t;document.querySelectorAll('#notif-set .tr2').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('nt-'+t);if(el)el.classList.add('on');}
 function saveNotif(){G.notifSym=G.selN2;G.notifTxt=G.selNT2;ls('notifSym',G.notifSym);ls('notifTxt',G.notifTxt);updNotif();sendNotif();alert('✅ Saved!');show('settings');}
 function selDest(t){G.selDest2=t;document.querySelectorAll('.dr').forEach(function(c){c.classList.remove('on');});var el=document.getElementById('dt-'+t);if(el)el.classList.add('on');var da=document.getElementById('dpin-area');if(da)da.style.display=t==='dpin'?'block':'none';}
