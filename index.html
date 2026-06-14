@@ -250,7 +250,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:var(--theme-tab-active);}
 .tab svg{width:24px;height:24px;}
-.scroll{flex:1;overflow-y:auto;background:transparent;min-height:0;-webkit-overflow-scrolling:touch;}
+.scroll{flex:1;overflow-y:auto;background:transparent;;min-height:0;-webkit-overflow-scrolling:touch;}
 .card{background:transparent;margin:0 8px;overflow:visible;}
 .row{display:flex;align-items:center;padding:14px 16px;cursor:pointer;gap:12px;background:var(--theme-row-bg);border-radius:16px;margin:6px 8px;}
 .row:last-child{border-bottom:none;}
@@ -907,6 +907,18 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 <!-- 隐藏模式设置 -->
 <div id="hide-set" class="screen">
   <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Hide Mode</span><span></span></div>
+  <div style="background:var(--theme-field-bg);border-radius:14px;margin:12px 16px 0;padding:14px 16px;border:0.5px solid var(--theme-field-border);">
+    <div style="font-size:13px;font-weight:600;color:var(--theme-text);margin-bottom:10px;">🏠 桌面图标名称</div>
+    <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;">添加到桌面时显示的名称（重新添加才生效）</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+      <button onclick="setDesktopName('天气')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🌤 天气</button>
+      <button onclick="setDesktopName('时钟')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🕐 时钟</button>
+      <button onclick="setDesktopName('笔记')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">📝 笔记</button>
+      <button onclick="setDesktopName('工具')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🔧 工具</button>
+      <button onclick="setDesktopName('计算器')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🔢 计算器</button>
+    </div>
+    <div style="font-size:12px;color:#8e8e93;">当前：<span id="_curDesktopName" style="color:var(--theme-link);font-weight:600;">天气</span></div>
+  </div>
   <div class="scroll" style="padding:16px;">
     <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">App will completely disguise as another app. Only you know how to unlock it.</p>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Disguise Shell</div>
@@ -1514,6 +1526,7 @@ document.addEventListener('visibilitychange',function(){
   var _cur=document.querySelector('.screen.active');
   var _cid=_cur?_cur.id:'';
   if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
+  // 切App回来只触发锁屏，不触发密码门（密码门只在退出登录后重新打开才出现）
   if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
     triggerLock();
   }
@@ -1524,6 +1537,8 @@ window.addEventListener('pagehide',function(){
 
 window.onload=function(){
   try{applyI18n();var rls=document.getElementById('regLangSelect');if(rls)rls.value=curLang;}catch(e){console.log('i18n err',e);}
+  // 恢复桌面图标名称
+  try{var _dn=lg('desktopName')||'天气';var _dm2=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(_dm2)_dm2.setAttribute('content',_dn);var _dt=document.querySelector('title');if(_dt)_dt.textContent=_dn;var _del=document.getElementById('_curDesktopName');if(_del)_del.textContent=_dn;}catch(e){}
   try{
     if(lg('registered')){
       var savedName=lg('myName')||'';
@@ -1600,14 +1615,18 @@ window.onload=function(){
     setTimeout(showInstallBanner, 3000);
   }
   if(!lg('registered')){
+    // 未登录（含退出登录后）→ 登录页
     show('reg');
   }else{
     pullSettings().then(function(){
-      if(G.hide && sessionStorage.getItem('testGatePassed')!=='1'){
+      var passed = sessionStorage.getItem('testGatePassed')==='1';
+      if(G.hide && !passed){
+        // 已登录+开了隐身+本次会话未过密码门 → 先显示隐身界面（密码门）
         show('testgate');
         var gp=document.getElementById('gatePinInput');
         if(gp){gp.value='';setTimeout(function(){gp.focus();},200);}
       }else{
+        // 已登录+非隐身 或 已过密码门 → 直接进主界面
         if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
           show('applock');
           setTimeout(function(){var lp=document.getElementById('lockPinInput');if(lp)lp.focus();},300);
@@ -1910,10 +1929,8 @@ async function claimSession(force){
   if(!token||force){
     token=makeSessionToken();
     ls('sessionToken',token);
-    // 异步写入，不阻塞登录流程
     _sb.from('users').update({session_token:token}).eq('id',parseInt(myId)||myId).then(function(){});
   }
-  // 不在每次启动时查 session_token（省一次 DB 查询）
   startSessionWatch();
 }
 function startSessionWatch(){
@@ -1956,9 +1973,9 @@ var _settingsPulled=false;
 var _lastPullSettings=0;
 async function pullSettings(){
   if(!lg('registered')||!myId){_settingsPulled=true;return;}
-  var _now=Date.now();
-  if(_settingsPulled&&_now-_lastPullSettings<60000&&_lastPullSettings>0)return;
-  _lastPullSettings=_now;
+  var _pnow=Date.now();
+  if(_settingsPulled&&_pnow-_lastPullSettings<60000&&_lastPullSettings>0)return;
+  _lastPullSettings=_pnow;
   try{
     var r=await _sb.from('users').select('settings').eq('id',parseInt(myId)||myId).maybeSingle();
     var s=r.data&&r.data.settings;
@@ -1988,7 +2005,7 @@ async function doLogin(){
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
     await pullSettings();
     sessionStorage.setItem('testGatePassed','1');
-    show('main');
+    show('main');  // 登录成功直接进消息页，不走隐身界面
     listenForCalls();listenForAllMessages();loadContacts();claimSession(true);return;
   }
   // 数据库验证用户存在
@@ -2003,7 +2020,8 @@ async function doLogin(){
   G.pin=pin;
   ls('registered','true');
   await pullSettings();
-  if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
+  sessionStorage.setItem('testGatePassed','1');
+  show('main');  // 登录成功直接进消息页
   listenForCalls();listenForAllMessages();loadContacts();
   claimSession(true);
 }
@@ -2335,7 +2353,7 @@ function showTypingIndicator(){
   },3000);
 }
 
-// 定期兜底刷新（降频：实时推送已覆盖，这里只做兜底）
+// 兜底刷新（降频，实时推送已覆盖大部分场景）
 setInterval(function(){
   if(!lg('registered'))return;
   var chatEl=document.getElementById('chat');
@@ -2343,14 +2361,14 @@ setInterval(function(){
     syncRoomMessages(G.chat);
   }
 },30000);
-// 联系人列表单独低频刷新（60秒，避免每5秒3次DB查询）
 setInterval(function(){
   if(!lg('registered'))return;
   var mainEl=document.getElementById('main');
   if(mainEl&&mainEl.classList.contains('active')){
+    _lastContactsLoad=0; // 强制刷新
     loadContacts();
   }
-},60000);
+},120000);
 
 async function joinRoom(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
@@ -2941,8 +2959,7 @@ function listenForAllMessages(){
         if(hset.indexOf(senderId)>=0){
           setHiddenContacts(hset.filter(function(x){return x!==senderId;}));
         }
-        // 只更新单行预览，不重新全量loadContacts
-        _lastContactsLoad=0; // 下次进列表会刷新
+        _lastContactsLoad=0;
         sendNotif();
       }
       // 未读提醒：只要不在当前聊天界面就提醒，与already无关
@@ -3151,11 +3168,19 @@ function updateLastPreview(cid,content,type,highlight,readState){
   if(prefixEl)prefixEl.innerHTML='';
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+var _friendsCache=null;
+var _friendsCacheTime=0;
 async function loadFriendsList(){
   var list=document.getElementById('friendsList');
   if(!list||!myId)return;
-  list.innerHTML='<div style="padding:16px;color:#8e8e93;text-align:center;">加载中...</div>';
   var mid=String(myId);
+  var now=Date.now();
+  // 60秒缓存，避免每次点通讯录都查DB
+  if(_friendsCache&&now-_friendsCacheTime<60000){
+    renderFriendsList(_friendsCache);return;
+  }
+  list.innerHTML='<div style="padding:16px;color:#8e8e93;text-align:center;">加载中...</div>';
+  // 并发查询 friends + users
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   if(fr.error||!fr.data||fr.data.length===0){
     list.innerHTML='<div style="padding:24px;color:#8e8e93;text-align:center;">暂无联系人，可以点消息页的➕按钮添加</div>';
@@ -3166,13 +3191,25 @@ async function loadFriendsList(){
   var userMap={};
   var avatarMap2={};
   if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;if(u.avatar_url)avatarMap2[String(u.id)]=u.avatar_url;});
+  // 渲染已移至 renderFriendsList
+
+  _friendsCache={fr:fr.data,userMap:userMap,avatarMap2:avatarMap2};
+  _friendsCacheTime=now;
+  renderFriendsList(_friendsCache);
+}
+function renderFriendsList(cache){
+  var list=document.getElementById('friendsList');
+  if(!list)return;
+  var mid=String(myId);
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
   var blocked=getBlockedContacts();
-  var sorted=fr.data.slice().sort(function(a,b){
+  var sorted=cache.fr.slice().sort(function(a,b){
     var ab=blocked.indexOf(String(a.friend_id))>=0?1:0;
     var bb=blocked.indexOf(String(b.friend_id))>=0?1:0;
     return ab-bb;
   });
+  var userMap=cache.userMap||{};
+  var avatarMap2=cache.avatarMap2||{};
   list.innerHTML='';
   sorted.forEach(function(f){
     var cid=String(f.friend_id);
@@ -3216,6 +3253,7 @@ async function loadFriendsList(){
 }
 
 async function deleteFriendEntry(cid){
+  _friendsCache=null;
   if(!confirm('确定要从通讯录中删除这个联系人吗？'))return;
   var mid=String(myId);
   await _sb.from('friends').delete().eq('user_id',mid).eq('friend_id',String(cid));
@@ -3437,10 +3475,9 @@ var _lastContactsLoad=0;
 async function loadContacts(){
   if(!myId)return;
   if(_loadingContacts)return;
-  // 60秒内不重复加载（实时推送会触发单条更新，不需要全量刷新）
-  var now=Date.now();
-  if(now-_lastContactsLoad<60000&&_lastContactsLoad>0){return;}
-  _lastContactsLoad=now;
+  var _now=Date.now();
+  if(_now-_lastContactsLoad<30000&&_lastContactsLoad>0)return; // 30秒缓存
+  _lastContactsLoad=_now;
   _loadingContacts=true;
   setTimeout(function(){_loadingContacts=false;},3000);
   var list=document.getElementById('chatList');
@@ -3561,6 +3598,7 @@ async function setRemark(){
 }
 
 async function saveFriend(friendId,nickname){
+  _friendsCache=null; // 清除缓存
   if(!myId||!friendId)return;
   var mid=String(myId);
   var fid=String(friendId);
@@ -3989,13 +4027,15 @@ function clearUnread(senderId){
 }
 
 function sendNotif(){
-  var symMap={dot:'●',line:'▏',star:'✦',tri:'▲',dia:'◆',wave:'∿',sync:'⟳',mail:'·'};
-  var sym=symMap[G.notifSym]||'●';
+  // 在右上角显示与Wi-Fi/主题色相同的小符号（跟设置里选的一致），3秒消失
+  // 符号映射和设置页 selN 保持一致
+  var symMap={dot:'，',period:'。',ellip:'…',mid:'·',space:' ',star:'✦',tri:'▲',dia:'◆',wave:'〜',line:'|'};
+  var sym=symMap[lg('notifSym')||G.notifSym]||'，';
   var dot=document.getElementById('_gc_dot');
   if(!dot){
     dot=document.createElement('span');
     dot.id='_gc_dot';
-    dot.style.cssText='position:fixed;top:14px;right:16px;z-index:9999;font-size:11px;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity .3s;pointer-events:none;';
+    dot.style.cssText='position:fixed;top:max(12px,env(safe-area-inset-top,12px));right:16px;z-index:9999;font-size:10px;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity .3s ease;pointer-events:none;line-height:1;';
     document.body.appendChild(dot);
   }
   dot.textContent=sym;
