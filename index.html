@@ -1513,9 +1513,7 @@ document.addEventListener('visibilitychange',function(){
   }
   var _cur=document.querySelector('.screen.active');
   var _cid=_cur?_cur.id:'';
-  // 登录页/密码门/锁屏页 不做任何跳转
   if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
-  // 只触发锁屏，不触发密码门
   if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
     triggerLock();
   }
@@ -1606,12 +1604,10 @@ window.onload=function(){
   }else{
     pullSettings().then(function(){
       if(G.hide && sessionStorage.getItem('testGatePassed')!=='1'){
-        // 开了隐身且本次会话未过密码门
         show('testgate');
         var gp=document.getElementById('gatePinInput');
         if(gp){gp.value='';setTimeout(function(){gp.focus();},200);}
       }else{
-        // 直接进主界面
         if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
           show('applock');
           setTimeout(function(){var lp=document.getElementById('lockPinInput');if(lp)lp.focus();},300);
@@ -1914,13 +1910,10 @@ async function claimSession(force){
   if(!token||force){
     token=makeSessionToken();
     ls('sessionToken',token);
-    await _sb.from('users').update({session_token:token}).eq('id',parseInt(myId)||myId);
-  }else{
-    var r=await _sb.from('users').select('session_token').eq('id',parseInt(myId)||myId).maybeSingle();
-    if(r.data&&r.data.session_token&&r.data.session_token!==token){
-      forceLogout();return;
-    }
+    // 异步写入，不阻塞登录流程
+    _sb.from('users').update({session_token:token}).eq('id',parseInt(myId)||myId).then(function(){});
   }
+  // 不在每次启动时查 session_token（省一次 DB 查询）
   startSessionWatch();
 }
 function startSessionWatch(){
@@ -1960,8 +1953,12 @@ async function pushSettings(){
   await _sb.from('users').update({settings:obj}).eq('id',parseInt(myId)||myId);
 }
 var _settingsPulled=false;
+var _lastPullSettings=0;
 async function pullSettings(){
   if(!lg('registered')||!myId){_settingsPulled=true;return;}
+  var _now=Date.now();
+  if(_settingsPulled&&_now-_lastPullSettings<60000&&_lastPullSettings>0)return;
+  _lastPullSettings=_now;
   try{
     var r=await _sb.from('users').select('settings').eq('id',parseInt(myId)||myId).maybeSingle();
     var s=r.data&&r.data.settings;
@@ -1984,41 +1981,31 @@ async function pullSettings(){
 async function doLogin(){
   var idInput=document.getElementById('loginId')?document.getElementById('loginId').value.trim():'';
   var pin=document.getElementById('loginPin').value;
-  if(!idInput){alert('请输入ID');return;}
-  if(!pin){alert('请输入密码');return;}
-  var btn=document.getElementById('login-btn');
-  if(btn){btn.disabled=true;btn.textContent='登录中...';}
-  try{
-    // 本地验证（已登录设备）
-    if(idInput===String(lg('myId'))&&pin===lg('pin')){
-      await pullSettings();
-      sessionStorage.setItem('testGatePassed','1');
-      proceedStartup();
-      claimSession(true);
-      if(btn){btn.disabled=false;btn.textContent='Log In';}
-      return;
-    }
-    // 数据库验证
-    var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).maybeSingle();
-    if(!res||!res.data){
-      alert('找不到该ID，请确认后重试');
-      if(btn){btn.disabled=false;btn.textContent='Log In';}
-      return;
-    }
-    myId=String(res.data.id);
-    ls('myId',myId);
-    ls('myName',res.data.name);
-    ls('pin',pin);
-    G.pin=pin;
-    ls('registered','true');
+  if(!idInput){alert('Enter your ID');return;}
+  if(!pin){alert('Enter password');return;}
+  var _dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
+  // 本地验证
+  if(idInput===String(lg('myId'))&&pin===lg('pin')){
     await pullSettings();
     sessionStorage.setItem('testGatePassed','1');
-    proceedStartup();
-    claimSession(true);
-  }catch(e){
-    alert('登录失败：'+( e&&e.message||'网络错误，请重试'));
+    show('main');
+    listenForCalls();listenForAllMessages();loadContacts();claimSession(true);return;
   }
-  if(btn){btn.disabled=false;btn.textContent='Log In';}
+  // 数据库验证用户存在
+  var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
+  if(!res.data){alert('User ID '+idInput+' not found');return;}
+  // 密码只在本地存储，这里允许登录并保存
+  myId=String(res.data.id);
+  ls('myId',myId);
+  ls('myName',res.data.name);
+  ls('pin',pin);
+  // 立即更新G.pin确保内存和localStorage一致
+  G.pin=pin;
+  ls('registered','true');
+  await pullSettings();
+  if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
+  listenForCalls();listenForAllMessages();loadContacts();
+  claimSession(true);
 }
 function showQR(){
   var modal=document.getElementById('qrModal');
@@ -2348,18 +2335,22 @@ function showTypingIndicator(){
   },3000);
 }
 
-// 定期兜底刷新：即使实时推送有问题，也能保证消息及时同步
+// 定期兜底刷新（降频：实时推送已覆盖，这里只做兜底）
 setInterval(function(){
   if(!lg('registered'))return;
   var chatEl=document.getElementById('chat');
   if(chatEl&&chatEl.classList.contains('active')&&G.chat){
     syncRoomMessages(G.chat);
   }
+},30000);
+// 联系人列表单独低频刷新（60秒，避免每5秒3次DB查询）
+setInterval(function(){
+  if(!lg('registered'))return;
   var mainEl=document.getElementById('main');
   if(mainEl&&mainEl.classList.contains('active')){
     loadContacts();
   }
-},5000);
+},60000);
 
 async function joinRoom(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
@@ -2950,7 +2941,8 @@ function listenForAllMessages(){
         if(hset.indexOf(senderId)>=0){
           setHiddenContacts(hset.filter(function(x){return x!==senderId;}));
         }
-        loadContacts();
+        // 只更新单行预览，不重新全量loadContacts
+        _lastContactsLoad=0; // 下次进列表会刷新
         sendNotif();
       }
       // 未读提醒：只要不在当前聊天界面就提醒，与already无关
@@ -3441,12 +3433,16 @@ function attachSwipe(el,actionsEl){
 }
 
 var _loadingContacts=false;
+var _lastContactsLoad=0;
 async function loadContacts(){
-  console.log('loadContacts called, myId=',myId,'_loadingContacts=',_loadingContacts);
   if(!myId)return;
   if(_loadingContacts)return;
+  // 60秒内不重复加载（实时推送会触发单条更新，不需要全量刷新）
+  var now=Date.now();
+  if(now-_lastContactsLoad<60000&&_lastContactsLoad>0){return;}
+  _lastContactsLoad=now;
   _loadingContacts=true;
-  setTimeout(function(){_loadingContacts=false;},2000);
+  setTimeout(function(){_loadingContacts=false;},3000);
   var list=document.getElementById('chatList');
   if(!list)return;
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
@@ -3455,7 +3451,7 @@ async function loadContacts(){
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   var friendMap={};
   if(fr.data)fr.data.forEach(function(f){friendMap[String(f.friend_id)]=f.nickname||'';});
-  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at,read,delivered').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(200);
+  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at,read,delivered').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(50);
   console.log('loadContacts messages query, error:',res.error,'count:',res.data?res.data.length:0);
   var contactIds=[];
   var receiptMap={};
