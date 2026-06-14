@@ -9,46 +9,115 @@
 :root{
   --theme-bg:#fdf2f8;
   --theme-bg2:#f3f0ff;
+  --theme-bg-solid:#fdf3f7;
+  --theme-dot:rgba(161,140,209,.10);
   --theme-accent1:#ff9a9e;
   --theme-accent2:#a18cd1;
   --theme-navbar:rgba(253,242,248,0.92);
   --theme-border:rgba(225,200,225,.35);
   --theme-bub-other:#fff;
   --theme-bub-other-text:#3a3a3c;
+  --theme-bub-mine-text:#fff;
+  --theme-bub-read1:#fdeef0;
+  --theme-bub-read2:#ece6f7;
+  --theme-bub-read-text:#9a8fae;
+  --theme-bub-read-border:#ecd9e2;
   --theme-field-border:rgba(225,200,225,.4);
+  --theme-field-bg:#fff;
+  --theme-text:#000;
+  --theme-link:#007aff;
+  --theme-tab-active:#a18cd1;
+  --theme-row-bg:rgba(255,154,158,.07);
+  --theme-ibar:rgba(253,242,248,0.95);
+  --theme-itxt-bg:#fff;
+  --theme-icon:#a18cd1;
+  --theme-ep-active:rgba(161,140,209,.15);
+  --theme-bub-shadow:rgba(161,140,209,.12);
   --theme-font-serif:-apple-system,sans-serif;
 }
+/* ═══ 主题皮肤 ═══ */
+body.theme-business{
+  --theme-bg:#f7f8fa;--theme-bg2:#eef0f3;--theme-bg-solid:#f4f5f7;--theme-dot:rgba(100,116,139,.06);
+  --theme-accent1:#64748b;--theme-accent2:#334155;--theme-navbar:rgba(247,248,250,0.92);--theme-border:rgba(100,116,139,.18);
+  --theme-bub-other:#fff;--theme-bub-other-text:#1e293b;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#eef1f5;--theme-bub-read2:#e4e8ee;--theme-bub-read-text:#94a3b8;--theme-bub-read-border:#dde3ea;
+  --theme-field-border:rgba(100,116,139,.25);--theme-field-bg:#fff;--theme-text:#0f172a;--theme-link:#2563eb;--theme-tab-active:#334155;
+  --theme-row-bg:rgba(100,116,139,.06);--theme-ibar:rgba(247,248,250,0.95);--theme-itxt-bg:#fff;--theme-icon:#475569;
+  --theme-ep-active:rgba(100,116,139,.12);--theme-bub-shadow:rgba(100,116,139,.10);
+}
+body.theme-dark{
+  --theme-bg:#16161d;--theme-bg2:#1c1c26;--theme-bg-solid:#0e0e12;--theme-dot:rgba(255,255,255,.04);
+  --theme-accent1:#7c5cff;--theme-accent2:#5b8cff;--theme-navbar:rgba(22,22,29,0.92);--theme-border:rgba(255,255,255,.08);
+  --theme-bub-other:#26262f;--theme-bub-other-text:#e7e7ec;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#2a2a35;--theme-bub-read2:#23232d;--theme-bub-read-text:#7a7a8c;--theme-bub-read-border:#33333e;
+  --theme-field-border:rgba(255,255,255,.12);--theme-field-bg:#1c1c26;--theme-text:#f1f1f4;--theme-link:#5b8cff;--theme-tab-active:#7c5cff;
+  --theme-row-bg:rgba(124,92,255,.08);--theme-ibar:rgba(22,22,29,0.95);--theme-itxt-bg:#23232d;--theme-icon:#9d8cff;
+  --theme-ep-active:rgba(124,92,255,.18);--theme-bub-shadow:rgba(0,0,0,.3);
+}
+body.theme-ocean{
+  --theme-bg:#eaf4fb;--theme-bg2:#e6eefc;--theme-bg-solid:#eef5fb;--theme-dot:rgba(59,130,246,.08);
+  --theme-accent1:#4facfe;--theme-accent2:#3b6fd6;--theme-navbar:rgba(234,244,251,0.92);--theme-border:rgba(59,130,246,.18);
+  --theme-bub-other:#fff;--theme-bub-other-text:#1e3a5f;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#e3f0fb;--theme-bub-read2:#dbe6f8;--theme-bub-read-text:#8aa6c4;--theme-bub-read-border:#cfe0f3;
+  --theme-field-border:rgba(59,130,246,.25);--theme-field-bg:#fff;--theme-text:#0f2942;--theme-link:#2b6cb0;--theme-tab-active:#3b6fd6;
+  --theme-row-bg:rgba(79,172,254,.08);--theme-ibar:rgba(234,244,251,0.95);--theme-itxt-bg:#fff;--theme-icon:#4a90d9;
+  --theme-ep-active:rgba(79,172,254,.15);--theme-bub-shadow:rgba(59,130,246,.12);
+}
+body.theme-forest{
+  --theme-bg:#f0f9f1;--theme-bg2:#e8f5ec;--theme-bg-solid:#f1f8f2;--theme-dot:rgba(74,150,90,.08);
+  --theme-accent1:#8bd3a0;--theme-accent2:#4f9d6e;--theme-navbar:rgba(240,249,241,0.92);--theme-border:rgba(74,150,90,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#27432f;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#e6f4e9;--theme-bub-read2:#dcefe1;--theme-bub-read-text:#9bbfa5;--theme-bub-read-border:#cfe6d5;
+  --theme-field-border:rgba(74,150,90,.25);--theme-field-bg:#fff;--theme-text:#1c2e21;--theme-link:#2f8f57;--theme-tab-active:#4f9d6e;
+  --theme-row-bg:rgba(139,211,160,.1);--theme-ibar:rgba(240,249,241,0.95);--theme-itxt-bg:#fff;--theme-icon:#4f9d6e;
+  --theme-ep-active:rgba(139,211,160,.18);--theme-bub-shadow:rgba(74,150,90,.12);
+}
+body.theme-neon{
+  --theme-bg:#0d0d1a;--theme-bg2:#14091f;--theme-bg-solid:#0a0a14;--theme-dot:rgba(0,255,224,.06);
+  --theme-accent1:#ff2bd6;--theme-accent2:#00e5ff;--theme-navbar:rgba(13,13,26,0.9);--theme-border:rgba(0,229,255,.2);
+  --theme-bub-other:#1a1a2e;--theme-bub-other-text:#e0e0ff;--theme-bub-mine-text:#06121a;
+  --theme-bub-read1:#221a33;--theme-bub-read2:#1a1a2e;--theme-bub-read-text:#7a6ea8;--theme-bub-read-border:#33264d;
+  --theme-field-border:rgba(0,229,255,.25);--theme-field-bg:#161626;--theme-text:#eef0ff;--theme-link:#00e5ff;--theme-tab-active:#ff2bd6;
+  --theme-row-bg:rgba(255,43,214,.08);--theme-ibar:rgba(13,13,26,0.92);--theme-itxt-bg:#161626;--theme-icon:#00e5ff;
+  --theme-ep-active:rgba(0,229,255,.15);--theme-bub-shadow:rgba(255,43,214,.25);
+}
+/* 外观/皮肤选择 */
+.theme-swatch{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 4px;border-radius:14px;border:2px solid transparent;transition:border-color .2s;}
+.theme-swatch.on{border-color:var(--theme-link);}
+.theme-preview{width:44px;height:44px;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.12);position:relative;}
+.theme-swatch.on .theme-preview::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.35);}
+.theme-swatch-name{font-size:12px;color:var(--theme-text);text-align:center;line-height:1.3;}
 
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px);}
 body{
-  background-color:#fdf3f7;
+  background-color:var(--theme-bg-solid);
   background-image:
-    radial-gradient(circle, rgba(161,140,209,.10) 1.4px, transparent 1.4px),
-    linear-gradient(160deg, #fdf2f8 0%, #f6f1fb 45%, #eef2ff 100%);
+    radial-gradient(circle, var(--theme-dot) 1.4px, transparent 1.4px),
+    linear-gradient(160deg, var(--theme-bg) 0%, var(--theme-bg2) 100%);
   background-size: 26px 26px, 100% 100%;
   background-attachment: fixed;
-  color:#000;font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;
+  color:var(--theme-text);font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .3s,color .3s;
 }
 .screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
 html,body{height:100%;margin:0;padding:0;}
 .screen.active{display:flex;}
-.btn-blue{background:linear-gradient(135deg,#ff9a9e,#a18cd1);border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
+.btn-blue{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
-.field{background:#fff;border:0.5px solid rgba(225,200,225,.4);border-radius:12px;padding:14px 16px;color:#000;font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
-.nav-bar{background:rgba(253,242,248,0.92);backdrop-filter:blur(20px);border-bottom:0.5px solid rgba(225,200,225,.35);flex-shrink:0;}
+.field{background:var(--theme-field-bg);border:0.5px solid var(--theme-field-border);border-radius:12px;padding:14px 16px;color:var(--theme-text);font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
+.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;}
 .nav-lg{padding:max(52px,calc(44px + var(--safe-top))) 20px 12px;}
 .nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
 .nav-sm{padding:max(48px,calc(env(safe-area-inset-top,20px) + 10px)) 16px 10px;display:flex;align-items:center;justify-content:space-between;}
 .nav-sm .t{font-size:17px;font-weight:600;}
-.nav-btn{color:#007aff;font-size:15px;cursor:pointer;padding:4px 8px;}
-.tabs{background:rgba(242,242,247,0.92);backdrop-filter:blur(20px);border-top:0.5px solid rgba(60,60,67,0.18);display:flex;flex-shrink:0;padding-bottom:var(--safe-bottom);}
+.nav-btn{color:var(--theme-link);font-size:15px;cursor:pointer;padding:4px 8px;}
+.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:var(--safe-bottom);}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
-.tab.on{color:#a18cd1;}
+.tab.on{color:var(--theme-tab-active);}
 .tab svg{width:24px;height:24px;}
 .scroll{flex:1;overflow-y:auto;background:transparent;}
 .card{background:transparent;margin:0 8px;overflow:visible;}
-.row{display:flex;align-items:center;padding:14px 16px;cursor:pointer;gap:12px;background:rgba(255,154,158,.07);border-radius:16px;margin:6px 8px;}
+.row{display:flex;align-items:center;padding:14px 16px;cursor:pointer;gap:12px;background:var(--theme-row-bg);border-radius:16px;margin:6px 8px;}
 .row:last-child{border-bottom:none;}
 .row:active{background:#e5e5ea;}
 .av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.06);}
@@ -57,13 +126,13 @@ html,body{height:100%;margin:0;padding:0;}
 .tog.on{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));}
 .td{width:27px;height:27px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .25s;box-shadow:0 2px 5px rgba(0,0,0,.25);}
 .tog.on .td{left:22px;}
-.cbg{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(160deg,#fdf2f8,#f3f0ff);}
+.cbg{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(160deg,var(--theme-bg),var(--theme-bg2));}
 .mr{display:flex;flex-direction:column;margin-bottom:2px;}
 .mr.s{align-items:flex-end;}.mr.r{align-items:flex-start;}
 .bub{max-width:72%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.45;word-break:break-word;position:relative;}
-.mr.s .bub{background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;border-bottom-right-radius:5px;font-weight:700;border:1px solid transparent;transition:background .6s,color .6s,font-weight .3s,border-color .6s;}
-.mr.s .bub.bub-read{background:linear-gradient(135deg,#fdeef0,#ece6f7);color:#9a8fae;font-weight:400;border:1px solid #ecd9e2;}
-.mr.r .bub{background:#fff;color:#3a3a3c;border-bottom-left-radius:5px;box-shadow:0 1px 4px rgba(161,140,209,.12);}
+.mr.s .bub{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:var(--theme-bub-mine-text);border-bottom-right-radius:5px;font-weight:700;border:1px solid transparent;transition:background .6s,color .6s,font-weight .3s,border-color .6s;}
+.mr.s .bub.bub-read{background:linear-gradient(135deg,var(--theme-bub-read1),var(--theme-bub-read2));color:var(--theme-bub-read-text);font-weight:400;border:1px solid var(--theme-bub-read-border);}
+.mr.r .bub{background:var(--theme-bub-other);color:var(--theme-bub-other-text);border-bottom-left-radius:5px;box-shadow:0 1px 4px var(--theme-bub-shadow);}
 .mt{font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;}
 .msg-tick{margin-left:4px;font-size:13px;display:inline-block;vertical-align:middle;}
 .msg-paw{display:inline-block;font-size:16px;vertical-align:middle;margin-left:6px;opacity:.85;}
@@ -72,18 +141,18 @@ html,body{height:100%;margin:0;padding:0;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
 @keyframes typingBounce{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-2px);}}
 .msg-img{max-width:220px;border-radius:16px;display:block;}
-.ibar{background:rgba(253,242,248,0.95);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);}
+.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
-.ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#a18cd1;flex-shrink:0;}
+.ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--theme-icon);flex-shrink:0;}
 .ibtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.itxt{flex:1;background:#fff;border:0.5px solid rgba(60,60,67,0.18);border-radius:18px;padding:8px 14px;color:#000;font-size:16px;outline:none;resize:none;max-height:100px;font-family:inherit;line-height:1.4;}
-.isend{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#ff9a9e,#a18cd1);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
-.xp{background:#fff;border-top:0.5px solid var(--theme-border);padding:16px;display:none;}
-.ep{background:#fff;border-top:0.5px solid var(--theme-border);padding:10px 12px;display:none;max-height:200px;overflow-y:auto;}
+.itxt{flex:1;background:var(--theme-itxt-bg);border:0.5px solid var(--theme-field-border);border-radius:18px;padding:8px 14px;color:var(--theme-text);font-size:16px;outline:none;resize:none;max-height:100px;font-family:inherit;line-height:1.4;}
+.isend{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.xp{background:var(--theme-field-bg);border-top:0.5px solid var(--theme-border);padding:16px;display:none;color:var(--theme-text);}
+.ep{background:var(--theme-field-bg);border-top:0.5px solid var(--theme-border);padding:10px 12px;display:none;max-height:200px;overflow-y:auto;}
 .ep.on{display:block;}
 .ep-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;}
 .ep-grid span{font-size:24px;text-align:center;cursor:pointer;padding:6px 0;border-radius:8px;line-height:1;}
-.ep-grid span:active{background:rgba(161,140,209,.15);}
+.ep-grid span:active{background:var(--theme-ep-active);}
 .xp.on{display:block;}
 .xg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 .xi{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
@@ -91,20 +160,20 @@ html,body{height:100%;margin:0;padding:0;}
 .xib{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;}
 .xil{font-size:11px;color:#3c3c43;}
 .og{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
-.oc{background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;}
-.oc.on{border-color:#007aff;background:#f0f7ff;}
-.nc{background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:border-color .2s;}
-.nc.on{border-color:#007aff;background:#f0f7ff;}
-.dr{background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;}
+.oc{background:var(--theme-field-bg);border:2px solid var(--theme-field-border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;color:var(--theme-text);}
+.oc.on{border-color:var(--theme-link);background:var(--theme-row-bg);}
+.nc{background:var(--theme-field-bg);border:2px solid var(--theme-field-border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:border-color .2s;color:var(--theme-text);}
+.nc.on{border-color:var(--theme-link);background:var(--theme-row-bg);}
+.dr{background:var(--theme-field-bg);border:2px solid var(--theme-field-border);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;color:var(--theme-text);}
 .dr.on{border-color:#ff3b30;}
-.tr2{background:#fff;border:2px solid rgba(60,60,67,0.18);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;}
-.tr2.on{border-color:#007aff;}
+.tr2{background:var(--theme-field-bg);border:2px solid var(--theme-field-border);border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .2s;color:var(--theme-text);}
+.tr2.on{border-color:var(--theme-link);}
 .pov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:flex-end;}
 .pov.on{display:flex;}
-.psh{background:#fff;border-radius:20px 20px 0 0;padding:20px 20px max(44px,calc(24px + var(--safe-bottom)));width:100%;}
+.psh{background:var(--theme-field-bg);color:var(--theme-text);border-radius:20px 20px 0 0;padding:20px 20px max(44px,calc(24px + var(--safe-bottom)));width:100%;}
 .ph{width:36px;height:4px;background:#e5e5ea;border-radius:2px;margin:0 auto 20px;}
 .pkb{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.pk{height:64px;border-radius:14px;background:#f2f2f7;border:none;font-size:28px;font-weight:300;cursor:pointer;font-family:inherit;}
+.pk{height:64px;border-radius:14px;background:var(--theme-row-bg);color:var(--theme-text);border:none;font-size:28px;font-weight:300;cursor:pointer;font-family:inherit;}
 .pk:active{background:#e5e5ea;}
 .rh{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.82);border-radius:16px;padding:20px 36px;text-align:center;display:none;z-index:200;}
 .rh.on{display:block;}
@@ -443,42 +512,42 @@ html,body{height:100%;margin:0;padding:0;}
     </div>
     <div class="card">
       <div class="row" onclick="editNickname()">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;">昵称</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="nickShow2">-</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="changePin()">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;">修改密码</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="setAppLockPin()">
-        <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">🐰</div>
+        <div class="si" style="background:var(--theme-row-bg);font-size:18px;">🐰</div>
         <div style="flex:1;"><div style="font-size:17px;">锁屏密码</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">空闲后/隐藏模式解锁都用这个</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="setTestGatePin()">
-        <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">🔐</div>
+        <div class="si" style="background:var(--theme-row-bg);font-size:18px;">🔐</div>
         <div style="flex:1;"><div style="font-size:17px;">访问密码</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">网站密码门，默认跟锁屏密码一致</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="setLockTimeout()">
-        <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">⏰</div>
+        <div class="si" style="background:var(--theme-row-bg);font-size:18px;">⏰</div>
         <div style="flex:1;"><div style="font-size:17px;">自动锁屏时间</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="lockTimeoutShow">-</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row">
-        <div class="si" style="background:rgba(255,154,158,.12);font-size:18px;">🔒</div>
+        <div class="si" style="background:var(--theme-row-bg);font-size:18px;">🔒</div>
         <div style="flex:1;"><div style="font-size:17px;">离开APP自动锁屏</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">切到其他软件或锁屏后，回来需要输入锁屏密码</div></div>
         <div class="tog" id="autoLockToggle" onclick="toggleAutoLockLeave()"><div class="td"></div></div>
       </div>
       <div class="row" onclick="showQR()">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="21" y2="14"/><line x1="14" y1="21" x2="21" y2="21"/><line x1="17.5" y1="14" x2="17.5" y2="21"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="21" y2="14"/><line x1="14" y1="21" x2="21" y2="21"/><line x1="17.5" y1="14" x2="17.5" y2="21"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;">我的二维码</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;">我的ID</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="idShow2">-</div></div>
       </div>
     </div>
@@ -550,35 +619,64 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Privacy & Security</div>
     <div class="card">
       <div class="row" onclick="show('hide-set')">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11a5 5 0 00-10 0"/><circle cx="12" cy="16" r="1"/><path d="M3 11h18l-1.5 8a2 2 0 01-2 1.7H6.5a2 2 0 01-2-1.7L3 11z"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11a5 5 0 00-10 0"/><circle cx="12" cy="16" r="1"/><path d="M3 11h18l-1.5 8a2 2 0 01-2 1.7H6.5a2 2 0 01-2-1.7L3 11z"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-hideMode">Hide Mode</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="hideDesc">Not enabled</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="show('notif-set')">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-secretNotif">Secret Notification</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="notifDesc">● Dot</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="show('dest-set')">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3l2 2M19 3l-2 2"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3l2 2M19 3l-2 2"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-destroyMethod">Destroy Method</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="destructDesc">3 wrong passwords</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row" onclick="panic()">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 21h20L12 2z"/><path d="M12 9v4"/><circle cx="12" cy="17" r="0.5" fill="#c47a72"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 21h20L12 2z"/><path d="M12 9v4"/><circle cx="12" cy="17" r="0.5" fill="#c47a72"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;" id="set-destroyNow">Destroy Now</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">Clear all records instantly</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
       <div class="row">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-e2e">End-to-End Encryption</div></div>
         <div class="tog on" onclick="this.classList.toggle('on')"><div class="td"></div></div>
+      </div>
+    </div>
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-appearance-hd">外观</div>
+    <div class="card">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:14px 10px;">
+        <div class="theme-swatch" data-theme="" onclick="pickTheme('')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#ff9a9e,#a18cd1);"></div>
+          <div class="theme-swatch-name" id="theme-name-default">默认粉紫</div>
+        </div>
+        <div class="theme-swatch" data-theme="business" onclick="pickTheme('business')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#64748b,#334155);"></div>
+          <div class="theme-swatch-name" id="theme-name-business">商务简约</div>
+        </div>
+        <div class="theme-swatch" data-theme="dark" onclick="pickTheme('dark')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#7c5cff,#5b8cff);"></div>
+          <div class="theme-swatch-name" id="theme-name-dark">深夜暗黑</div>
+        </div>
+        <div class="theme-swatch" data-theme="ocean" onclick="pickTheme('ocean')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#4facfe,#3b6fd6);"></div>
+          <div class="theme-swatch-name" id="theme-name-ocean">静谧蓝海</div>
+        </div>
+        <div class="theme-swatch" data-theme="forest" onclick="pickTheme('forest')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#8bd3a0,#4f9d6e);"></div>
+          <div class="theme-swatch-name" id="theme-name-forest">森系绿意</div>
+        </div>
+        <div class="theme-swatch" data-theme="neon" onclick="pickTheme('neon')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#ff2bd6,#00e5ff);"></div>
+          <div class="theme-swatch-name" id="theme-name-neon">赛博霓虹</div>
+        </div>
       </div>
     </div>
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-lang-hd">Language</div>
     <div class="card">
       <div class="row" onclick="show('lang-set')">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 010 18M12 3a13 13 0 000 18"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 010 18M12 3a13 13 0 000 18"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-lang">Language</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="curLangShow">English</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
@@ -586,7 +684,7 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-sub-hd">Subscription</div>
     <div class="card">
       <div class="row">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.5 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9.5 9 9 12 2"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.5 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9.5 9 9 12 2"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;" id="set-subscribe">Subscribe</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">$9.99/month · Unlock all features</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
@@ -594,7 +692,7 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-acct">Account</div>
     <div class="card">
       <div class="row" onclick="doLogout()">
-        <div class="si" style="background:rgba(255,154,158,.12);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="#c47a72" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
         <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;" id="set-logout">Logout</div></div>
       </div>
     </div>
@@ -681,7 +779,7 @@ html,body{height:100%;margin:0;padding:0;}
 <!-- 语言设置 -->
 <div id="lang-set" class="screen">
   <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Language</span><span></span></div>
-  <div class="scroll" id="langList" style="padding:8px 0;background:#f2f2f7;"></div>
+  <div class="scroll" id="langList" style="padding:8px 0;background:var(--theme-bg2);"></div>
 </div>
 
 <!-- 伪装：天气 -->
@@ -857,6 +955,21 @@ html,body{height:100%;margin:0;padding:0;}
 // ═══ 工具函数 ═══
 function lg(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function ls(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+// ═══ 主题皮肤 ═══
+var THEME_LIST=['','business','dark','ocean','forest','neon'];
+function applyTheme(name){
+  THEME_LIST.forEach(function(t){if(t)document.body.classList.remove('theme-'+t);});
+  if(name)document.body.classList.add('theme-'+name);
+  document.querySelectorAll('.theme-swatch').forEach(function(el){
+    el.classList.toggle('on', el.getAttribute('data-theme')===name);
+  });
+}
+function pickTheme(name){
+  ls('theme',name);
+  applyTheme(name);
+}
+applyTheme(lg('theme')||'');
 function gt(){var d=new Date();return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();}
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function makeRC(){var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';for(var i=0;i<12;i++){if(i>0&&i%4===0)s+='-';s+=c[Math.floor(Math.random()*c.length)];}return s;}
@@ -1673,8 +1786,8 @@ function buildLangList(){
 }
 function applyLang(){
   var L={
-    'en':{app:'GhostChat',tag:'Private · Encrypted · Untraceable',msg:'Messages',set:'Settings',nick:'Nickname',pwd:'Password (4-8 digits)',cpwd:'Confirm password',create:'Create Account',haveAcct:'Already have account?',newUser:'New user?',forgot:'Forgot password?',hideMode:'Hide Mode',notEnabled:'Not enabled',secretNotif:'Secret Notification',destroyMethod:'Destroy Method',e2e:'End-to-End Encryption',destroyNow:'Destroy Now',subscribe:'Subscribe',logout:'Logout',lang:'Language',privacy:'Privacy & Security',flashlight:'Flashlight',calculator:'Calculator',clock:'Clock',notes:'Notes',calling:'Calling...',mute:'Mute',end:'End',speaker:'Speaker',incoming:'Incoming call...',decline:'Decline',accept:'Accept',enterPwd:'Enter Password',cancel:'Cancel',release:'Release to send',enableHide:'Enable Hide Mode',disableHide:'Disable Hide Mode',save:'Save'},
-    'zh-CN':{app:'私聊',tag:'私密 · 加密 · 无痕',msg:'消息',set:'设置',nick:'昵称',pwd:'密码（4-8位）',cpwd:'确认密码',create:'创建账号',haveAcct:'已有账号？',newUser:'新用户？',forgot:'忘记密码？',hideMode:'隐藏模式',notEnabled:'未开启',secretNotif:'隐秘通知',destroyMethod:'销毁方式',e2e:'端对端加密',destroyNow:'立即销毁',subscribe:'订阅会员',logout:'退出登录',lang:'语言',privacy:'隐私与安全',flashlight:'手电筒',calculator:'计算器',clock:'时钟',notes:'备忘录',calling:'正在呼叫...',mute:'静音',end:'挂断',speaker:'扬声器',incoming:'来电...',decline:'拒接',accept:'接听',enterPwd:'输入密码',cancel:'取消',release:'松开发送',enableHide:'开启隐藏模式',disableHide:'关闭隐藏模式',save:'保存'},
+    'en':{app:'GhostChat',tag:'Private · Encrypted · Untraceable',msg:'Messages',set:'Settings',nick:'Nickname',pwd:'Password (4-8 digits)',cpwd:'Confirm password',create:'Create Account',haveAcct:'Already have account?',newUser:'New user?',forgot:'Forgot password?',hideMode:'Hide Mode',notEnabled:'Not enabled',secretNotif:'Secret Notification',destroyMethod:'Destroy Method',e2e:'End-to-End Encryption',destroyNow:'Destroy Now',subscribe:'Subscribe',logout:'Logout',lang:'Language',privacy:'Privacy & Security',flashlight:'Flashlight',calculator:'Calculator',clock:'Clock',notes:'Notes',calling:'Calling...',mute:'Mute',end:'End',speaker:'Speaker',incoming:'Incoming call...',decline:'Decline',accept:'Accept',enterPwd:'Enter Password',cancel:'Cancel',release:'Release to send',enableHide:'Enable Hide Mode',disableHide:'Disable Hide Mode',save:'Save',appearance:'Appearance',themeDefault:'Pink Dream',themeBusiness:'Business',themeDark:'Dark',themeOcean:'Ocean',themeForest:'Forest',themeNeon:'Neon'},
+    'zh-CN':{app:'私聊',tag:'私密 · 加密 · 无痕',msg:'消息',set:'设置',nick:'昵称',pwd:'密码（4-8位）',cpwd:'确认密码',create:'创建账号',haveAcct:'已有账号？',newUser:'新用户？',forgot:'忘记密码？',hideMode:'隐藏模式',notEnabled:'未开启',secretNotif:'隐秘通知',destroyMethod:'销毁方式',e2e:'端对端加密',destroyNow:'立即销毁',subscribe:'订阅会员',logout:'退出登录',lang:'语言',privacy:'隐私与安全',flashlight:'手电筒',calculator:'计算器',clock:'时钟',notes:'备忘录',calling:'正在呼叫...',mute:'静音',end:'挂断',speaker:'扬声器',incoming:'来电...',decline:'拒接',accept:'接听',enterPwd:'输入密码',cancel:'取消',release:'松开发送',enableHide:'开启隐藏模式',disableHide:'关闭隐藏模式',save:'保存',appearance:'外观',themeDefault:'默认粉紫',themeBusiness:'商务简约',themeDark:'深夜暗黑',themeOcean:'静谧蓝海',themeForest:'森系绿意',themeNeon:'赛博霓虹'},
     'zh-TW':{app:'私聊',tag:'私密 · 加密 · 無痕',msg:'訊息',set:'設定',nick:'暱稱',pwd:'密碼（4-8位）',cpwd:'確認密碼',create:'建立帳號',haveAcct:'已有帳號？',newUser:'新用戶？',forgot:'忘記密碼？',hideMode:'隱藏模式',notEnabled:'未開啟',secretNotif:'隱密通知',destroyMethod:'銷毀方式',e2e:'端對端加密',destroyNow:'立即銷毀',subscribe:'訂閱會員',logout:'登出',lang:'語言',privacy:'隱私與安全',flashlight:'手電筒',calculator:'計算機',clock:'時鐘',notes:'備忘錄',calling:'撥打中...',mute:'靜音',end:'掛斷',speaker:'擴音',incoming:'來電...',decline:'拒接',accept:'接聽',enterPwd:'輸入密碼',cancel:'取消',release:'放開傳送',enableHide:'開啟隱藏模式',disableHide:'關閉隱藏模式',save:'儲存'},
     'es':{app:'GhostChat',tag:'Privado · Cifrado · Sin rastro',msg:'Mensajes',set:'Ajustes',nick:'Apodo',pwd:'Contraseña (4-8 dígitos)',cpwd:'Confirmar contraseña',create:'Crear cuenta',haveAcct:'¿Ya tienes cuenta?',newUser:'¿Nuevo usuario?',forgot:'¿Olvidaste la contraseña?',hideMode:'Modo oculto',notEnabled:'No activado',secretNotif:'Notif. secreta',destroyMethod:'Destrucción',e2e:'Cifrado E2E',destroyNow:'Destruir ahora',subscribe:'Suscribirse',logout:'Cerrar sesión',lang:'Idioma',privacy:'Privacidad',flashlight:'Linterna',calculator:'Calculadora',clock:'Reloj',notes:'Notas',calling:'Llamando...',mute:'Silencio',end:'Colgar',speaker:'Altavoz',incoming:'Llamada entrante...',decline:'Rechazar',accept:'Aceptar',enterPwd:'Contraseña',cancel:'Cancelar',release:'Soltar para enviar',enableHide:'Activar modo oculto',disableHide:'Desactivar',save:'Guardar'},
     'fr':{app:'GhostChat',tag:'Privé · Chiffré · Sans trace',msg:'Messages',set:'Paramètres',nick:'Pseudo',pwd:'Mot de passe (4-8 chiffres)',cpwd:'Confirmer',create:'Créer un compte',haveAcct:'Déjà un compte?',newUser:'Nouvel utilisateur?',forgot:'Mot de passe oublié?',hideMode:'Mode caché',notEnabled:'Non activé',secretNotif:'Notif. secrète',destroyMethod:'Destruction',e2e:'Chiffrement E2E',destroyNow:'Détruire',subscribe:'Abonnement',logout:'Déconnexion',lang:'Langue',privacy:'Confidentialité',flashlight:'Lampe torche',calculator:'Calculatrice',clock:'Horloge',notes:'Notes',calling:'Appel en cours...',mute:'Muet',end:'Raccrocher',speaker:'Haut-parleur',incoming:'Appel entrant...',decline:'Refuser',accept:'Accepter',enterPwd:'Mot de passe',cancel:'Annuler',release:'Relâcher pour envoyer',enableHide:'Activer mode caché',disableHide:'Désactiver',save:'Enregistrer'},
@@ -1701,6 +1814,10 @@ function applyLang(){
   // 设置项
   T('set-hideMode','hideMode');T('set-secretNotif','secretNotif');
   T('set-destroyMethod','destroyMethod');T('set-e2e','e2e');
+  T('set-appearance-hd','appearance');
+  T('theme-name-default','themeDefault');T('theme-name-business','themeBusiness');
+  T('theme-name-dark','themeDark');T('theme-name-ocean','themeOcean');
+  T('theme-name-forest','themeForest');T('theme-name-neon','themeNeon');
   T('set-destroyNow','destroyNow');T('set-subscribe','subscribe');
   T('set-logout','logout');T('set-lang','lang');
   T('set-privacy-hd','privacy');
