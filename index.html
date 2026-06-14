@@ -1347,17 +1347,87 @@ function updatePushToggleUI(on){
 }
 
 // 发送消息时通知对方（只推服务器端，服务器负责推送）
+async // 天气通知文案库 - 让推送看起来完全是天气 App 的正常通知
+var _wxNotifCache=null;
+var _wxNotifCacheTime=0;
+
+async function _getWeatherNotifText(){
+  var now=Date.now();
+  if(_wxNotifCache&&now-_wxNotifCacheTime<3600000)return _wxNotifCache;
+  try{
+    // 用已保存的城市坐标，默认迪拜
+    var cities=[];try{cities=JSON.parse(localStorage.getItem('wxCities')||'[]');}catch(e){}
+    var city=cities[0]||{lat:25.2048,lon:55.2708,name:'Dubai'};
+    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+city.lat+'&longitude='+city.lon+'&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=1');
+    var d=await r.json();
+    var c=d.current;
+    var daily=d.daily;
+    var temp=Math.round(c.temperature_2m);
+    var feels=Math.round(c.apparent_temperature);
+    var code=c.weather_code;
+    var maxT=Math.round(daily.temperature_2m_max[0]);
+    var minT=Math.round(daily.temperature_2m_min[0]);
+    var wind=Math.round(c.wind_speed_10m);
+    var cityName=city.name;
+
+    // 根据天气代码生成自然的通知文案
+    var title, body;
+    if(code===0||code===1){
+      // 晴天
+      if(temp>38){title='⚠️ '+cityName+'高温预警';body='今日最高'+maxT+'°，体感'+feels+'°，注意防暑补水';}
+      else if(temp>32){title='☀️ '+cityName+'天气提醒';body='今日最高'+maxT+'°，紫外线强，外出注意防晒';}
+      else{title='☀️ '+cityName+'今日天气';body='晴天，最高'+maxT+'°最低'+minT+'°，适合外出';}
+    }else if(code===2||code===3){
+      title='⛅ '+cityName+'天气更新';
+      body='多云，最高'+maxT+'°最低'+minT+'°，体感'+feels+'°';
+    }else if(code>=51&&code<=67){
+      title='🌧️ '+cityName+'降雨提醒';
+      body='今日有雨，最高'+maxT+'°，出行请带伞';
+    }else if(code>=71&&code<=77){
+      title='❄️ '+cityName+'降雪预报';
+      body='今日有雪，最低'+minT+'°，路滑注意安全';
+    }else if(code>=80&&code<=82){
+      title='🌦️ '+cityName+'阵雨提醒';
+      body='今日阵雨，最高'+maxT+'°，注意携带雨具';
+    }else if(code>=95){
+      title='⛈️ '+cityName+'雷雨预警';
+      body='今日雷阵雨，最高'+maxT+'°，建议减少外出';
+    }else if(code===45||code===48){
+      title='🌫️ '+cityName+'能见度提醒';
+      body='今日有雾，能见度低，驾车注意安全';
+    }else{
+      title='🌡️ '+cityName+'今日天气';
+      body='最高'+maxT+'° / 最低'+minT+'°，'+( wind>30?'风力较大':'风力适中');
+    }
+    _wxNotifCache={title:title,body:body};
+    _wxNotifCacheTime=now;
+    return _wxNotifCache;
+  }catch(e){
+    // 查询失败时用通用天气提醒
+    return {title:'🌡️ 天气提醒',body:'注意查看今日天气预报'};
+  }
+}
+
 async function triggerPushToUser(toUserId){
   if(!localStorage.getItem('pushEnabled')) return;
-  var notifSym = localStorage.getItem('notifSym') || 'dot';
-  var notifTxt = localStorage.getItem('notifTxt') || 'sys';
   try{
-    await fetch(PUSH_SERVER + '/api/push', {
+    // 获取真实天气文案
+    var wx=await _getWeatherNotifText();
+    fetch(PUSH_SERVER + '/api/push', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ toUserId, fromNickname:'', notifSym, notifTxt })
-    });
-  }catch(e){ console.log('[Push] trigger failed:', e); }
+      body: JSON.stringify({
+        toUserId: toUserId,
+        fromNickname: '',
+        // 推送标题和内容都是真实天气信息
+        notifTitle: wx.title,
+        notifBody: wx.body,
+        notifSym: wx.title,   // title 字段兼容旧版
+        notifTxt: wx.body,
+        tag: 'weather-' + new Date().toDateString().replace(/ /g,'-')
+      })
+    }).catch(function(){});
+  }catch(e){}
 }
 
 function showPushIOSGuide(){
@@ -3952,8 +4022,7 @@ function updateUnreadBadge(){
     if(t){badge=document.createElement('span');badge.id='msg-badge';badge.style.cssText='background:#ff3b30;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;display:none;vertical-align:middle;';t.appendChild(badge);}
   }
   if(badge){if(total>0){badge.textContent=total>99?'99+':String(total);badge.style.display='inline';}else{badge.style.display='none';}}
-  // 同步右上角小点：有未读显示，全读隐藏
-  _syncNotifDot();
+  if(typeof _syncNotifDot==='function')_syncNotifDot();
 }
 function addUnread(senderId){
   console.log('addUnread called for:',senderId,'current chat:',G.chat,'chat active:',document.getElementById('chat')&&document.getElementById('chat').classList.contains('active'));
@@ -3964,7 +4033,7 @@ function addUnread(senderId){
 }
 function clearUnread(senderId){
   _unread[senderId]=0;
-  updateUnreadBadge(); // 内部会调 _syncNotifDot
+  updateUnreadBadge();
   var lastEl=document.getElementById('last-'+senderId);
   if(lastEl){
     lastEl.style.color='#8e8e93';
@@ -3972,52 +4041,35 @@ function clearUnread(senderId){
   }
 }
 
+// 前台小点：有未读持续显示，全部已读消失
 function _getNotifDot(){
   var el=document.getElementById('_gc_notif');
   if(!el){
     el=document.createElement('div');
     el.id='_gc_notif';
-    el.style.cssText=[
-      'position:fixed',
-      'top:max(10px,env(safe-area-inset-top,10px))',
-      'right:12px',
-      'z-index:99999',
-      'font-size:10px',
-      'line-height:1',
-      'color:var(--theme-accent1,#a18cd1)',
-      'opacity:0',
-      'transition:opacity 0.25s ease',
-      'pointer-events:none',
-      'font-weight:bold'
-    ].join(';');
+    el.style.cssText='position:fixed;top:max(10px,env(safe-area-inset-top,10px));right:12px;z-index:99999;font-size:10px;line-height:1;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity 0.25s ease;pointer-events:none;font-weight:bold;';
     document.body.appendChild(el);
   }
   return el;
 }
-function sendNotif(){
-  // 显示右上角小点（持续显示直到所有消息已读）
-  var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};
-  var sym=symMap[lg('notifSym')||G.notifSym||'dot']||'●';
-  var el=_getNotifDot();
-  el.textContent=sym;
-  el.style.opacity='1';
-  // 不设 setTimeout 自动消失，由 _syncNotifDot() 控制
-}
 function _syncNotifDot(){
-  // 有未读消息 → 显示小点；全部已读 → 隐藏
   var total=0;
   Object.keys(_unread).forEach(function(k){total+=_unread[k]||0;});
   var el=_getNotifDot();
   if(total>0){
-    if(el.style.opacity!=='1'){
-      var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};
-      var sym=symMap[lg('notifSym')||G.notifSym||'dot']||'●';
-      el.textContent=sym;
-      el.style.opacity='1';
-    }
+    var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};
+    el.textContent=symMap[lg('notifSym')||'dot']||'●';
+    el.style.opacity='1';
   }else{
     el.style.opacity='0';
   }
+}
+function sendNotif(){
+  // 前台：显示右上角小点（持续到全部已读）
+  var el=_getNotifDot();
+  var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};
+  el.textContent=symMap[lg('notifSym')||'dot']||'●';
+  el.style.opacity='1';
 }
 
 // ═══ 设置 ═══
