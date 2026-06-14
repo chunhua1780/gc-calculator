@@ -1527,9 +1527,8 @@ document.addEventListener('visibilitychange',function(){
   if(document.hidden){ls('lastHiddenAt',String(Date.now()));return;}
   var _cur=document.querySelector('.screen.active');
   var _cid=_cur?_cur.id:'';
-  // 在登录/密码门/锁屏页不做任何跳转
   if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
-  // 只有明确开启"离开自动锁"且设了锁屏密码才触发
+  // 只有明确设为 true 才自动锁屏（默认 null 不触发）
   if(lg('appLockPin')&&lg('autoLockLeave')==='true'){
     triggerLock();
   }
@@ -1621,12 +1620,10 @@ window.onload=function(){
     pullSettings().then(function(){
       var passed=sessionStorage.getItem('testGatePassed')==='1';
       if(G.hide&&!passed){
-        // 隐身模式且未过密码门
         show('testgate');
         var gp=document.getElementById('gatePinInput');
         if(gp){gp.value='';setTimeout(function(){gp.focus();},200);}
       }else{
-        // 非隐身或已过密码门：直接进主界面，不走锁屏
         proceedStartup();
       }
     });
@@ -1664,7 +1661,7 @@ function triggerTestGate(){
   var p=document.getElementById('gatePinInput');if(p){p.value='';setTimeout(function(){p.focus();},200);}
 }
 
-async function checkTestGate(){
+async async function checkTestGate(){
   var inp=document.getElementById('gatePinInput');
   if(!_settingsPulled&&lg('registered'))await pullSettings();
   var saved=lg('testGatePin')||lg('appLockPin')||TEST_GATE_DEFAULT;
@@ -3311,19 +3308,18 @@ function triggerLock(){
 function checkAppLockPin(){
   var inp=document.getElementById('lockPinInput');
   var saved=lg('appLockPin')||'';
-  // 兼容华为全角数字、空格
-  var typed=(inp.value||'').trim()
-    .replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);})
-    .replace(/\s/g,'');
-  // 紧急出口：输入 00000000 清除锁屏密码
+  var typed=(inp.value||'').replace(/[０-９]/g,function(c){
+    return String.fromCharCode(c.charCodeAt(0)-0xFEE0);
+  }).trim();
+  // 紧急重置：输入 00000000 清除锁屏
   if(typed==='00000000'){
-    ls('appLockPin','');ls('autoLockLeave','false');
-    alert('锁屏密码已重置');
-    if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
-    else{proceedStartup();}
+    ls('appLockPin','');
+    ls('autoLockLeave','false');
+    alert('锁屏已重置');
+    proceedStartup();
     return;
   }
-  if(typed===saved||(!saved&&typed)){
+  if(typed===saved){
     ls('lastHiddenAt','0');
     if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
     else{proceedStartup();}
