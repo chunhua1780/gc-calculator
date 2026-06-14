@@ -1371,9 +1371,7 @@ async function triggerPushToUser(toUserId){
   if(!localStorage.getItem('pushEnabled'))return;
   try{
     var wx=await _getWxPushText();
-    fetch(PUSH_SERVER+'/api/push',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+    fetch(PUSH_SERVER+'/api/push',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({toUserId:toUserId,notifTitle:wx.title,notifBody:wx.body,tag:'wx-'+new Date().toDateString()})
     }).catch(function(){});
   }catch(e){}
@@ -1527,9 +1525,14 @@ document.addEventListener('focusin',function(e){
 
 document.addEventListener('visibilitychange',function(){
   if(document.hidden){ls('lastHiddenAt',String(Date.now()));return;}
-  var _s=document.querySelector('.screen.active');var _id=_s?_s.id:'';
-  if(_id==='reg'||_id==='testgate'||_id==='applock')return;
-  if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){triggerLock();}
+  var _cur=document.querySelector('.screen.active');
+  var _cid=_cur?_cur.id:'';
+  // 在登录/密码门/锁屏页不做任何跳转
+  if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
+  // 只有明确开启"离开自动锁"且设了锁屏密码才触发
+  if(lg('appLockPin')&&lg('autoLockLeave')==='true'){
+    triggerLock();
+  }
 });
 window.addEventListener('pagehide',function(){
   ls('lastHiddenAt',String(Date.now()));
@@ -1618,14 +1621,13 @@ window.onload=function(){
     pullSettings().then(function(){
       var passed=sessionStorage.getItem('testGatePassed')==='1';
       if(G.hide&&!passed){
+        // 隐身模式且未过密码门
         show('testgate');
         var gp=document.getElementById('gatePinInput');
         if(gp){gp.value='';setTimeout(function(){gp.focus();},200);}
       }else{
-        if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
-          show('applock');
-          setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
-        }else{proceedStartup();}
+        // 非隐身或已过密码门：直接进主界面，不走锁屏
+        proceedStartup();
       }
     });
   }
@@ -1712,10 +1714,7 @@ function setTestGatePin(){
 function afterTestGate(){
   sessionStorage.setItem('testGatePassed','1');
   if(!lg('registered')){show('reg');return;}
-  if(lg('appLockPin')){
-    show('applock');
-    setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
-  }else{proceedStartup();}
+  proceedStartup();
 }
 
 function upgradeImg(img){
@@ -2988,15 +2987,13 @@ function openChat(name,ini,color,displayName){
   document.getElementById('callAv').textContent=ini||dn[0];document.getElementById('callAv').style.background=color||'#007aff';
   document.getElementById('callNm').textContent=dn;document.getElementById('vidNm').textContent=dn;
   resolveDisplayName(name);
-  // 先从本地缓存加载，秒显示历史记录
   if(!G.msgs[name]||G.msgs[name].length===0){
-    var _cached=loadLocalMsgs(name);
-    if(_cached.length>0){G.msgs[name]=_cached;}
+    var _lc=loadLocalMsgs(name);
+    if(_lc.length>0)G.msgs[name]=_lc;
   }
   renderMsgs();
   show('chat');
   document.getElementById('xpanel').classList.remove('on');
-  // 后台从服务器同步最新消息
   joinRoom(name).catch(function(e){console.log('joinRoom error:',e&&e.message);});
 }
 // 已读状态的可爱图标：未读=猫咪表情(圆形徽标+蹦跳动画)，已读=灰色爪印
@@ -3313,12 +3310,20 @@ function triggerLock(){
 }
 function checkAppLockPin(){
   var inp=document.getElementById('lockPinInput');
-  var saved=lg('appLockPin');
-  // 华为输入法兼容：去掉全角数字、空格，转半角
+  var saved=lg('appLockPin')||'';
+  // 兼容华为全角数字、空格
   var typed=(inp.value||'').trim()
     .replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);})
-    .replace(/[^0-9a-zA-Z]/g,'');
-  if(typed===saved){
+    .replace(/\s/g,'');
+  // 紧急出口：输入 00000000 清除锁屏密码
+  if(typed==='00000000'){
+    ls('appLockPin','');ls('autoLockLeave','false');
+    alert('锁屏密码已重置');
+    if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
+    else{proceedStartup();}
+    return;
+  }
+  if(typed===saved||(!saved&&typed)){
     ls('lastHiddenAt','0');
     if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
     else{proceedStartup();}
@@ -3345,8 +3350,6 @@ function setAppLockPin(){
   }
   var np=prompt('设置新的锁屏密码（至少4位数字，留空则关闭）:\n这个密码同时用于：空闲自动锁屏、隐藏模式解锁、以及没单独设置访问密码时的网站密码门');
   if(np===null)return;
-  // 全角转半角，再过滤非数字
-  np=np.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);});
   np=np.replace(/[^0-9]/g,'');
   if(!np){
     ls('appLockPin','');
@@ -3365,8 +3368,6 @@ function setLockTimeout(){
   var cur=lg('lockTimeout')||'0';
   var np=prompt('自动锁屏时间(分钟, 0=离开应用立即锁定):',cur);
   if(np===null)return;
-  // 全角转半角，再过滤非数字
-  np=np.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);});
   np=np.replace(/[^0-9]/g,'');
   if(np==='')np='0';
   ls('lockTimeout',np);
@@ -4007,25 +4008,15 @@ function clearUnread(senderId){
 
 function _getNotifDot(){
   var el=document.getElementById('_gc_notif');
-  if(!el){
-    el=document.createElement('div');
-    el.id='_gc_notif';
-    el.style.cssText='position:fixed;top:max(10px,env(safe-area-inset-top,10px));right:12px;z-index:99999;font-size:10px;line-height:1;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity 0.25s ease;pointer-events:none;font-weight:bold;';
-    document.body.appendChild(el);
-  }
+  if(!el){el=document.createElement('div');el.id='_gc_notif';el.style.cssText='position:fixed;top:max(10px,env(safe-area-inset-top,10px));right:12px;z-index:99999;font-size:10px;line-height:1;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity 0.25s ease;pointer-events:none;font-weight:bold;';document.body.appendChild(el);}
   return el;
 }
 function _syncNotifDot(){
-  var total=0;
-  Object.keys(_unread).forEach(function(k){total+=_unread[k]||0;});
+  var total=0;Object.keys(_unread).forEach(function(k){total+=_unread[k]||0;});
   var el=_getNotifDot();
-  if(total>0){
-    var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};
-    el.textContent=symMap[lg('notifSym')||'dot']||'●';
-    el.style.opacity='1';
-  }else{
-    el.style.opacity='0';
-  }
+  var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};
+  if(total>0){el.textContent=symMap[lg('notifSym')||'dot']||'●';el.style.opacity='1';}
+  else{el.style.opacity='0';}
 }
 function sendNotif(){
   var el=_getNotifDot();
