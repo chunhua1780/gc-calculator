@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>GhostChat</title>
+<title>天气</title>
 
 <!-- ═══ PWA 核心 ═══ -->
 <link rel="manifest" href="./manifest.json">
@@ -11,7 +11,7 @@
 <!-- ═══ iOS 全屏 standalone（添加到主屏幕后去掉Safari UI）═══ -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GhostChat">
+<meta name="apple-mobile-web-app-title" content="天气">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <!-- 隐藏iOS状态栏启动画面 -->
 <meta name="apple-touch-fullscreen" content="yes">
@@ -19,7 +19,7 @@
 <!-- ═══ Android / Chrome 主题色 ═══ -->
 <meta name="theme-color" content="#ff9a9e" id="metaThemeColor">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="GhostChat">
+<meta name="application-name" content="天气">
 
 <!-- ═══ 防止被搜索引擎索引 ═══ -->
 <meta name="robots" content="noindex,nofollow">
@@ -246,7 +246,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .nav-sm{padding:max(40px,calc(env(safe-area-inset-top,14px) + 8px)) 16px 8px;display:flex;align-items:center;justify-content:space-between;}
 .nav-sm .t{font-size:17px;font-weight:600;}
 .nav-btn{color:var(--theme-link);font-size:15px;cursor:pointer;padding:4px 8px;}
-.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),4px);;position:relative;z-index:2;}
+.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),4px);;position:relative;z-index:2;padding-bottom:max(var(--safe-bottom),14px);}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:var(--theme-tab-active);}
 .tab svg{width:24px;height:24px;}
@@ -1511,17 +1511,15 @@ document.addEventListener('visibilitychange',function(){
     ls('lastHiddenAt',String(Date.now()));
     return;
   }
-  // 回到前台
+  // 回到前台：在登录/密码门/锁屏页不做任何跳转
   var _cur=document.querySelector('.screen.active');
   var _cid=_cur?_cur.id:'';
-  // 在登录页/密码门/锁屏页 → 不做任何跳转
   if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
-  // 开了锁屏密码 + 开了"离开自动锁" → 触发锁屏（不触发密码门）
+  // 只有设了锁屏密码且开了"离开自动锁"才触发锁屏，不触发密码门
   if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
-    sessionStorage.removeItem('_appUnlocked');
+    sessionStorage.removeItem('_unlocked');
     triggerLock();
   }
-  // 其他情况不打断用户
 });
 window.addEventListener('pagehide',function(){
   ls('lastHiddenAt',String(Date.now()));
@@ -1604,28 +1602,23 @@ window.onload=function(){
   if(!window.navigator.standalone && !localStorage.getItem('installBannerDismissed')){
     setTimeout(showInstallBanner, 3000);
   }
-  // ── 启动逻辑 ──
-  // 状态A: 从未登录 → 登录页
-  // 状态B: 已登录 + 未开隐身 → 直接进主界面（或锁屏）
-  // 状态C: 已登录 + 开了隐身 → 先过密码门，再进主界面（或锁屏）
+  // 启动规则：
+  // A. 从未登录 → 登录页
+  // B. 已登录 + 未开隐身 → 直接进主界面（或锁屏）
+  // C. 已登录 + 开了隐身 + 本次会话未过密码门 → 先过密码门
+  // D. 已登录 + 开了隐身 + 本次会话已过密码门 → 直接进主界面（或锁屏）
   if(!lg('registered')){
     show('reg');
   }else{
     pullSettings().then(function(){
-      if(G.hide){
-        // 隐身模式：需要过密码门
-        if(sessionStorage.getItem('testGatePassed')==='1'){
-          // 本次会话已过密码门
-          _enterMainAfterGate();
-        } else {
-          // 显示密码门
-          show('testgate');
-          var p=document.getElementById('gatePinInput');
-          if(p){p.value='';setTimeout(function(){p.focus();},200);}
-        }
+      if(G.hide && sessionStorage.getItem('testGatePassed')!=='1'){
+        // 隐身模式且本次会话未过密码门 → 显示密码门
+        show('testgate');
+        var p=document.getElementById('gatePinInput');
+        if(p){p.value='';setTimeout(function(){p.focus();},200);}
       }else{
-        // 非隐身：直接进主界面
-        _enterMainAfterGate();
+        // 非隐身 or 已过密码门 → 直接进主界面
+        _proceedToMain();
       }
     });
   }
@@ -1649,8 +1642,7 @@ function resetGateIdleTimer(){
 }
 
 function triggerTestGate(){
-  // 非隐身模式不需要密码门
-  if(!G.hide)return;
+  if(!G.hide)return; // 非隐身模式不需要密码门
   var active=document.querySelector('.screen.active');
   if(active&&(active.id==='testgate'||active.id==='reg'||active.id==='applock'))return;
   if(active)_gateReturnScreen=active.id;
@@ -1711,10 +1703,10 @@ function setTestGatePin(){
   pushSettings();
 }
 function afterTestGate(){
-  // 密码门通过后：标记本次会话，进入主界面流程
+  // 密码门通过：标记本次会话，进入主界面
   sessionStorage.setItem('testGatePassed','1');
   if(!lg('registered')){show('reg');return;}
-  _enterMainAfterGate();
+  _proceedToMain();
 }
 
 function upgradeImg(img){
@@ -1996,8 +1988,7 @@ async function doLogin(){
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
     await pullSettings();
     sessionStorage.setItem('testGatePassed','1');
-    sessionStorage.setItem('_appUnlocked','1');
-    // 登录后直接进主界面，不走密码门（已通过登录验证）
+    sessionStorage.setItem('_unlocked','1');
     proceedStartup();
     claimSession(true);return;
   }
@@ -2014,8 +2005,7 @@ async function doLogin(){
   ls('registered','true');
   await pullSettings();
   sessionStorage.setItem('testGatePassed','1');
-  sessionStorage.setItem('_appUnlocked','1');
-  // 登录后直接进主界面，不走密码门
+  sessionStorage.setItem('_unlocked','1');
   proceedStartup();
   claimSession(true);
 }
@@ -3271,15 +3261,13 @@ async function resolveDisplayName(cid){
   }
 }
 
-// 密码门/锁屏全部通过后，进入主界面
-function _enterMainAfterGate(){
-  if(lg('appLockPin')&&lg('autoLockLeave')!=='false'&&sessionStorage.getItem('_appUnlocked')!=='1'){
-    // 有锁屏密码且开了自动锁 → 显示锁屏
+// 统一进入主界面入口（登录成功、密码门通过、锁屏解锁后都走这里）
+function _proceedToMain(){
+  if(lg('appLockPin') && lg('autoLockLeave')!=='false' && sessionStorage.getItem('_unlocked')!=='1'){
     show('applock');
     setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
     return;
   }
-  // 直接进主界面
   proceedStartup();
 }
 
@@ -3323,7 +3311,7 @@ function checkAppLockPin(){
   var saved=lg('appLockPin');
   if(inp.value===saved){
     ls('lastHiddenAt','0');
-    sessionStorage.setItem('_appUnlocked','1');
+    sessionStorage.setItem('_unlocked','1');
     if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
     else{proceedStartup();}
   }else{
@@ -4005,12 +3993,21 @@ function clearUnread(senderId){
 }
 
 function sendNotif(){
-  if(!('Notification' in window))return;
-  var symMap={dot:'●',line:'|',star:'✦',tri:'▲',dia:'◆',wave:'～',sync:'↻',mail:'✉'};
+  // 在顶部导航栏显示与主题色相同的小符号，3秒后消失，不弹系统通知
+  var symMap={dot:'●',line:'▏',star:'✦',tri:'▲',dia:'◆',wave:'～',sync:'↻',mail:'·'};
   var sym=symMap[G.notifSym]||'●';
-  var txt={sys:'System update complete',sync:'Data syncing',cal:'Reminder',none:''}[G.notifTxt]||'';
-  if(Notification.permission==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});
-  else if(Notification.permission!=='denied')Notification.requestPermission().then(function(p){if(p==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});});
+  // 找所有可见的 nav-bar 在标题右侧插入符号
+  var indicator=document.getElementById('_notifDot');
+  if(!indicator){
+    indicator=document.createElement('span');
+    indicator.id='_notifDot';
+    indicator.style.cssText='position:fixed;top:var(--safe-top,14px);right:18px;z-index:9999;font-size:11px;color:var(--theme-accent1);opacity:0;transition:opacity .3s;pointer-events:none;';
+    document.body.appendChild(indicator);
+  }
+  indicator.textContent=sym;
+  indicator.style.opacity='1';
+  clearTimeout(indicator._t);
+  indicator._t=setTimeout(function(){indicator.style.opacity='0';},3000);
 }
 
 // ═══ 设置 ═══
