@@ -240,7 +240,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .btn-blue{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 .field{background:var(--theme-field-bg);border:0.5px solid var(--theme-field-border);border-radius:12px;padding:14px 16px;color:var(--theme-text);font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
-.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;position:relative;z-index:2;}
+.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;;position:relative;z-index:2;}
 .nav-lg{padding:max(44px,calc(36px + var(--safe-top))) 20px 10px;}
 .nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
 .nav-sm{padding:max(40px,calc(env(safe-area-inset-top,14px) + 8px)) 16px 8px;display:flex;align-items:center;justify-content:space-between;}
@@ -276,7 +276,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
 @keyframes typingBounce{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-2px);}}
 .msg-img{max-width:min(260px,72vw);border-radius:16px;display:block;height:auto;object-fit:contain;}
-.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);position:relative;z-index:2;}
+.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);;position:relative;z-index:2;}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
 .ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--theme-icon);flex-shrink:0;}
 .ibtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -1513,8 +1513,9 @@ document.addEventListener('visibilitychange',function(){
   }
   var _cur=document.querySelector('.screen.active');
   var _cid=_cur?_cur.id:'';
+  // 登录页/密码门/锁屏页 不做任何跳转
   if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
-  // 只触发锁屏，不再触发 testgate（死循环根源）
+  // 只触发锁屏，不触发密码门
   if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
     triggerLock();
   }
@@ -1601,17 +1602,16 @@ window.onload=function(){
     setTimeout(showInstallBanner, 3000);
   }
   if(!lg('registered')){
-    // 未登录：进登录页
     show('reg');
   }else{
     pullSettings().then(function(){
       if(G.hide && sessionStorage.getItem('testGatePassed')!=='1'){
-        // 开了隐身 且 本次会话未过密码门 → 显示密码门
+        // 开了隐身且本次会话未过密码门
         show('testgate');
         var gp=document.getElementById('gatePinInput');
         if(gp){gp.value='';setTimeout(function(){gp.focus();},200);}
       }else{
-        // 已登录 + 非隐身  或  已过密码门 → 直接进主界面
+        // 直接进主界面
         if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
           show('applock');
           setTimeout(function(){var lp=document.getElementById('lockPinInput');if(lp)lp.focus();},300);
@@ -1984,32 +1984,41 @@ async function pullSettings(){
 async function doLogin(){
   var idInput=document.getElementById('loginId')?document.getElementById('loginId').value.trim():'';
   var pin=document.getElementById('loginPin').value;
-  if(!idInput){alert('Enter your ID');return;}
-  if(!pin){alert('Enter password');return;}
-  var _dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
-  // 本地验证
-  if(idInput===String(lg('myId'))&&pin===lg('pin')){
+  if(!idInput){alert('请输入ID');return;}
+  if(!pin){alert('请输入密码');return;}
+  var btn=document.getElementById('login-btn');
+  if(btn){btn.disabled=true;btn.textContent='登录中...';}
+  try{
+    // 本地验证（已登录设备）
+    if(idInput===String(lg('myId'))&&pin===lg('pin')){
+      await pullSettings();
+      sessionStorage.setItem('testGatePassed','1');
+      proceedStartup();
+      claimSession(true);
+      if(btn){btn.disabled=false;btn.textContent='Log In';}
+      return;
+    }
+    // 数据库验证
+    var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).maybeSingle();
+    if(!res||!res.data){
+      alert('找不到该ID，请确认后重试');
+      if(btn){btn.disabled=false;btn.textContent='Log In';}
+      return;
+    }
+    myId=String(res.data.id);
+    ls('myId',myId);
+    ls('myName',res.data.name);
+    ls('pin',pin);
+    G.pin=pin;
+    ls('registered','true');
     await pullSettings();
     sessionStorage.setItem('testGatePassed','1');
-    show('main');
-    listenForCalls();listenForAllMessages();loadContacts();claimSession(true);return;
+    proceedStartup();
+    claimSession(true);
+  }catch(e){
+    alert('登录失败：'+( e&&e.message||'网络错误，请重试'));
   }
-  // 数据库验证用户存在
-  var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
-  if(!res.data){alert('User ID '+idInput+' not found');return;}
-  // 密码只在本地存储，这里允许登录并保存
-  myId=String(res.data.id);
-  ls('myId',myId);
-  ls('myName',res.data.name);
-  ls('pin',pin);
-  // 立即更新G.pin确保内存和localStorage一致
-  G.pin=pin;
-  ls('registered','true');
-  await pullSettings();
-  sessionStorage.setItem('testGatePassed','1');
-  show('main');
-  listenForCalls();listenForAllMessages();loadContacts();
-  claimSession(true);
+  if(btn){btn.disabled=false;btn.textContent='Log In';}
 }
 function showQR(){
   var modal=document.getElementById('qrModal');
@@ -3986,11 +3995,11 @@ function clearUnread(senderId){
 function sendNotif(){
   var symMap={dot:'●',line:'▏',star:'✦',tri:'▲',dia:'◆',wave:'∿',sync:'⟳',mail:'·'};
   var sym=symMap[G.notifSym]||'●';
-  var dot=document.getElementById('_gc_notif_dot');
+  var dot=document.getElementById('_gc_dot');
   if(!dot){
     dot=document.createElement('span');
-    dot.id='_gc_notif_dot';
-    dot.style.cssText='position:fixed;top:12px;right:16px;z-index:9999;font-size:12px;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity .25s ease;pointer-events:none;line-height:1;';
+    dot.id='_gc_dot';
+    dot.style.cssText='position:fixed;top:14px;right:16px;z-index:9999;font-size:11px;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity .3s;pointer-events:none;';
     document.body.appendChild(dot);
   }
   dot.textContent=sym;
