@@ -234,7 +234,7 @@ body{
   background-attachment: fixed;
   color:var(--theme-text);font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .3s,color .3s;
 }
-.screen{display:none;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;position:relative;}
+.screen{display:none;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;}
 html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .screen.active{display:flex;}
 .btn-blue{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
@@ -246,7 +246,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .nav-sm{padding:max(40px,calc(env(safe-area-inset-top,14px) + 8px)) 16px 8px;display:flex;align-items:center;justify-content:space-between;}
 .nav-sm .t{font-size:17px;font-weight:600;}
 .nav-btn{color:var(--theme-link);font-size:15px;cursor:pointer;padding:4px 8px;}
-.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),4px);position:relative;z-index:2;padding-bottom:max(var(--safe-bottom),14px);}
+.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),4px);;position:relative;z-index:2;}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:var(--theme-tab-active);}
 .tab svg{width:24px;height:24px;}
@@ -1480,22 +1480,19 @@ var G={
 function fixVh(){
   var vh=window.visualViewport?window.visualViewport.height:window.innerHeight;
   document.documentElement.style.setProperty('--vh',(vh*0.01)+'px');
-  var active=document.querySelector('.screen.active');
-  if(active){active.style.height=vh+'px';active.style.maxHeight=vh+'px';}
-}
-function onVPResize(){
-  fixVh();
-  var c=document.getElementById('chatMsgs');
-  var chat=document.getElementById('chat');
-  if(c&&chat&&chat.classList.contains('active')){
-    setTimeout(function(){c.scrollTop=c.scrollHeight;},80);
-  }
+  document.querySelectorAll('.screen').forEach(function(s){
+    s.style.height=vh+'px';
+    s.style.maxHeight=vh+'px';
+  });
 }
 fixVh();
 if(window.visualViewport){
-  window.visualViewport.addEventListener('resize',onVPResize);
-  window.visualViewport.addEventListener('scroll',onVPResize);
-}else{
+  window.visualViewport.addEventListener('resize',function(){
+    fixVh();
+    var c=document.getElementById('chatMsgs');
+    if(c)setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
+  });
+} else {
   window.addEventListener('resize',fixVh);
 }
 window.addEventListener('orientationchange',function(){setTimeout(fixVh,300);});
@@ -1514,16 +1511,17 @@ document.addEventListener('visibilitychange',function(){
     ls('lastHiddenAt',String(Date.now()));
     return;
   }
-  // 回到前台：先检查当前页面
+  // 回到前台
   var _cur=document.querySelector('.screen.active');
   var _cid=_cur?_cur.id:'';
-  // 登录页、密码门、锁屏页 → 什么都不做
+  // 在登录页/密码门/锁屏页 → 不做任何跳转
   if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
-  // 已设置 appLockPin 且开启了"离开自动锁" → 触发锁屏
+  // 开了锁屏密码 + 开了"离开自动锁" → 触发锁屏（不触发密码门）
   if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
+    sessionStorage.removeItem('_appUnlocked');
     triggerLock();
   }
-  // 注意：不再自动触发 testgate（密码门只在首次进入网站时要求一次）
+  // 其他情况不打断用户
 });
 window.addEventListener('pagehide',function(){
   ls('lastHiddenAt',String(Date.now()));
@@ -1606,20 +1604,31 @@ window.onload=function(){
   if(!window.navigator.standalone && !localStorage.getItem('installBannerDismissed')){
     setTimeout(showInstallBanner, 3000);
   }
+  // ── 启动逻辑 ──
+  // 状态A: 从未登录 → 登录页
+  // 状态B: 已登录 + 未开隐身 → 直接进主界面（或锁屏）
+  // 状态C: 已登录 + 开了隐身 → 先过密码门，再进主界面（或锁屏）
   if(!lg('registered')){
-    // 从未注册过的设备：永远直接进登录/注册界面，跳过密码门和伪装界面
     show('reg');
   }else{
     pullSettings().then(function(){
       if(G.hide){
-        afterTestGate();
-      }else if(sessionStorage.getItem('testGatePassed')==='1'){
-        afterTestGate();
-        resetGateIdleTimer();
+        // 隐身模式：需要过密码门
+        if(sessionStorage.getItem('testGatePassed')==='1'){
+          // 本次会话已过密码门
+          _enterMainAfterGate();
+        } else {
+          // 显示密码门
+          show('testgate');
+          var p=document.getElementById('gatePinInput');
+          if(p){p.value='';setTimeout(function(){p.focus();},200);}
+        }
+      }else{
+        // 非隐身：直接进主界面
+        _enterMainAfterGate();
       }
     });
   }
-  // 否则停留在 testgate 屏幕（默认 active），等待用户输入内测密码
   ['click','keydown','touchstart','mousemove','scroll'].forEach(function(ev){
     document.addEventListener(ev,resetGateIdleTimer,{passive:true});
   });
@@ -1640,7 +1649,8 @@ function resetGateIdleTimer(){
 }
 
 function triggerTestGate(){
-  if(G.hide)return;
+  // 非隐身模式不需要密码门
+  if(!G.hide)return;
   var active=document.querySelector('.screen.active');
   if(active&&(active.id==='testgate'||active.id==='reg'||active.id==='applock'))return;
   if(active)_gateReturnScreen=active.id;
@@ -1701,22 +1711,10 @@ function setTestGatePin(){
   pushSettings();
 }
 function afterTestGate(){
+  // 密码门通过后：标记本次会话，进入主界面流程
   sessionStorage.setItem('testGatePassed','1');
-  if(G.hide){
-    if(lg('registered')){
-      show('main');
-      listenForCalls();listenForAllMessages();loadContacts();
-    } else {
-      show('reg');
-    }
-    return;
-  }
-  if(lg('appLockPin')){
-    show('applock');
-    setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
-  }else{
-    proceedStartup();
-  }
+  if(!lg('registered')){show('reg');return;}
+  _enterMainAfterGate();
 }
 
 function upgradeImg(img){
@@ -1998,9 +1996,10 @@ async function doLogin(){
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
     await pullSettings();
     sessionStorage.setItem('testGatePassed','1');
-    if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
-    listenForCalls();listenForAllMessages();loadContacts();claimSession(true);
-    resetGateIdleTimer();return;
+    sessionStorage.setItem('_appUnlocked','1');
+    // 登录后直接进主界面，不走密码门（已通过登录验证）
+    proceedStartup();
+    claimSession(true);return;
   }
   // 数据库验证用户存在
   var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
@@ -2015,10 +2014,10 @@ async function doLogin(){
   ls('registered','true');
   await pullSettings();
   sessionStorage.setItem('testGatePassed','1');
-  if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
-  listenForCalls();listenForAllMessages();loadContacts();
+  sessionStorage.setItem('_appUnlocked','1');
+  // 登录后直接进主界面，不走密码门
+  proceedStartup();
   claimSession(true);
-  resetGateIdleTimer();
 }
 function showQR(){
   var modal=document.getElementById('qrModal');
@@ -3272,6 +3271,18 @@ async function resolveDisplayName(cid){
   }
 }
 
+// 密码门/锁屏全部通过后，进入主界面
+function _enterMainAfterGate(){
+  if(lg('appLockPin')&&lg('autoLockLeave')!=='false'&&sessionStorage.getItem('_appUnlocked')!=='1'){
+    // 有锁屏密码且开了自动锁 → 显示锁屏
+    show('applock');
+    setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
+    return;
+  }
+  // 直接进主界面
+  proceedStartup();
+}
+
 function proceedStartup(){
   if(lg('registered')){loadContacts();listenForCalls();listenForAllMessages();claimSession(false);}
   if('Notification' in window&&Notification.permission==='default'){
@@ -3312,6 +3323,7 @@ function checkAppLockPin(){
   var saved=lg('appLockPin');
   if(inp.value===saved){
     ls('lastHiddenAt','0');
+    sessionStorage.setItem('_appUnlocked','1');
     if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
     else{proceedStartup();}
   }else{
