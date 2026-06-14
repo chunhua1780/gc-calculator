@@ -240,13 +240,13 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .btn-blue{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 .field{background:var(--theme-field-bg);border:0.5px solid var(--theme-field-border);border-radius:12px;padding:14px 16px;color:var(--theme-text);font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
-.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;}
+.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;position:sticky;top:0;z-index:10;}
 .nav-lg{padding:max(44px,calc(36px + var(--safe-top))) 20px 10px;}
 .nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
 .nav-sm{padding:max(40px,calc(env(safe-area-inset-top,14px) + 8px)) 16px 8px;display:flex;align-items:center;justify-content:space-between;}
 .nav-sm .t{font-size:17px;font-weight:600;}
 .nav-btn{color:var(--theme-link);font-size:15px;cursor:pointer;padding:4px 8px;}
-.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),4px);}
+.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),14px);position:sticky;bottom:0;z-index:10;}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:var(--theme-tab-active);}
 .tab svg{width:24px;height:24px;}
@@ -276,7 +276,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
 @keyframes typingBounce{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-2px);}}
 .msg-img{max-width:min(260px,72vw);border-radius:16px;display:block;height:auto;object-fit:contain;}
-.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);}
+.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);position:sticky;bottom:0;z-index:10;}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
 .ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--theme-icon);flex-shrink:0;}
 .ibtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -907,6 +907,19 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 <!-- 隐藏模式设置 -->
 <div id="hide-set" class="screen">
   <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Hide Mode</span><span></span></div>
+  <div style="background:var(--theme-field-bg);border-radius:14px;margin:12px 16px 0;padding:14px 16px;border:0.5px solid var(--theme-field-border);">
+    <div style="font-size:13px;font-weight:600;color:var(--theme-text);margin-bottom:8px;">🏠 桌面图标伪装</div>
+    <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;">添加到桌面时显示的名称，选一个不显眼的名字：</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+      <button onclick="setIconName('天气')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🌤 天气</button>
+      <button onclick="setIconName('时钟')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🕐 时钟</button>
+      <button onclick="setIconName('笔记')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">📝 笔记</button>
+      <button onclick="setIconName('工具')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🔧 工具</button>
+      <button onclick="setIconName('计算器')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🔢 计算器</button>
+    </div>
+    <div style="font-size:12px;color:#8e8e93;">当前图标名：<span id="curIconName" style="color:var(--theme-link);font-weight:600;">GhostChat</span></div>
+    <div style="font-size:11px;color:#aaa;margin-top:6px;">⚠️ 更改后需重新"添加到主屏幕"才生效</div>
+  </div>
   <div class="scroll" style="padding:16px;">
     <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">App will completely disguise as another app. Only you know how to unlock it.</p>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Disguise Shell</div>
@@ -1513,11 +1526,16 @@ document.addEventListener('visibilitychange',function(){
     if(sessionStorage.getItem('testGatePassed')==='1'){
       // 系统锁屏/切到后台再回来，重新要求内测密码
       triggerTestGate();
-    }else if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
-      var last=parseInt(lg('lastHiddenAt')||'0');
-      var timeout=parseInt(lg('lockTimeout')||'0')*60000;
-      if(last>0&&Date.now()-last>=timeout){
+    }else if(lg('appLockPin')){
+      if(lg('autoLockLeave')!=='false'){
+        // 离开立即锁屏
         triggerLock();
+      } else {
+        var last=parseInt(lg('lastHiddenAt')||'0');
+        var timeout=parseInt(lg('lockTimeout')||'0')*60000;
+        if(last>0&&timeout>0&&Date.now()-last>=timeout){
+          triggerLock();
+        }
       }
     }
   }
@@ -1528,6 +1546,7 @@ window.addEventListener('pagehide',function(){
 
 window.onload=function(){
   try{applyI18n();var rls=document.getElementById('regLangSelect');if(rls)rls.value=curLang;}catch(e){console.log('i18n err',e);}
+  try{var _iname=lg('iconName');if(_iname){var _imetas=document.querySelectorAll('meta[name="apple-mobile-web-app-title"]');_imetas.forEach(function(m){m.setAttribute('content',_iname);});var _iel=document.getElementById('curIconName');if(_iel)_iel.textContent=_iname;}}catch(e){}
   try{
     if(lg('registered')){
       var savedName=lg('myName')||'';
@@ -2506,10 +2525,22 @@ async function syncRoomMessages(name){
   localMsgs=localMsgs.filter(function(m){return m.type!=='recall'&&m.type!=='read_receipt';});
   serverMsgs=serverMsgs.filter(function(m){return m.type!=='read_receipt';});
   toCleanup.forEach(function(item){cleanupMediaMessage(item.id,item.src,item.expired);});
-  // 合并本地缓存与服务器消息（按id去重）
+  // 合并本地缓存与服务器消息（按id去重，保留正在发送的pending消息）
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
+  var pendingMsgs=(G.msgs[name]||[]).filter(function(m){return m._pending===true;});
   var merged=localMsgs.filter(function(m){return !(m.id!=null&&serverIds[m.id]);}).concat(serverMsgs);
+  // 去掉 ts 重复（同一时间戳+同一内容+sent）
+  var seen={};
+  merged=merged.filter(function(m){
+    if(!m.id&&m.sent){var k=m.ts+'|'+m.text;if(seen[k])return false;seen[k]=true;}
+    return true;
+  });
   merged.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+  // 把 pending 追加到末尾（不被服务器数据覆盖）
+  pendingMsgs.forEach(function(p){
+    var already=merged.some(function(m){return m===p||m.id===p.id;});
+    if(!already)merged.push(p);
+  });
   var prevLen=(G.msgs[name]||[]).length;
   G.msgs[name]=merged;
   if(G.chat===name)renderMsgs();
@@ -3126,13 +3157,24 @@ async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
   if(G.chat&&isBlocked(G.chat)){alert('对方已被你拉黑，请先在通讯录中解除拉黑');return;}
   var chatAtSend=G.chat;
-  var msgObj={text:t,sent:true,t:gt(),ts:Date.now()};
+  var _sendTs=Date.now();
+  var msgObj={text:t,sent:true,t:gt(),ts:_sendTs,_pending:true};
   addMsg(msgObj);
   updateLastPreview(chatAtSend,t,'text',false,'sent');
   inp.value='';
   if(currentRoom){
     var r=await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'}).select().single();
-    if(r.data){msgObj.id=r.data.id;saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);}
+    if(r.data){
+      msgObj.id=r.data.id;
+      msgObj._pending=false;
+      saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);
+    } else {
+      // 插入失败，移除 pending 消息避免重影
+      if(G.msgs[chatAtSend]){
+        G.msgs[chatAtSend]=G.msgs[chatAtSend].filter(function(m){return m!==msgObj;});
+        if(G.chat===chatAtSend)renderMsgs();
+      }
+    }
     // 触发推送通知给对方
     if(chatAtSend) triggerPushToUser(String(chatAtSend));
   }
@@ -3986,15 +4028,21 @@ function clearUnread(senderId){
 }
 
 function sendNotif(){
-  if(!('Notification' in window))return;
-  var symMap={dot:'●',line:'|',star:'✦',tri:'▲',dia:'◆',wave:'～',sync:'↻',mail:'✉'};
-  var sym=symMap[G.notifSym]||'●';
-  var txt={sys:'System update complete',sync:'Data syncing',cal:'Reminder',none:''}[G.notifTxt]||'';
-  if(Notification.permission==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});
-  else if(Notification.permission!=='denied')Notification.requestPermission().then(function(p){if(p==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});});
+  // 只在顶部 tab 显示小红点，不弹系统通知弹窗
+  // (msg-badge 已在 HTML 里，addUnread 会更新它)
 }
 
 // ═══ 设置 ═══
+function setIconName(name){
+  ls('iconName',name);
+  var el=document.getElementById('curIconName');
+  if(el)el.textContent=name;
+  // 动态修改 apple-mobile-web-app-title（下次添加桌面时生效）
+  var metas=document.querySelectorAll('meta[name="apple-mobile-web-app-title"]');
+  metas.forEach(function(m){m.setAttribute('content',name);});
+  var titleEl=document.querySelector('title');
+  if(titleEl)titleEl.textContent=name;
+}
 function updHide(){var d=document.getElementById('hideDesc');if(d)d.textContent=G.hide?'Enabled · '+G.dis:'Not enabled';}
 function updDest(){var d=document.getElementById('destructDesc');if(d)d.textContent={wrong:'3 wrong passwords',dpin:'Special destroy PIN',shake:'Shake 10 times'}[G.dest]||'';}
 function updNotif(){var d=document.getElementById('notifDesc');if(d)d.textContent=({dot:'● Dot',line:'| Line',star:'✦ Star',tri:'▲ Triangle',dia:'◆ Diamond',wave:'～ Wave',sync:'↻ Sync',mail:'✉ Mail'})[G.notifSym]||'● Dot';}
