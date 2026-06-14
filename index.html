@@ -1347,85 +1347,41 @@ function updatePushToggleUI(on){
 }
 
 // 发送消息时通知对方（只推服务器端，服务器负责推送）
-async // 天气通知文案库 - 让推送看起来完全是天气 App 的正常通知
-var _wxNotifCache=null;
-var _wxNotifCacheTime=0;
-
-async function _getWeatherNotifText(){
+async // 天气通知文案（简洁）
+var _wxPushCache=null;
+var _wxPushCacheTime=0;
+async function _getWxPushText(){
   var now=Date.now();
-  if(_wxNotifCache&&now-_wxNotifCacheTime<3600000)return _wxNotifCache;
+  if(_wxPushCache&&now-_wxPushCacheTime<3600000)return _wxPushCache;
   try{
-    // 用已保存的城市坐标，默认迪拜
     var cities=[];try{cities=JSON.parse(localStorage.getItem('wxCities')||'[]');}catch(e){}
-    var city=cities[0]||{lat:25.2048,lon:55.2708,name:'Dubai'};
-    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+city.lat+'&longitude='+city.lon+'&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=auto&forecast_days=1');
+    var c=cities[0]||{lat:25.2048,lon:55.2708,name:'Dubai'};
+    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+c.lat+'&longitude='+c.lon+'&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1');
     var d=await r.json();
-    var c=d.current;
-    var daily=d.daily;
-    var temp=Math.round(c.temperature_2m);
-    var feels=Math.round(c.apparent_temperature);
-    var code=c.weather_code;
-    var maxT=Math.round(daily.temperature_2m_max[0]);
-    var minT=Math.round(daily.temperature_2m_min[0]);
-    var wind=Math.round(c.wind_speed_10m);
-    var cityName=city.name;
-
-    // 根据天气代码生成自然的通知文案
-    var title, body;
-    if(code===0||code===1){
-      // 晴天
-      if(temp>38){title='⚠️ '+cityName+'高温预警';body='今日最高'+maxT+'°，体感'+feels+'°，注意防暑补水';}
-      else if(temp>32){title='☀️ '+cityName+'天气提醒';body='今日最高'+maxT+'°，紫外线强，外出注意防晒';}
-      else{title='☀️ '+cityName+'今日天气';body='晴天，最高'+maxT+'°最低'+minT+'°，适合外出';}
-    }else if(code===2||code===3){
-      title='⛅ '+cityName+'天气更新';
-      body='多云，最高'+maxT+'°最低'+minT+'°，体感'+feels+'°';
-    }else if(code>=51&&code<=67){
-      title='🌧️ '+cityName+'降雨提醒';
-      body='今日有雨，最高'+maxT+'°，出行请带伞';
-    }else if(code>=71&&code<=77){
-      title='❄️ '+cityName+'降雪预报';
-      body='今日有雪，最低'+minT+'°，路滑注意安全';
-    }else if(code>=80&&code<=82){
-      title='🌦️ '+cityName+'阵雨提醒';
-      body='今日阵雨，最高'+maxT+'°，注意携带雨具';
-    }else if(code>=95){
-      title='⛈️ '+cityName+'雷雨预警';
-      body='今日雷阵雨，最高'+maxT+'°，建议减少外出';
-    }else if(code===45||code===48){
-      title='🌫️ '+cityName+'能见度提醒';
-      body='今日有雾，能见度低，驾车注意安全';
-    }else{
-      title='🌡️ '+cityName+'今日天气';
-      body='最高'+maxT+'° / 最低'+minT+'°，'+( wind>30?'风力较大':'风力适中');
-    }
-    _wxNotifCache={title:title,body:body};
-    _wxNotifCacheTime=now;
-    return _wxNotifCache;
+    var temp=Math.round(d.current.temperature_2m);
+    var max=Math.round(d.daily.temperature_2m_max[0]);
+    var min=Math.round(d.daily.temperature_2m_min[0]);
+    var code=d.current.weather_code;
+    var icon=code===0?'☀️':code<=2?'🌤️':code===3?'☁️':code<=48?'🌫️':code<=67?'🌧️':code<=77?'❄️':code<=82?'🌦️':'⛈️';
+    var desc=code===0?'晴':code<=2?'多云':code===3?'阴':code<=48?'有雾':code<=67?'有雨':code<=77?'有雪':'雷雨';
+    // 简洁一行
+    var title=icon+' '+c.name+' '+temp+'° '+desc;
+    var body=max+'°/'+min+'°';
+    _wxPushCache={title:title,body:body};
+    _wxPushCacheTime=now;
+    return _wxPushCache;
   }catch(e){
-    // 查询失败时用通用天气提醒
-    return {title:'🌡️ 天气提醒',body:'注意查看今日天气预报'};
+    return{title:'🌡️ 天气更新',body:'今日天气已更新'};
   }
 }
-
 async function triggerPushToUser(toUserId){
-  if(!localStorage.getItem('pushEnabled')) return;
+  if(!localStorage.getItem('pushEnabled'))return;
   try{
-    // 获取真实天气文案
-    var wx=await _getWeatherNotifText();
-    fetch(PUSH_SERVER + '/api/push', {
+    var wx=await _getWxPushText();
+    fetch(PUSH_SERVER+'/api/push',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        toUserId: toUserId,
-        fromNickname: '',
-        // 推送标题和内容都是真实天气信息
-        notifTitle: wx.title,
-        notifBody: wx.body,
-        notifSym: wx.title,   // title 字段兼容旧版
-        notifTxt: wx.body,
-        tag: 'weather-' + new Date().toDateString().replace(/ /g,'-')
-      })
+      body:JSON.stringify({toUserId:toUserId,notifTitle:wx.title,notifBody:wx.body,tag:'wx-'+new Date().toDateString()})
     }).catch(function(){});
   }catch(e){}
 }
@@ -3039,8 +2995,15 @@ function openChat(name,ini,color,displayName){
   document.getElementById('callAv').textContent=ini||dn[0];document.getElementById('callAv').style.background=color||'#007aff';
   document.getElementById('callNm').textContent=dn;document.getElementById('vidNm').textContent=dn;
   resolveDisplayName(name);
-  if(!G.msgs[name])G.msgs[name]=[{text:'👋',sent:false,t:gt()}];
-  renderMsgs();show('chat');document.getElementById('xpanel').classList.remove('on');
+  // 先从本地缓存加载（秒显示），不显示假消息
+  if(!G.msgs[name]){
+    var cached=loadLocalMsgs(name);
+    G.msgs[name]=cached.length?cached:[];
+  }
+  renderMsgs();
+  show('chat');
+  document.getElementById('xpanel').classList.remove('on');
+  // joinRoom 加载完服务器消息后自动 renderMsgs
   joinRoom(name).catch(function(e){console.log('joinRoom error:',e&&e.message);});
 }
 // 已读状态的可爱图标：未读=猫咪表情(圆形徽标+蹦跳动画)，已读=灰色爪印
@@ -4041,7 +4004,6 @@ function clearUnread(senderId){
   }
 }
 
-// 前台小点：有未读持续显示，全部已读消失
 function _getNotifDot(){
   var el=document.getElementById('_gc_notif');
   if(!el){
@@ -4065,7 +4027,6 @@ function _syncNotifDot(){
   }
 }
 function sendNotif(){
-  // 前台：显示右上角小点（持续到全部已读）
   var el=_getNotifDot();
   var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};
   el.textContent=symMap[lg('notifSym')||'dot']||'●';
