@@ -1347,9 +1347,7 @@ function updatePushToggleUI(on){
 }
 
 // 发送消息时通知对方（只推服务器端，服务器负责推送）
-async // 天气通知文案（简洁）
-var _wxPushCache=null;
-var _wxPushCacheTime=0;
+async var _wxPushCache=null,_wxPushCacheTime=0;
 async function _getWxPushText(){
   var now=Date.now();
   if(_wxPushCache&&now-_wxPushCacheTime<3600000)return _wxPushCache;
@@ -1364,15 +1362,10 @@ async function _getWxPushText(){
     var code=d.current.weather_code;
     var icon=code===0?'☀️':code<=2?'🌤️':code===3?'☁️':code<=48?'🌫️':code<=67?'🌧️':code<=77?'❄️':code<=82?'🌦️':'⛈️';
     var desc=code===0?'晴':code<=2?'多云':code===3?'阴':code<=48?'有雾':code<=67?'有雨':code<=77?'有雪':'雷雨';
-    // 简洁一行
-    var title=icon+' '+c.name+' '+temp+'° '+desc;
-    var body=max+'°/'+min+'°';
-    _wxPushCache={title:title,body:body};
+    _wxPushCache={title:icon+' '+c.name+' '+temp+'° '+desc,body:max+'°/'+min+'°'};
     _wxPushCacheTime=now;
     return _wxPushCache;
-  }catch(e){
-    return{title:'🌡️ 天气更新',body:'今日天气已更新'};
-  }
+  }catch(e){return{title:'🌡️ 天气更新',body:''};}
 }
 async function triggerPushToUser(toUserId){
   if(!localStorage.getItem('pushEnabled'))return;
@@ -2995,15 +2988,15 @@ function openChat(name,ini,color,displayName){
   document.getElementById('callAv').textContent=ini||dn[0];document.getElementById('callAv').style.background=color||'#007aff';
   document.getElementById('callNm').textContent=dn;document.getElementById('vidNm').textContent=dn;
   resolveDisplayName(name);
-  // 先从本地缓存加载（秒显示），不显示假消息
-  if(!G.msgs[name]){
-    var cached=loadLocalMsgs(name);
-    G.msgs[name]=cached.length?cached:[];
+  // 先从本地缓存加载，秒显示历史记录
+  if(!G.msgs[name]||G.msgs[name].length===0){
+    var _cached=loadLocalMsgs(name);
+    if(_cached.length>0){G.msgs[name]=_cached;}
   }
   renderMsgs();
   show('chat');
   document.getElementById('xpanel').classList.remove('on');
-  // joinRoom 加载完服务器消息后自动 renderMsgs
+  // 后台从服务器同步最新消息
   joinRoom(name).catch(function(e){console.log('joinRoom error:',e&&e.message);});
 }
 // 已读状态的可爱图标：未读=猫咪表情(圆形徽标+蹦跳动画)，已读=灰色爪印
@@ -3321,7 +3314,11 @@ function triggerLock(){
 function checkAppLockPin(){
   var inp=document.getElementById('lockPinInput');
   var saved=lg('appLockPin');
-  if(inp.value===saved){
+  // 华为输入法兼容：去掉全角数字、空格，转半角
+  var typed=(inp.value||'').trim()
+    .replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);})
+    .replace(/[^0-9a-zA-Z]/g,'');
+  if(typed===saved){
     ls('lastHiddenAt','0');
     if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
     else{proceedStartup();}
@@ -3348,6 +3345,8 @@ function setAppLockPin(){
   }
   var np=prompt('设置新的锁屏密码（至少4位数字，留空则关闭）:\n这个密码同时用于：空闲自动锁屏、隐藏模式解锁、以及没单独设置访问密码时的网站密码门');
   if(np===null)return;
+  // 全角转半角，再过滤非数字
+  np=np.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);});
   np=np.replace(/[^0-9]/g,'');
   if(!np){
     ls('appLockPin','');
@@ -3366,6 +3365,8 @@ function setLockTimeout(){
   var cur=lg('lockTimeout')||'0';
   var np=prompt('自动锁屏时间(分钟, 0=离开应用立即锁定):',cur);
   if(np===null)return;
+  // 全角转半角，再过滤非数字
+  np=np.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);});
   np=np.replace(/[^0-9]/g,'');
   if(np==='')np='0';
   ls('lockTimeout',np);
