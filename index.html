@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>天气</title>
+<title>GhostChat</title>
 
 <!-- ═══ PWA 核心 ═══ -->
 <link rel="manifest" href="./manifest.json">
@@ -11,7 +11,7 @@
 <!-- ═══ iOS 全屏 standalone（添加到主屏幕后去掉Safari UI）═══ -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="天气">
+<meta name="apple-mobile-web-app-title" content="GhostChat">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <!-- 隐藏iOS状态栏启动画面 -->
 <meta name="apple-touch-fullscreen" content="yes">
@@ -234,13 +234,13 @@ body{
   background-attachment: fixed;
   color:var(--theme-text);font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .3s,color .3s;
 }
-.screen{display:none;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;}
+.screen{display:none;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;position:relative;}
 html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .screen.active{display:flex;}
 .btn-blue{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 .field{background:var(--theme-field-bg);border:0.5px solid var(--theme-field-border);border-radius:12px;padding:14px 16px;color:var(--theme-text);font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
-.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;;position:relative;z-index:2;}
+.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;position:relative;z-index:2;}
 .nav-lg{padding:max(44px,calc(36px + var(--safe-top))) 20px 10px;}
 .nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
 .nav-sm{padding:max(40px,calc(env(safe-area-inset-top,14px) + 8px)) 16px 8px;display:flex;align-items:center;justify-content:space-between;}
@@ -250,7 +250,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:var(--theme-tab-active);}
 .tab svg{width:24px;height:24px;}
-.scroll{flex:1;overflow-y:auto;background:transparent;;min-height:0;-webkit-overflow-scrolling:touch;}
+.scroll{flex:1;overflow-y:auto;background:transparent;min-height:0;-webkit-overflow-scrolling:touch;}
 .card{background:transparent;margin:0 8px;overflow:visible;}
 .row{display:flex;align-items:center;padding:14px 16px;cursor:pointer;gap:12px;background:var(--theme-row-bg);border-radius:16px;margin:6px 8px;}
 .row:last-child{border-bottom:none;}
@@ -276,7 +276,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
 @keyframes typingBounce{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-2px);}}
 .msg-img{max-width:min(260px,72vw);border-radius:16px;display:block;height:auto;object-fit:contain;}
-.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);;position:relative;z-index:2;}
+.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);position:relative;z-index:2;}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
 .ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--theme-icon);flex-shrink:0;}
 .ibtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -528,9 +528,9 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
     <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
   </button>
   <div class="tabs">
-    <div class="tab on" id="msgTab"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Messages<span id="msg-badge" style="background:#ff3b30;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;display:none;vertical-align:middle;"></span></div>
+    <div class="tab on" id="msgTab"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>消息<span id="msg-badge" style="background:#ff3b30;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;display:none;vertical-align:middle;"></span></div>
     <div class="tab" onclick="show('contacts-list');loadFriendsList();"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Contacts</div>
-    <div class="tab" onclick="show('settings')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
+    <div class="tab" onclick="show('settings')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>设置</div>
   </div>
 </div>
 
@@ -706,9 +706,9 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
     <div class="card" id="friendsList"></div>
   </div>
   <div class="tabs">
-    <div class="tab" onclick="show('main')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>消息</div>
+    <div class="tab" onclick="show('main');"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>消息</div>
     <div class="tab on"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>通讯录</div>
-    <div class="tab" onclick="show('settings')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>设置</div>
+    <div class="tab" onclick="show('settings');"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>设置</div>
   </div>
 </div>
 <div id="applock" class="screen">
@@ -898,27 +898,15 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
     <div style="height:30px;"></div>
   </div>
   <div class="tabs">
-    <div class="tab" onclick="show('main')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Messages</div>
-    <div class="tab"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Contacts</div>
-    <div class="tab on"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
+    <div class="tab" onclick="show('main');"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>消息</div>
+    <div class="tab" onclick="show('contacts-list');loadFriendsList();"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>通讯录</div>
+    <div class="tab on"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>设置</div>
   </div>
 </div>
 
 <!-- 隐藏模式设置 -->
 <div id="hide-set" class="screen">
   <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Hide Mode</span><span></span></div>
-  <div style="background:var(--theme-field-bg);border-radius:14px;margin:12px 16px 0;padding:14px 16px;border:0.5px solid var(--theme-field-border);">
-    <div style="font-size:13px;font-weight:600;color:var(--theme-text);margin-bottom:10px;">🏠 桌面图标名称</div>
-    <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;">添加到桌面时显示的名称（重新添加才生效）</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-      <button onclick="setDesktopName('天气')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🌤 天气</button>
-      <button onclick="setDesktopName('时钟')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🕐 时钟</button>
-      <button onclick="setDesktopName('笔记')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">📝 笔记</button>
-      <button onclick="setDesktopName('工具')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🔧 工具</button>
-      <button onclick="setDesktopName('计算器')" style="background:var(--theme-row-bg);border:1px solid var(--theme-field-border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--theme-text);cursor:pointer;">🔢 计算器</button>
-    </div>
-    <div style="font-size:12px;color:#8e8e93;">当前：<span id="_curDesktopName" style="color:var(--theme-link);font-weight:600;">天气</span></div>
-  </div>
   <div class="scroll" style="padding:16px;">
     <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">App will completely disguise as another app. Only you know how to unlock it.</p>
     <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Disguise Shell</div>
@@ -1489,46 +1477,72 @@ var G={
 
 // ═══ 启动 ═══
 // 修复移动端100vh问题
+// 键盘平滑跟随 - 不跳动
+var _lastVh=0;
 function fixVh(){
-  var vh=window.visualViewport?window.visualViewport.height:window.innerHeight;
+  var vp=window.visualViewport;
+  var vh=vp?vp.height:window.innerHeight;
+  if(Math.abs(vh-_lastVh)<1)return; // 变化太小忽略
+  _lastVh=vh;
   document.documentElement.style.setProperty('--vh',(vh*0.01)+'px');
-  document.querySelectorAll('.screen').forEach(function(s){
-    s.style.height=vh+'px';
-    s.style.maxHeight=vh+'px';
-  });
+  // 只调整当前 active screen，其他不动
+  var active=document.querySelector('.screen.active');
+  if(active){
+    active.style.height=vh+'px';
+    active.style.maxHeight=vh+'px';
+  }
+  // 键盘弹出时聊天消息滚到底
+  var chat=document.getElementById('chat');
+  if(chat&&chat.classList.contains('active')){
+    var c=document.getElementById('chatMsgs');
+    if(c)c.scrollTop=c.scrollHeight;
+  }
 }
 fixVh();
 if(window.visualViewport){
-  window.visualViewport.addEventListener('resize',function(){
-    fixVh();
-    var c=document.getElementById('chatMsgs');
-    if(c)setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
+  window.visualViewport.addEventListener('resize',fixVh);
+  window.visualViewport.addEventListener('scroll',function(){
+    // 键盘滚动时不调整高度，只滚消息区
+    var chat=document.getElementById('chat');
+    if(chat&&chat.classList.contains('active')){
+      var c=document.getElementById('chatMsgs');
+      if(c)c.scrollTop=c.scrollHeight;
+    }
   });
-} else {
+}else{
   window.addEventListener('resize',fixVh);
 }
-window.addEventListener('orientationchange',function(){setTimeout(fixVh,300);});
+window.addEventListener('orientationchange',function(){setTimeout(fixVh,400);});
 
-// iOS Safari: 输入框聚焦时滚入可视区域，避免被键盘遮挡
+// 输入框聚焦：平滑滚入，不强制跳动
 document.addEventListener('focusin',function(e){
   if(e.target&&(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')){
     setTimeout(function(){
-      e.target.scrollIntoView({block:'end',behavior:'smooth'});
-    },300);
+      if(e.target.tagName==='TEXTAREA'){
+        // 聊天输入框：滚消息区到底即可，不调整页面
+        var c=document.getElementById('chatMsgs');
+        if(c)c.scrollTop=c.scrollHeight;
+      }else{
+        e.target.scrollIntoView({block:'nearest',behavior:'smooth'});
+      }
+    },350);
   }
 });
 
 document.addEventListener('visibilitychange',function(){
   if(document.hidden){
     ls('lastHiddenAt',String(Date.now()));
-    return;
-  }
-  var _cur=document.querySelector('.screen.active');
-  var _cid=_cur?_cur.id:'';
-  if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
-  // 切App回来只触发锁屏，不触发密码门（密码门只在退出登录后重新打开才出现）
-  if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
-    triggerLock();
+  }else{
+    if(sessionStorage.getItem('testGatePassed')==='1'){
+      // 系统锁屏/切到后台再回来，重新要求内测密码
+      triggerTestGate();
+    }else if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
+      var last=parseInt(lg('lastHiddenAt')||'0');
+      var timeout=parseInt(lg('lockTimeout')||'0')*60000;
+      if(last>0&&Date.now()-last>=timeout){
+        triggerLock();
+      }
+    }
   }
 });
 window.addEventListener('pagehide',function(){
@@ -1537,8 +1551,6 @@ window.addEventListener('pagehide',function(){
 
 window.onload=function(){
   try{applyI18n();var rls=document.getElementById('regLangSelect');if(rls)rls.value=curLang;}catch(e){console.log('i18n err',e);}
-  // 恢复桌面图标名称
-  try{var _dn=lg('desktopName')||'天气';var _dm2=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(_dm2)_dm2.setAttribute('content',_dn);var _dt=document.querySelector('title');if(_dt)_dt.textContent=_dn;var _del=document.getElementById('_curDesktopName');if(_del)_del.textContent=_dn;}catch(e){}
   try{
     if(lg('registered')){
       var savedName=lg('myName')||'';
@@ -1615,27 +1627,19 @@ window.onload=function(){
     setTimeout(showInstallBanner, 3000);
   }
   if(!lg('registered')){
-    // 未登录（含退出登录后）→ 登录页
+    // 从未注册过的设备：永远直接进登录/注册界面，跳过密码门和伪装界面
     show('reg');
   }else{
     pullSettings().then(function(){
-      var passed = sessionStorage.getItem('testGatePassed')==='1';
-      if(G.hide && !passed){
-        // 已登录+开了隐身+本次会话未过密码门 → 先显示隐身界面（密码门）
-        show('testgate');
-        var gp=document.getElementById('gatePinInput');
-        if(gp){gp.value='';setTimeout(function(){gp.focus();},200);}
-      }else{
-        // 已登录+非隐身 或 已过密码门 → 直接进主界面
-        if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
-          show('applock');
-          setTimeout(function(){var lp=document.getElementById('lockPinInput');if(lp)lp.focus();},300);
-        }else{
-          proceedStartup();
-        }
+      if(G.hide){
+        afterTestGate();
+      }else if(sessionStorage.getItem('testGatePassed')==='1'){
+        afterTestGate();
+        resetGateIdleTimer();
       }
     });
   }
+  // 否则停留在 testgate 屏幕（默认 active），等待用户输入内测密码
   ['click','keydown','touchstart','mousemove','scroll'].forEach(function(ev){
     document.addEventListener(ev,resetGateIdleTimer,{passive:true});
   });
@@ -1656,9 +1660,9 @@ function resetGateIdleTimer(){
 }
 
 function triggerTestGate(){
-  if(!G.hide)return;
+  if(G.hide)return;
   var active=document.querySelector('.screen.active');
-  if(active&&(active.id==='testgate'||active.id==='reg'||active.id==='applock'))return;
+  if(active&&active.id==='testgate')return;
   if(active)_gateReturnScreen=active.id;
   sessionStorage.removeItem('testGatePassed');
   if(_gateIdleTimer){clearTimeout(_gateIdleTimer);_gateIdleTimer=null;}
@@ -1717,8 +1721,16 @@ function setTestGatePin(){
   pushSettings();
 }
 function afterTestGate(){
-  sessionStorage.setItem('testGatePassed','1');
-  if(!lg('registered')){show('reg');return;}
+  if(G.hide){
+    // 隐藏模式下，testgate通过后直接进主界面，不走proceedStartup避免死循环
+    if(lg('registered')){
+      show('main');
+      listenForCalls();listenForAllMessages();loadContacts();
+    } else {
+      show('reg');
+    }
+    return;
+  }
   if(lg('appLockPin')){
     show('applock');
     setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
@@ -1779,7 +1791,7 @@ async function submitNewChat(){
   openChat(String(u.id),displayName[0].toUpperCase(),color,displayName);
 }
 
-function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();if(id==='dnote')initNotes();
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');s.style.height='';s.style.maxHeight='';});var el=document.getElementById(id);if(el){el.classList.add('active');fixVh();}if(id==='dweather')initWeather();if(id==='dnote')initNotes();
 if(id==='dcalc'){var en=document.getElementById('cNum');if(en&&!CALC.buf)en.textContent='0';}}
 
 // ═══ 注册/登录 ═══
@@ -1929,7 +1941,12 @@ async function claimSession(force){
   if(!token||force){
     token=makeSessionToken();
     ls('sessionToken',token);
-    _sb.from('users').update({session_token:token}).eq('id',parseInt(myId)||myId).then(function(){});
+    await _sb.from('users').update({session_token:token}).eq('id',parseInt(myId)||myId);
+  }else{
+    var r=await _sb.from('users').select('session_token').eq('id',parseInt(myId)||myId).maybeSingle();
+    if(r.data&&r.data.session_token&&r.data.session_token!==token){
+      forceLogout();return;
+    }
   }
   startSessionWatch();
 }
@@ -1970,12 +1987,8 @@ async function pushSettings(){
   await _sb.from('users').update({settings:obj}).eq('id',parseInt(myId)||myId);
 }
 var _settingsPulled=false;
-var _lastPullSettings=0;
 async function pullSettings(){
   if(!lg('registered')||!myId){_settingsPulled=true;return;}
-  var _pnow=Date.now();
-  if(_settingsPulled&&_pnow-_lastPullSettings<60000&&_lastPullSettings>0)return;
-  _lastPullSettings=_pnow;
   try{
     var r=await _sb.from('users').select('settings').eq('id',parseInt(myId)||myId).maybeSingle();
     var s=r.data&&r.data.settings;
@@ -2004,8 +2017,7 @@ async function doLogin(){
   // 本地验证
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
     await pullSettings();
-    sessionStorage.setItem('testGatePassed','1');
-    show('main');  // 登录成功直接进消息页，不走隐身界面
+    if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
     listenForCalls();listenForAllMessages();loadContacts();claimSession(true);return;
   }
   // 数据库验证用户存在
@@ -2020,9 +2032,8 @@ async function doLogin(){
   G.pin=pin;
   ls('registered','true');
   await pullSettings();
-  sessionStorage.setItem('testGatePassed','1');
-  show('main');  // 登录成功直接进消息页
-  listenForCalls();listenForAllMessages();loadContacts();
+  if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
+  listenForCalls();listenForAllMessages();loadContacts();loadContacts();
   claimSession(true);
 }
 function showQR(){
@@ -2353,22 +2364,18 @@ function showTypingIndicator(){
   },3000);
 }
 
-// 兜底刷新（降频，实时推送已覆盖大部分场景）
+// 定期兜底刷新：即使实时推送有问题，也能保证消息及时同步
 setInterval(function(){
   if(!lg('registered'))return;
   var chatEl=document.getElementById('chat');
   if(chatEl&&chatEl.classList.contains('active')&&G.chat){
     syncRoomMessages(G.chat);
   }
-},30000);
-setInterval(function(){
-  if(!lg('registered'))return;
   var mainEl=document.getElementById('main');
   if(mainEl&&mainEl.classList.contains('active')){
-    _lastContactsLoad=0; // 强制刷新
     loadContacts();
   }
-},120000);
+},5000);
 
 async function joinRoom(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
@@ -2959,7 +2966,7 @@ function listenForAllMessages(){
         if(hset.indexOf(senderId)>=0){
           setHiddenContacts(hset.filter(function(x){return x!==senderId;}));
         }
-        _lastContactsLoad=0;
+        loadContacts();
         sendNotif();
       }
       // 未读提醒：只要不在当前聊天界面就提醒，与already无关
@@ -3168,19 +3175,11 @@ function updateLastPreview(cid,content,type,highlight,readState){
   if(prefixEl)prefixEl.innerHTML='';
 }
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
-var _friendsCache=null;
-var _friendsCacheTime=0;
 async function loadFriendsList(){
   var list=document.getElementById('friendsList');
   if(!list||!myId)return;
-  var mid=String(myId);
-  var now=Date.now();
-  // 60秒缓存，避免每次点通讯录都查DB
-  if(_friendsCache&&now-_friendsCacheTime<60000){
-    renderFriendsList(_friendsCache);return;
-  }
   list.innerHTML='<div style="padding:16px;color:#8e8e93;text-align:center;">加载中...</div>';
-  // 并发查询 friends + users
+  var mid=String(myId);
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   if(fr.error||!fr.data||fr.data.length===0){
     list.innerHTML='<div style="padding:24px;color:#8e8e93;text-align:center;">暂无联系人，可以点消息页的➕按钮添加</div>';
@@ -3191,25 +3190,13 @@ async function loadFriendsList(){
   var userMap={};
   var avatarMap2={};
   if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;if(u.avatar_url)avatarMap2[String(u.id)]=u.avatar_url;});
-  // 渲染已移至 renderFriendsList
-
-  _friendsCache={fr:fr.data,userMap:userMap,avatarMap2:avatarMap2};
-  _friendsCacheTime=now;
-  renderFriendsList(_friendsCache);
-}
-function renderFriendsList(cache){
-  var list=document.getElementById('friendsList');
-  if(!list)return;
-  var mid=String(myId);
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
   var blocked=getBlockedContacts();
-  var sorted=cache.fr.slice().sort(function(a,b){
+  var sorted=fr.data.slice().sort(function(a,b){
     var ab=blocked.indexOf(String(a.friend_id))>=0?1:0;
     var bb=blocked.indexOf(String(b.friend_id))>=0?1:0;
     return ab-bb;
   });
-  var userMap=cache.userMap||{};
-  var avatarMap2=cache.avatarMap2||{};
   list.innerHTML='';
   sorted.forEach(function(f){
     var cid=String(f.friend_id);
@@ -3253,7 +3240,6 @@ function renderFriendsList(cache){
 }
 
 async function deleteFriendEntry(cid){
-  _friendsCache=null;
   if(!confirm('确定要从通讯录中删除这个联系人吗？'))return;
   var mid=String(myId);
   await _sb.from('friends').delete().eq('user_id',mid).eq('friend_id',String(cid));
@@ -3471,15 +3457,12 @@ function attachSwipe(el,actionsEl){
 }
 
 var _loadingContacts=false;
-var _lastContactsLoad=0;
 async function loadContacts(){
+  console.log('loadContacts called, myId=',myId,'_loadingContacts=',_loadingContacts);
   if(!myId)return;
   if(_loadingContacts)return;
-  var _now=Date.now();
-  if(_now-_lastContactsLoad<30000&&_lastContactsLoad>0)return; // 30秒缓存
-  _lastContactsLoad=_now;
   _loadingContacts=true;
-  setTimeout(function(){_loadingContacts=false;},3000);
+  setTimeout(function(){_loadingContacts=false;},2000);
   var list=document.getElementById('chatList');
   if(!list)return;
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
@@ -3488,7 +3471,7 @@ async function loadContacts(){
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   var friendMap={};
   if(fr.data)fr.data.forEach(function(f){friendMap[String(f.friend_id)]=f.nickname||'';});
-  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at,read,delivered').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(50);
+  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at,read,delivered').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(200);
   console.log('loadContacts messages query, error:',res.error,'count:',res.data?res.data.length:0);
   var contactIds=[];
   var receiptMap={};
@@ -3598,7 +3581,6 @@ async function setRemark(){
 }
 
 async function saveFriend(friendId,nickname){
-  _friendsCache=null; // 清除缓存
   if(!myId||!friendId)return;
   var mid=String(myId);
   var fid=String(friendId);
@@ -4027,21 +4009,12 @@ function clearUnread(senderId){
 }
 
 function sendNotif(){
-  // 在右上角显示与Wi-Fi/主题色相同的小符号（跟设置里选的一致），3秒消失
-  // 符号映射和设置页 selN 保持一致
-  var symMap={dot:'，',period:'。',ellip:'…',mid:'·',space:' ',star:'✦',tri:'▲',dia:'◆',wave:'〜',line:'|'};
-  var sym=symMap[lg('notifSym')||G.notifSym]||'，';
-  var dot=document.getElementById('_gc_dot');
-  if(!dot){
-    dot=document.createElement('span');
-    dot.id='_gc_dot';
-    dot.style.cssText='position:fixed;top:max(12px,env(safe-area-inset-top,12px));right:16px;z-index:9999;font-size:10px;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity .3s ease;pointer-events:none;line-height:1;';
-    document.body.appendChild(dot);
-  }
-  dot.textContent=sym;
-  dot.style.opacity='1';
-  clearTimeout(dot._t);
-  dot._t=setTimeout(function(){dot.style.opacity='0';},3000);
+  if(!('Notification' in window))return;
+  var symMap={dot:'●',line:'|',star:'✦',tri:'▲',dia:'◆',wave:'～',sync:'↻',mail:'✉'};
+  var sym=symMap[G.notifSym]||'●';
+  var txt={sys:'System update complete',sync:'Data syncing',cal:'Reminder',none:''}[G.notifTxt]||'';
+  if(Notification.permission==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});
+  else if(Notification.permission!=='denied')Notification.requestPermission().then(function(p){if(p==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});});
 }
 
 // ═══ 设置 ═══
