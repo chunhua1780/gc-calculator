@@ -240,13 +240,13 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .btn-blue{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 .field{background:var(--theme-field-bg);border:0.5px solid var(--theme-field-border);border-radius:12px;padding:14px 16px;color:var(--theme-text);font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
-.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;z-index:2;position:relative;}
+.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;position:relative;z-index:2;}
 .nav-lg{padding:max(44px,calc(36px + var(--safe-top))) 20px 10px;}
 .nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
 .nav-sm{padding:max(40px,calc(env(safe-area-inset-top,14px) + 8px)) 16px 8px;display:flex;align-items:center;justify-content:space-between;}
 .nav-sm .t{font-size:17px;font-weight:600;}
 .nav-btn{color:var(--theme-link);font-size:15px;cursor:pointer;padding:4px 8px;}
-.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),14px);z-index:2;position:relative;}
+.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),4px);position:relative;z-index:2;padding-bottom:max(var(--safe-bottom),14px);}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:var(--theme-tab-active);}
 .tab svg{width:24px;height:24px;}
@@ -276,7 +276,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
 @keyframes typingBounce{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-2px);}}
 .msg-img{max-width:min(260px,72vw);border-radius:16px;display:block;height:auto;object-fit:contain;}
-.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);z-index:2;position:relative;}
+.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);position:relative;z-index:2;}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
 .ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--theme-icon);flex-shrink:0;}
 .ibtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
@@ -1478,22 +1478,16 @@ var G={
 // ═══ 启动 ═══
 // 修复移动端100vh问题
 function fixVh(){
-  var vp=window.visualViewport;
-  var vh=vp?vp.height:window.innerHeight;
-  var vw=vp?vp.width:window.innerWidth;
+  var vh=window.visualViewport?window.visualViewport.height:window.innerHeight;
   document.documentElement.style.setProperty('--vh',(vh*0.01)+'px');
-  // 只对 active screen 设置高度，ibar 自动在底部
   var active=document.querySelector('.screen.active');
-  if(active){
-    active.style.height=vh+'px';
-    active.style.maxHeight=vh+'px';
-  }
+  if(active){active.style.height=vh+'px';active.style.maxHeight=vh+'px';}
 }
 function onVPResize(){
   fixVh();
-  // 键盘弹出时，聊天消息区滚到底
   var c=document.getElementById('chatMsgs');
-  if(c&&document.getElementById('chat')&&document.getElementById('chat').classList.contains('active')){
+  var chat=document.getElementById('chat');
+  if(c&&chat&&chat.classList.contains('active')){
     setTimeout(function(){c.scrollTop=c.scrollHeight;},80);
   }
 }
@@ -1501,7 +1495,7 @@ fixVh();
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize',onVPResize);
   window.visualViewport.addEventListener('scroll',onVPResize);
-} else {
+}else{
   window.addEventListener('resize',fixVh);
 }
 window.addEventListener('orientationchange',function(){setTimeout(fixVh,300);});
@@ -1518,22 +1512,18 @@ document.addEventListener('focusin',function(e){
 document.addEventListener('visibilitychange',function(){
   if(document.hidden){
     ls('lastHiddenAt',String(Date.now()));
-  }else{
-    var _actScr=document.querySelector('.screen.active');
-    var _actId=_actScr?_actScr.id:'';
-    // 登录页/密码门/锁屏页 不触发任何跳转
-    if(_actId==='reg'||_actId==='testgate'||_actId==='applock')return;
-    if(sessionStorage.getItem('testGatePassed')==='1'){
-      // 系统锁屏/切到后台再回来，重新要求内测密码
-      triggerTestGate();
-    }else if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
-      var last=parseInt(lg('lastHiddenAt')||'0');
-      var timeout=parseInt(lg('lockTimeout')||'0')*60000;
-      if(last>0&&Date.now()-last>=timeout){
-        triggerLock();
-      }
-    }
+    return;
   }
+  // 回到前台：先检查当前页面
+  var _cur=document.querySelector('.screen.active');
+  var _cid=_cur?_cur.id:'';
+  // 登录页、密码门、锁屏页 → 什么都不做
+  if(_cid==='reg'||_cid==='testgate'||_cid==='applock')return;
+  // 已设置 appLockPin 且开启了"离开自动锁" → 触发锁屏
+  if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
+    triggerLock();
+  }
+  // 注意：不再自动触发 testgate（密码门只在首次进入网站时要求一次）
 });
 window.addEventListener('pagehide',function(){
   ls('lastHiddenAt',String(Date.now()));
@@ -1711,8 +1701,8 @@ function setTestGatePin(){
   pushSettings();
 }
 function afterTestGate(){
+  sessionStorage.setItem('testGatePassed','1');
   if(G.hide){
-    // 隐藏模式下，testgate通过后直接进主界面，不走proceedStartup避免死循环
     if(lg('registered')){
       show('main');
       listenForCalls();listenForAllMessages();loadContacts();
