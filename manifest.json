@@ -1,0 +1,22 @@
+{
+  "name": "GhostChat",
+  "short_name": "GhostChat",
+  "start_url": "https://chunhua1780.github.io/ghostchat/",
+  "scope": "https://chunhua1780.github.io/ghostchat/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf2f8",
+  "theme_color": "#a18cd1",
+  "icons": [
+    {
+      "src": "./icon192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon192.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
