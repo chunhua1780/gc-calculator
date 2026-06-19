@@ -637,9 +637,6 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 </head>
 <body>
 
-<!-- ═══ PWA 安装横幅（Android Chrome）═══ -->
-<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9990;background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;padding:14px 16px calc(14px + env(safe-area-inset-bottom));align-items:center;gap:12px;font-family:-apple-system,sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,.15);">
-  <div style="font-size:22px;">👻</div>
   <div style="flex:1;">
     <div style="font-size:14px;font-weight:700;">安装 GhostChat</div>
     <div style="font-size:12px;opacity:.85;">添加到桌面，收发推送通知</div>
@@ -1038,34 +1035,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
       <div id="pushToggle" style="display:none;"></div>
 
       <!-- Bark 折叠抽屉 -->
-      <div style="border-top:1px solid var(--theme-border);">
-        <div onclick="toggleBarkDrawer()" style="display:flex;align-items:center;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-          <div class="si" style="background:var(--theme-row-bg);font-size:16px;display:flex;align-items:center;justify-content:center;">🌿</div>
-          <div style="flex:1;margin-left:12px;">
-            <div style="font-size:17px;">Bark 推送</div>
-            <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="barkUrlPreview">点击配置</div>
-          </div>
-          <span style="color:#c7c7cc;font-size:14px;transition:transform .2s;" id="barkDrawerArrow">›</span>
-        </div>
-        <div id="barkDrawer" style="display:none;padding:0 16px 14px;">
-          <div style="font-size:12px;color:#8e8e93;margin-bottom:6px;">Bark推送地址</div>
-          <div style="display:flex;gap:8px;">
-            <input id="barkUrlInput" type="url" inputmode="url" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-              placeholder="https://api.day.app/你的Key/"
-              style="flex:1;padding:10px 12px;border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:13px;background:var(--theme-field-bg);color:var(--theme-text);outline:none;font-family:monospace;min-width:0;">
-            <button onclick="saveBarkUrl()" style="padding:10px 14px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">保存</button>
-          </div>
-          <!-- 图标选择 -->
-          <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px;">
-            <div style="font-size:12px;color:#8e8e93;">推送图标</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:#8e8e93;" id="barkIconSelName">未选择</span>
-              <div id="barkIconPreviewWrap" style="width:32px;height:32px;border-radius:8px;border:2px solid var(--theme-accent1);overflow:hidden;background:var(--theme-field-bg);display:flex;align-items:center;justify-content:center;">
-                <img id="barkIconPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;" onerror="this.style.display='none';document.getElementById('barkIconFallback').style.display='flex'">
-                <span id="barkIconFallback" style="font-size:18px;display:flex;">🌿</span>
-              </div>
-            </div>
-          </div>
+      
           <div id="barkIconGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div>
           <div style="margin-top:6px;">
             <button onclick="toggleCustomIconInput()" style="font-size:11px;color:#8e8e93;background:none;border:none;cursor:pointer;padding:0;">自定义图标URL ›</button>
@@ -1084,12 +1054,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
         </div>
       </div>
 
-      <!-- 通知直达（Bark点通知打开App）-->
-      <div style="border-top:1px solid var(--theme-border);padding:14px 16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-size:14px;font-weight:500;color:var(--theme-text);">Bark通知直达桌面App</div>
-          <div style="font-size:12px;color:#34c759;" id="shortcutInstallStatus"></div>
-        </div>
+      
         <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.6;">
           只需建一个「打开GhostChat」捷径，之后点Bark通知直接静默打开桌面App，不影响其他App通知。
         </div>
@@ -2935,12 +2900,7 @@ function showPushIOSGuide(){
 }
 
 // ═══ PWA 安装横幅 ═══
-var _deferredInstall = null;
-window.addEventListener('beforeinstallprompt', function(e){
-  e.preventDefault();
-  _deferredInstall = e;
-  showInstallBanner();
-});
+// Android: beforeinstallprompt removed
 function showInstallBanner(){
   if(localStorage.getItem('installBannerDismissed')) return;
   if(window.navigator.standalone) return;
@@ -3194,36 +3154,7 @@ window.addEventListener('pagehide',function(){
 
 window.onload=function(){
   // 华为浏览器检测：顶部显示引导横幅
-  (function(){
-    var ua=navigator.userAgent;
-    var isHuawei=/HuaweiBrowser|HUAWEI|Honor/i.test(ua);
-    var isAndroid=/Android/i.test(ua);
-    var isStandalone=window.matchMedia('(display-mode: standalone)').matches
-                     ||window.matchMedia('(display-mode: fullscreen)').matches;
-    if(isHuawei&&isAndroid&&!isStandalone){
-      var banner=document.createElement('div');
-      banner.id='huaweiBanner';
-      banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:8888;background:#ff9500;color:#fff;'
-        +'padding:10px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.2);';
-      banner.innerHTML='<span>📱 当前浏览器不支持App安装，建议改用 Edge 或 Firefox</span>';
-      var closeBtn=document.createElement('button');
-      closeBtn.textContent='知道了 ›';
-      closeBtn.style.cssText='background:rgba(255,255,255,.25);border:none;color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap;margin-left:8px;';
-      closeBtn.onclick=function(){
-        banner.remove();
-        // 弹出详细引导
-        if(typeof showPwaGuide==='function')showPwaGuide();
-      };
-      banner.appendChild(closeBtn);
-      document.body.insertBefore(banner,document.body.firstChild);
-      // 自动给body加padding避免内容被遮挡
-      document.body.style.paddingTop='44px';
-      // 5秒后自动收起（不强制，不打扰）
-      setTimeout(function(){
-        if(banner.parentNode)banner.style.transition='opacity .5s';banner.style.opacity='0.7';
-      },5000);
-    }
-  })();
+  // Android: Huawei banner removed
 
   // ★ 老用户迁移：已有账号但没有gatePassedPersist → 自动补写，不再进屏保
   // 判断条件：registered=true + myId存在 + pin存在 = 之前已正常登录过
@@ -3291,9 +3222,7 @@ window.onload=function(){
   // 推送状态UI更新（不自动订阅，避免影响启动稳定性）
   updatePushToggleUI(lg('pushEnabled')==='1');
   // 显示安装横幅（如果不在standalone模式）
-  if(!window.navigator.standalone && !localStorage.getItem('installBannerDismissed')){
-    setTimeout(showInstallBanner, 3000);
-  }
+  // Android: no install banner
   if(!lg('registered')||!lg('myId')){
     // 没有账号 → 登录/注册页
     show('reg');
