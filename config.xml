@@ -10,7 +10,7 @@
 
     <!-- 兼容老设备：不强制要求过高安卓版本 -->
     <preference name="android-minSdkVersion" value="22" />
-    <preference name="android-targetSdkVersion" value="33" />
+    <preference name="android-targetSdkVersion" value="34" />
 
     <!-- WebView性能与兼容性 -->
     <preference name="AndroidXEnabled" value="true" />
@@ -24,11 +24,11 @@
 
     <platform name="android">
         <!-- 图标（圆角计算器图标） -->
-        <icon density="mdpi" src="res/icon/android/icon-mdpi.png" />
-        <icon density="hdpi" src="res/icon/android/icon-hdpi.png" />
-        <icon density="xhdpi" src="res/icon/android/icon-xhdpi.png" />
-        <icon density="xxhdpi" src="res/icon/android/icon-xxhdpi.png" />
-        <icon density="xxxhdpi" src="res/icon/android/icon-xxxhdpi.png" />
+        <icon density="mdpi" src="icon192.png" />
+        <icon density="hdpi" src="icon192.png" />
+        <icon density="xhdpi" src="icon192.png" />
+        <icon density="xxhdpi" src="icon512.png" />
+        <icon density="xxxhdpi" src="icon512.png" />
 
         <!-- 应用权限：保活+通知必需 -->
         <config-file target="AndroidManifest.xml" parent="/manifest">
