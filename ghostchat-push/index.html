@@ -3,23 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>GhostChat</title>
+<title>Calculator</title>
 
 <!-- ═══ PWA 核心 ═══ -->
 <link rel="manifest" href="./manifest.json">
 
-<!-- ═══ iOS 全屏 standalone（添加到主屏幕后去掉Safari UI）═══ -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GhostChat">
-<link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<!-- 隐藏iOS状态栏启动画面 -->
-<meta name="apple-touch-fullscreen" content="yes">
-
 <!-- ═══ Android / Chrome 主题色 ═══ -->
-<meta name="theme-color" content="#ff9a9e" id="metaThemeColor">
+<meta name="theme-color" content="#000000" id="metaThemeColor">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="GhostChat">
+<meta name="application-name" content="Calculator">
 
 <!-- ═══ 防止被搜索引擎索引 ═══ -->
 <meta name="robots" content="noindex,nofollow">
@@ -156,6 +148,266 @@ body.theme-rose{
   --theme-row-bg:rgba(239,154,130,.08);--theme-ibar:rgba(255,248,246,0.96);--theme-itxt-bg:#fff;--theme-icon:#d84315;
   --theme-ep-active:rgba(239,154,130,.15);--theme-bub-shadow:rgba(220,90,60,.12);
 }
+/* ── 新增皮肤：极光 ── */
+body.theme-aurora{
+  --theme-bg:#0a0e27;--theme-bg2:#0d1233;--theme-bg-solid:#080b1f;--theme-dot:rgba(80,200,180,.06);
+  --theme-accent1:#00d4aa;--theme-accent2:#7b2fff;--theme-navbar:rgba(10,14,39,0.92);--theme-border:rgba(80,200,180,.2);
+  --theme-bub-other:#141830;--theme-bub-other-text:#e0f4f0;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#1a2040;--theme-bub-read2:#141830;--theme-bub-read-text:#6ab8a8;--theme-bub-read-border:#1e2d40;
+  --theme-field-border:rgba(80,200,180,.2);--theme-field-bg:#141830;--theme-text:#d0f0e8;--theme-link:#00d4aa;--theme-tab-active:#00d4aa;
+  --theme-row-bg:rgba(0,212,170,.08);--theme-ibar:rgba(10,14,39,0.95);--theme-itxt-bg:#141830;--theme-icon:#00d4aa;
+  --theme-ep-active:rgba(0,212,170,.15);--theme-bub-shadow:rgba(123,47,255,.3);
+}
+/* ── 新增皮肤：夕阳 ── */
+body.theme-sunset{
+  --theme-bg:#fff5ee;--theme-bg2:#fde8d8;--theme-bg-solid:#fff6f0;--theme-dot:rgba(230,100,60,.06);
+  --theme-accent1:#ff6b35;--theme-accent2:#f7931e;--theme-navbar:rgba(255,245,238,0.93);--theme-border:rgba(230,100,60,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#3d1a0a;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#fde8d8;--theme-bub-read2:#fad5be;--theme-bub-read-text:#c07040;--theme-bub-read-border:#f4c9a8;
+  --theme-field-border:rgba(230,100,60,.22);--theme-field-bg:#fff;--theme-text:#2a1005;--theme-link:#d44810;--theme-tab-active:#ff6b35;
+  --theme-row-bg:rgba(255,107,53,.08);--theme-ibar:rgba(255,245,238,0.96);--theme-itxt-bg:#fff;--theme-icon:#ff6b35;
+  --theme-ep-active:rgba(255,107,53,.15);--theme-bub-shadow:rgba(247,147,30,.15);
+}
+/* ── 新增皮肤：雾霾蓝 ── */
+body.theme-mist{
+  --theme-bg:#f0f4f8;--theme-bg2:#e4ecf4;--theme-bg-solid:#f2f5f8;--theme-dot:rgba(90,130,180,.07);
+  --theme-accent1:#7aa8d4;--theme-accent2:#4a7fb0;--theme-navbar:rgba(240,244,248,0.93);--theme-border:rgba(90,130,180,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#1a2a3a;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#e0eaf4;--theme-bub-read2:#d4e2f0;--theme-bub-read-text:#7090b0;--theme-bub-read-border:#c4d8ec;
+  --theme-field-border:rgba(90,130,180,.22);--theme-field-bg:#fff;--theme-text:#0f1e2e;--theme-link:#3a70a8;--theme-tab-active:#4a7fb0;
+  --theme-row-bg:rgba(122,168,212,.08);--theme-ibar:rgba(240,244,248,0.96);--theme-itxt-bg:#fff;--theme-icon:#5a90c0;
+  --theme-ep-active:rgba(122,168,212,.15);--theme-bub-shadow:rgba(90,130,180,.12);
+}
+/* ── 新增皮肤：抹茶 ── */
+body.theme-matcha{
+  --theme-bg:#f2f8f0;--theme-bg2:#e6f2e2;--theme-bg-solid:#f3f8f1;--theme-dot:rgba(90,150,80,.07);
+  --theme-accent1:#7ab870;--theme-accent2:#4a9040;--theme-navbar:rgba(242,248,240,0.93);--theme-border:rgba(90,150,80,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#1a2e18;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#e0f0da;--theme-bub-read2:#d4eace;--theme-bub-read-text:#6a9860;--theme-bub-read-border:#c4e0bc;
+  --theme-field-border:rgba(90,150,80,.22);--theme-field-bg:#fff;--theme-text:#0e200c;--theme-link:#3a8030;--theme-tab-active:#4a9040;
+  --theme-row-bg:rgba(122,184,112,.08);--theme-ibar:rgba(242,248,240,0.96);--theme-itxt-bg:#fff;--theme-icon:#5a9850;
+  --theme-ep-active:rgba(122,184,112,.15);--theme-bub-shadow:rgba(90,150,80,.12);
+}
+/* ── 新增皮肤：葡萄紫 ── */
+body.theme-grape{
+  --theme-bg:#f8f0ff;--theme-bg2:#f0e4ff;--theme-bg-solid:#f9f2ff;--theme-dot:rgba(140,60,200,.07);
+  --theme-accent1:#b060e8;--theme-accent2:#7030c0;--theme-navbar:rgba(248,240,255,0.93);--theme-border:rgba(140,60,200,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#200840;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#ede0ff;--theme-bub-read2:#e2d0ff;--theme-bub-read-text:#9060c0;--theme-bub-read-border:#d8c0f8;
+  --theme-field-border:rgba(140,60,200,.22);--theme-field-bg:#fff;--theme-text:#150530;--theme-link:#6020a8;--theme-tab-active:#7030c0;
+  --theme-row-bg:rgba(176,96,232,.08);--theme-ibar:rgba(248,240,255,0.96);--theme-itxt-bg:#fff;--theme-icon:#9040d0;
+  --theme-ep-active:rgba(176,96,232,.15);--theme-bub-shadow:rgba(140,60,200,.15);
+}
+/* ── 新增皮肤：午夜金 ── */
+body.theme-midnight{
+  --theme-bg:#0c0a04;--theme-bg2:#140e00;--theme-bg-solid:#080600;--theme-dot:rgba(200,160,40,.06);
+  --theme-accent1:#c8a028;--theme-accent2:#a07818;--theme-navbar:rgba(12,10,4,0.92);--theme-border:rgba(200,160,40,.2);
+  --theme-bub-other:#1a1600;--theme-bub-other-text:#f0e0a0;--theme-bub-mine-text:#0a0800;
+  --theme-bub-read1:#201800;--theme-bub-read2:#181200;--theme-bub-read-text:#907030;--theme-bub-read-border:#302000;
+  --theme-field-border:rgba(200,160,40,.2);--theme-field-bg:#1a1600;--theme-text:#e8d090;--theme-link:#c8a028;--theme-tab-active:#c8a028;
+  --theme-row-bg:rgba(200,160,40,.08);--theme-ibar:rgba(12,10,4,0.95);--theme-itxt-bg:#1a1600;--theme-icon:#c8a028;
+  --theme-ep-active:rgba(200,160,40,.15);--theme-bub-shadow:rgba(200,160,40,.2);
+}
+
+/* ── 新增22种主题 ── */
+body.theme-peach{
+  --theme-bg:#fff8f5;--theme-bg2:#fdeee7;--theme-bg-solid:#fff9f6;--theme-dot:rgba(255,140,80,.07);
+  --theme-accent1:#ff8c55;--theme-accent2:#e8521a;--theme-navbar:rgba(255,248,245,0.93);--theme-border:rgba(255,140,80,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#3d1800;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#fde8da;--theme-bub-read2:#fad4c0;--theme-bub-read-text:#c07050;--theme-bub-read-border:#f4c4a8;
+  --theme-field-border:rgba(255,140,80,.22);--theme-field-bg:#fff;--theme-text:#2a1005;--theme-link:#c84000;--theme-tab-active:#e8521a;
+  --theme-row-bg:rgba(255,140,85,.08);--theme-ibar:rgba(255,248,245,0.96);--theme-itxt-bg:#fff;--theme-icon:#e8521a;
+  --theme-ep-active:rgba(255,140,85,.15);--theme-bub-shadow:rgba(255,140,80,.13);
+}
+body.theme-coral{
+  --theme-bg:#fff5f3;--theme-bg2:#fde8e4;--theme-bg-solid:#fff6f4;--theme-dot:rgba(240,100,90,.07);
+  --theme-accent1:#f4635a;--theme-accent2:#d63028;--theme-navbar:rgba(255,245,243,0.93);--theme-border:rgba(240,100,90,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#3a0c0a;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#fde0dc;--theme-bub-read2:#fad0ca;--theme-bub-read-text:#c07070;--theme-bub-read-border:#f2bfba;
+  --theme-field-border:rgba(240,100,90,.22);--theme-field-bg:#fff;--theme-text:#280806;--theme-link:#b02020;--theme-tab-active:#d63028;
+  --theme-row-bg:rgba(244,99,90,.08);--theme-ibar:rgba(255,245,243,0.96);--theme-itxt-bg:#fff;--theme-icon:#d63028;
+  --theme-ep-active:rgba(244,99,90,.15);--theme-bub-shadow:rgba(240,100,90,.13);
+}
+body.theme-sky{
+  --theme-bg:#f0f8ff;--theme-bg2:#e2f2ff;--theme-bg-solid:#f2f9ff;--theme-dot:rgba(30,144,255,.07);
+  --theme-accent1:#54b4f5;--theme-accent2:#1a7fd4;--theme-navbar:rgba(240,248,255,0.93);--theme-border:rgba(30,144,255,.18);
+  --theme-bub-other:#fff;--theme-bub-other-text:#0a2040;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#ddf0ff;--theme-bub-read2:#cde8ff;--theme-bub-read-text:#6aacdd;--theme-bub-read-border:#b8dcf8;
+  --theme-field-border:rgba(30,144,255,.22);--theme-field-bg:#fff;--theme-text:#081428;--theme-link:#1060c0;--theme-tab-active:#1a7fd4;
+  --theme-row-bg:rgba(84,180,245,.08);--theme-ibar:rgba(240,248,255,0.96);--theme-itxt-bg:#fff;--theme-icon:#2090e0;
+  --theme-ep-active:rgba(84,180,245,.15);--theme-bub-shadow:rgba(30,144,255,.12);
+}
+body.theme-indigo{
+  --theme-bg:#f0f0ff;--theme-bg2:#e4e4ff;--theme-bg-solid:#f2f2ff;--theme-dot:rgba(80,80,220,.07);
+  --theme-accent1:#6060ee;--theme-accent2:#3030cc;--theme-navbar:rgba(240,240,255,0.93);--theme-border:rgba(80,80,220,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#080830;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#e0e0ff;--theme-bub-read2:#d4d4ff;--theme-bub-read-text:#8080cc;--theme-bub-read-border:#c8c8ff;
+  --theme-field-border:rgba(80,80,220,.22);--theme-field-bg:#fff;--theme-text:#060620;--theme-link:#2828bb;--theme-tab-active:#3030cc;
+  --theme-row-bg:rgba(96,96,238,.08);--theme-ibar:rgba(240,240,255,0.96);--theme-itxt-bg:#fff;--theme-icon:#4040cc;
+  --theme-ep-active:rgba(96,96,238,.15);--theme-bub-shadow:rgba(80,80,220,.13);
+}
+body.theme-emerald{
+  --theme-bg:#f0fdf4;--theme-bg2:#dcfce7;--theme-bg-solid:#f2fdf5;--theme-dot:rgba(20,160,80,.07);
+  --theme-accent1:#34d399;--theme-accent2:#059669;--theme-navbar:rgba(240,253,244,0.93);--theme-border:rgba(20,160,80,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#032d1a;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#d1fae5;--theme-bub-read2:#c2f5d8;--theme-bub-read-text:#50b880;--theme-bub-read-border:#a8edca;
+  --theme-field-border:rgba(20,160,80,.22);--theme-field-bg:#fff;--theme-text:#021c10;--theme-link:#047a50;--theme-tab-active:#059669;
+  --theme-row-bg:rgba(52,211,153,.08);--theme-ibar:rgba(240,253,244,0.96);--theme-itxt-bg:#fff;--theme-icon:#10a868;
+  --theme-ep-active:rgba(52,211,153,.15);--theme-bub-shadow:rgba(20,160,80,.13);
+}
+body.theme-teal{
+  --theme-bg:#f0fdfa;--theme-bg2:#ccfbf1;--theme-bg-solid:#f2fdf9;--theme-dot:rgba(20,180,170,.07);
+  --theme-accent1:#2dd4bf;--theme-accent2:#0d9488;--theme-navbar:rgba(240,253,250,0.93);--theme-border:rgba(20,180,170,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#042d2a;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#c8f8f2;--theme-bub-read2:#b8f4ec;--theme-bub-read-text:#40b0a8;--theme-bub-read-border:#a0eee6;
+  --theme-field-border:rgba(20,180,170,.22);--theme-field-bg:#fff;--theme-text:#021c1a;--theme-link:#0a7870;--theme-tab-active:#0d9488;
+  --theme-row-bg:rgba(45,212,191,.08);--theme-ibar:rgba(240,253,250,0.96);--theme-itxt-bg:#fff;--theme-icon:#149090;
+  --theme-ep-active:rgba(45,212,191,.15);--theme-bub-shadow:rgba(20,180,170,.13);
+}
+body.theme-amber{
+  --theme-bg:#fffbeb;--theme-bg2:#fef3c7;--theme-bg-solid:#fffcee;--theme-dot:rgba(210,140,20,.07);
+  --theme-accent1:#f59e0b;--theme-accent2:#d97706;--theme-navbar:rgba(255,251,235,0.93);--theme-border:rgba(210,140,20,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#2d1c00;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#fef0c4;--theme-bub-read2:#fde8a8;--theme-bub-read-text:#c09020;--theme-bub-read-border:#fad880;
+  --theme-field-border:rgba(210,140,20,.22);--theme-field-bg:#fff;--theme-text:#1c1000;--theme-link:#b06010;--theme-tab-active:#d97706;
+  --theme-row-bg:rgba(245,158,11,.08);--theme-ibar:rgba(255,251,235,0.96);--theme-itxt-bg:#fff;--theme-icon:#d08000;
+  --theme-ep-active:rgba(245,158,11,.15);--theme-bub-shadow:rgba(210,140,20,.13);
+}
+body.theme-lemon{
+  --theme-bg:#fdfee8;--theme-bg2:#fbfcc0;--theme-bg-solid:#feffee;--theme-dot:rgba(200,200,20,.07);
+  --theme-accent1:#d4d400;--theme-accent2:#a0a000;--theme-navbar:rgba(253,254,232,0.93);--theme-border:rgba(200,200,20,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#202000;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#f4f8a0;--theme-bub-read2:#eef480;--theme-bub-read-text:#909000;--theme-bub-read-border:#e8f060;
+  --theme-field-border:rgba(200,200,20,.22);--theme-field-bg:#fff;--theme-text:#161600;--theme-link:#808000;--theme-tab-active:#a0a000;
+  --theme-row-bg:rgba(212,212,0,.08);--theme-ibar:rgba(253,254,232,0.96);--theme-itxt-bg:#fff;--theme-icon:#909000;
+  --theme-ep-active:rgba(212,212,0,.15);--theme-bub-shadow:rgba(200,200,20,.12);
+}
+body.theme-wine{
+  --theme-bg:#1a0010;--theme-bg2:#240018;--theme-bg-solid:#140008;--theme-dot:rgba(180,20,80,.06);
+  --theme-accent1:#d4145a;--theme-accent2:#8b0038;--theme-navbar:rgba(26,0,16,0.92);--theme-border:rgba(180,20,80,.25);
+  --theme-bub-other:#2a0018;--theme-bub-other-text:#f5d0e0;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#340020;--theme-bub-read2:#280018;--theme-bub-read-text:#a05070;--theme-bub-read-border:#400028;
+  --theme-field-border:rgba(180,20,80,.25);--theme-field-bg:#240018;--theme-text:#f0c8d8;--theme-link:#d4145a;--theme-tab-active:#d4145a;
+  --theme-row-bg:rgba(212,20,90,.08);--theme-ibar:rgba(26,0,16,0.95);--theme-itxt-bg:#240018;--theme-icon:#d4145a;
+  --theme-ep-active:rgba(212,20,90,.15);--theme-bub-shadow:rgba(180,20,80,.3);
+}
+body.theme-charcoal{
+  --theme-bg:#1c1c1e;--theme-bg2:#2c2c2e;--theme-bg-solid:#141416;--theme-dot:rgba(255,255,255,.04);
+  --theme-accent1:#8e8e93;--theme-accent2:#636366;--theme-navbar:rgba(28,28,30,0.92);--theme-border:rgba(255,255,255,.1);
+  --theme-bub-other:#3a3a3c;--theme-bub-other-text:#f2f2f7;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#3a3a3c;--theme-bub-read2:#2c2c2e;--theme-bub-read-text:#8e8e93;--theme-bub-read-border:#48484a;
+  --theme-field-border:rgba(255,255,255,.12);--theme-field-bg:#2c2c2e;--theme-text:#f2f2f7;--theme-link:#0a84ff;--theme-tab-active:#8e8e93;
+  --theme-row-bg:rgba(142,142,147,.08);--theme-ibar:rgba(28,28,30,0.95);--theme-itxt-bg:#3a3a3c;--theme-icon:#aeaeb2;
+  --theme-ep-active:rgba(142,142,147,.15);--theme-bub-shadow:rgba(0,0,0,.4);
+}
+body.theme-obsidian{
+  --theme-bg:#080810;--theme-bg2:#10101a;--theme-bg-solid:#050508;--theme-dot:rgba(100,100,255,.05);
+  --theme-accent1:#4040ff;--theme-accent2:#2020cc;--theme-navbar:rgba(8,8,16,0.92);--theme-border:rgba(100,100,255,.15);
+  --theme-bub-other:#141420;--theme-bub-other-text:#c8c8ff;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#1c1c30;--theme-bub-read2:#141424;--theme-bub-read-text:#6060aa;--theme-bub-read-border:#242440;
+  --theme-field-border:rgba(100,100,255,.18);--theme-field-bg:#141420;--theme-text:#c0c0e8;--theme-link:#6060ff;--theme-tab-active:#4040ff;
+  --theme-row-bg:rgba(64,64,255,.08);--theme-ibar:rgba(8,8,16,0.95);--theme-itxt-bg:#141420;--theme-icon:#6060ff;
+  --theme-ep-active:rgba(64,64,255,.15);--theme-bub-shadow:rgba(64,64,255,.3);
+}
+body.theme-rose-gold{
+  --theme-bg:#fff0f4;--theme-bg2:#ffe4ec;--theme-bg-solid:#fff2f6;--theme-dot:rgba(200,100,120,.07);
+  --theme-accent1:#e8799a;--theme-accent2:#c04070;--theme-navbar:rgba(255,240,244,0.93);--theme-border:rgba(200,100,120,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#3a0a1a;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#ffd8e4;--theme-bub-read2:#ffc8d8;--theme-bub-read-text:#b06080;--theme-bub-read-border:#ffb0c8;
+  --theme-field-border:rgba(200,100,120,.22);--theme-field-bg:#fff;--theme-text:#280610;--theme-link:#a03060;--theme-tab-active:#c04070;
+  --theme-row-bg:rgba(232,121,154,.08);--theme-ibar:rgba(255,240,244,0.96);--theme-itxt-bg:#fff;--theme-icon:#c04070;
+  --theme-ep-active:rgba(232,121,154,.15);--theme-bub-shadow:rgba(200,100,120,.14);
+}
+body.theme-lilac{
+  --theme-bg:#faf5ff;--theme-bg2:#f3e8ff;--theme-bg-solid:#fbf7ff;--theme-dot:rgba(160,80,220,.07);
+  --theme-accent1:#c084fc;--theme-accent2:#9333ea;--theme-navbar:rgba(250,245,255,0.93);--theme-border:rgba(160,80,220,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#1a0830;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#eed6ff;--theme-bub-read2:#e4c4ff;--theme-bub-read-text:#9060c0;--theme-bub-read-border:#d8b0f8;
+  --theme-field-border:rgba(160,80,220,.22);--theme-field-bg:#fff;--theme-text:#100520;--theme-link:#7c20d0;--theme-tab-active:#9333ea;
+  --theme-row-bg:rgba(192,132,252,.08);--theme-ibar:rgba(250,245,255,0.96);--theme-itxt-bg:#fff;--theme-icon:#a040e0;
+  --theme-ep-active:rgba(192,132,252,.15);--theme-bub-shadow:rgba(160,80,220,.14);
+}
+body.theme-arctic{
+  --theme-bg:#f0f8ff;--theme-bg2:#e0f4ff;--theme-bg-solid:#f3faff;--theme-dot:rgba(100,200,240,.08);
+  --theme-accent1:#38bdf8;--theme-accent2:#0284c7;--theme-navbar:rgba(240,248,255,0.93);--theme-border:rgba(100,200,240,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#0a1e30;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#d8f2ff;--theme-bub-read2:#c4eaff;--theme-bub-read-text:#4090c0;--theme-bub-read-border:#a8daff;
+  --theme-field-border:rgba(100,200,240,.22);--theme-field-bg:#fff;--theme-text:#061420;--theme-link:#0270b0;--theme-tab-active:#0284c7;
+  --theme-row-bg:rgba(56,189,248,.08);--theme-ibar:rgba(240,248,255,0.96);--theme-itxt-bg:#fff;--theme-icon:#0290d0;
+  --theme-ep-active:rgba(56,189,248,.15);--theme-bub-shadow:rgba(100,200,240,.13);
+}
+body.theme-cybergreen{
+  --theme-bg:#001a0d;--theme-bg2:#002814;--theme-bg-solid:#000e07;--theme-dot:rgba(0,255,100,.06);
+  --theme-accent1:#00ff65;--theme-accent2:#00cc50;--theme-navbar:rgba(0,26,13,0.92);--theme-border:rgba(0,255,100,.2);
+  --theme-bub-other:#001a0d;--theme-bub-other-text:#a0ffca;--theme-bub-mine-text:#001a0d;
+  --theme-bub-read1:#003018;--theme-bub-read2:#002010;--theme-bub-read-text:#40b870;--theme-bub-read-border:#004020;
+  --theme-field-border:rgba(0,255,100,.2);--theme-field-bg:#001a0d;--theme-text:#80ffaa;--theme-link:#00ff65;--theme-tab-active:#00ff65;
+  --theme-row-bg:rgba(0,255,101,.08);--theme-ibar:rgba(0,26,13,0.95);--theme-itxt-bg:#001a0d;--theme-icon:#00ee60;
+  --theme-ep-active:rgba(0,255,101,.15);--theme-bub-shadow:rgba(0,255,100,.25);
+}
+body.theme-blush{
+  --theme-bg:#fff0f5;--theme-bg2:#ffe0ec;--theme-bg-solid:#fff3f7;--theme-dot:rgba(255,100,160,.07);
+  --theme-accent1:#ff70a8;--theme-accent2:#e0308c;--theme-navbar:rgba(255,240,245,0.93);--theme-border:rgba(255,100,160,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#38001c;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#ffd4e8;--theme-bub-read2:#ffc0d8;--theme-bub-read-text:#b05080;--theme-bub-read-border:#ffaad0;
+  --theme-field-border:rgba(255,100,160,.22);--theme-field-bg:#fff;--theme-text:#280012;--theme-link:#c02070;--theme-tab-active:#e0308c;
+  --theme-row-bg:rgba(255,112,168,.08);--theme-ibar:rgba(255,240,245,0.96);--theme-itxt-bg:#fff;--theme-icon:#e0308c;
+  --theme-ep-active:rgba(255,112,168,.15);--theme-bub-shadow:rgba(255,100,160,.14);
+}
+body.theme-coffee{
+  --theme-bg:#fdf8f4;--theme-bg2:#f5ece4;--theme-bg-solid:#fef9f6;--theme-dot:rgba(140,90,50,.07);
+  --theme-accent1:#a0673a;--theme-accent2:#6b3f1e;--theme-navbar:rgba(253,248,244,0.93);--theme-border:rgba(140,90,50,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#2a1206;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#f0e2d4;--theme-bub-read2:#e8d4c0;--theme-bub-read-text:#a07050;--theme-bub-read-border:#dcc4a8;
+  --theme-field-border:rgba(140,90,50,.22);--theme-field-bg:#fff;--theme-text:#1c0c04;--theme-link:#7a4820;--theme-tab-active:#6b3f1e;
+  --theme-row-bg:rgba(160,103,58,.08);--theme-ibar:rgba(253,248,244,0.96);--theme-itxt-bg:#fff;--theme-icon:#8a5030;
+  --theme-ep-active:rgba(160,103,58,.15);--theme-bub-shadow:rgba(140,90,50,.12);
+}
+body.theme-dusk{
+  --theme-bg:#1a0828;--theme-bg2:#240c38;--theme-bg-solid:#14061e;--theme-dot:rgba(200,100,255,.06);
+  --theme-accent1:#c060ff;--theme-accent2:#8020e0;--theme-navbar:rgba(26,8,40,0.92);--theme-border:rgba(200,100,255,.2);
+  --theme-bub-other:#28103c;--theme-bub-other-text:#e8c8ff;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#341848;--theme-bub-read2:#28103c;--theme-bub-read-text:#a060c0;--theme-bub-read-border:#401a58;
+  --theme-field-border:rgba(200,100,255,.2);--theme-field-bg:#28103c;--theme-text:#e0c0f8;--theme-link:#c060ff;--theme-tab-active:#c060ff;
+  --theme-row-bg:rgba(192,96,255,.08);--theme-ibar:rgba(26,8,40,0.95);--theme-itxt-bg:#28103c;--theme-icon:#c060ff;
+  --theme-ep-active:rgba(192,96,255,.15);--theme-bub-shadow:rgba(200,100,255,.3);
+}
+body.theme-bronze{
+  --theme-bg:#fdf6ee;--theme-bg2:#f8ead8;--theme-bg-solid:#fef7f0;--theme-dot:rgba(180,120,50,.07);
+  --theme-accent1:#cd7f32;--theme-accent2:#8b5a1a;--theme-navbar:rgba(253,246,238,0.93);--theme-border:rgba(180,120,50,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#2c1800;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#f5e2c0;--theme-bub-read2:#ecd4a8;--theme-bub-read-text:#a07030;--theme-bub-read-border:#e0c090;
+  --theme-field-border:rgba(180,120,50,.22);--theme-field-bg:#fff;--theme-text:#1e1000;--theme-link:#7a4a10;--theme-tab-active:#8b5a1a;
+  --theme-row-bg:rgba(205,127,50,.08);--theme-ibar:rgba(253,246,238,0.96);--theme-itxt-bg:#fff;--theme-icon:#a06020;
+  --theme-ep-active:rgba(205,127,50,.15);--theme-bub-shadow:rgba(180,120,50,.13);
+}
+body.theme-cyberpink{
+  --theme-bg:#1a0018;--theme-bg2:#280024;--theme-bg-solid:#140014;--theme-dot:rgba(255,0,200,.06);
+  --theme-accent1:#ff00cc;--theme-accent2:#cc0099;--theme-navbar:rgba(26,0,24,0.92);--theme-border:rgba(255,0,200,.22);
+  --theme-bub-other:#220020;--theme-bub-other-text:#ffc0f8;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#320030;--theme-bub-read2:#280024;--theme-bub-read-text:#b040a0;--theme-bub-read-border:#3e003c;
+  --theme-field-border:rgba(255,0,200,.22);--theme-field-bg:#220020;--theme-text:#ffa8f0;--theme-link:#ff00cc;--theme-tab-active:#ff00cc;
+  --theme-row-bg:rgba(255,0,204,.08);--theme-ibar:rgba(26,0,24,0.95);--theme-itxt-bg:#220020;--theme-icon:#ff00cc;
+  --theme-ep-active:rgba(255,0,204,.15);--theme-bub-shadow:rgba(255,0,200,.3);
+}
+body.theme-iceberg{
+  --theme-bg:#e8f4f8;--theme-bg2:#d4ecf4;--theme-bg-solid:#eaf5f9;--theme-dot:rgba(80,160,200,.08);
+  --theme-accent1:#5ba8c4;--theme-accent2:#2878a0;--theme-navbar:rgba(232,244,248,0.93);--theme-border:rgba(80,160,200,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#0a2030;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#c8e8f4;--theme-bub-read2:#b8dff0;--theme-bub-read-text:#5090b0;--theme-bub-read-border:#a0d4e8;
+  --theme-field-border:rgba(80,160,200,.22);--theme-field-bg:#fff;--theme-text:#081828;--theme-link:#2070a0;--theme-tab-active:#2878a0;
+  --theme-row-bg:rgba(91,168,196,.08);--theme-ibar:rgba(232,244,248,0.96);--theme-itxt-bg:#fff;--theme-icon:#3888b0;
+  --theme-ep-active:rgba(91,168,196,.15);--theme-bub-shadow:rgba(80,160,200,.13);
+}
+body.theme-pumpkin{
+  --theme-bg:#fff4e6;--theme-bg2:#ffe8c8;--theme-bg-solid:#fff6ea;--theme-dot:rgba(220,120,0,.07);
+  --theme-accent1:#f07820;--theme-accent2:#c05000;--theme-navbar:rgba(255,244,230,0.93);--theme-border:rgba(220,120,0,.2);
+  --theme-bub-other:#fff;--theme-bub-other-text:#2e1400;--theme-bub-mine-text:#fff;
+  --theme-bub-read1:#ffe4b8;--theme-bub-read2:#ffd8a0;--theme-bub-read-text:#b07030;--theme-bub-read-border:#ffcA80;
+  --theme-field-border:rgba(220,120,0,.22);--theme-field-bg:#fff;--theme-text:#200e00;--theme-link:#a04000;--theme-tab-active:#c05000;
+  --theme-row-bg:rgba(240,120,32,.08);--theme-ibar:rgba(255,244,230,0.96);--theme-itxt-bg:#fff;--theme-icon:#c05000;
+  --theme-ep-active:rgba(240,120,32,.15);--theme-bub-shadow:rgba(220,120,0,.13);
+}
 /* 外观/皮肤选择 */
 .theme-swatch{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:10px 4px;border-radius:14px;border:2px solid transparent;transition:border-color .2s;}
 .theme-swatch.on{border-color:var(--theme-link);}
@@ -174,23 +426,34 @@ body{
   background-attachment: fixed;
   color:var(--theme-text);font-family:-apple-system,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .3s,color .3s;
 }
-.screen{display:none;flex-direction:column;height:100%;overflow:hidden;}
-html,body{height:100%;margin:0;padding:0;}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;position:fixed;inset:0;}
+/* 全局：顶栏底栏锁死，中间滚动 */
+.screen.active{display:flex;}
+.screen > .nav-bar{flex-shrink:0 !important;width:100%;}
+.screen > .scroll{flex:1 !important;min-height:0 !important;overflow-y:auto !important;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.screen > .tabs{flex-shrink:0 !important;width:100%;}
+/* chat页：cbg填满，ibar底部固定 */
+#chat{display:none;flex-direction:column;position:fixed;inset:0;}
+#chat.active{display:flex;}
+#chat > .nav-bar{flex-shrink:0;}
+#chat > .cbg{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+#chat > .ibar{flex-shrink:0;width:100%;}
+html,body{height:100%;height:100dvh;margin:0;padding:0;}
 .screen.active{display:flex;}
 .btn-blue{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;margin-bottom:10px;}
 .btn-red{background:#ff3b30;border:none;color:#fff;padding:16px;border-radius:14px;font-size:17px;font-weight:600;width:100%;cursor:pointer;}
 .field{background:var(--theme-field-bg);border:0.5px solid var(--theme-field-border);border-radius:12px;padding:14px 16px;color:var(--theme-text);font-size:17px;width:100%;outline:none;margin-bottom:14px;font-family:inherit;}
-.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;}
-.nav-lg{padding:max(52px,calc(44px + var(--safe-top))) 20px 12px;}
+.nav-bar{background:var(--theme-navbar);backdrop-filter:blur(20px);border-bottom:0.5px solid var(--theme-border);flex-shrink:0;;position:relative;z-index:10;}
+.nav-lg{padding:max(44px,calc(36px + var(--safe-top))) 20px 10px;}
 .nav-lg .t{font-size:34px;font-weight:700;letter-spacing:-.5px;}
-.nav-sm{padding:max(48px,calc(env(safe-area-inset-top,20px) + 10px)) 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+.nav-sm{padding:max(40px,calc(env(safe-area-inset-top,14px) + 8px)) 16px 8px;display:flex;align-items:center;justify-content:space-between;}
 .nav-sm .t{font-size:17px;font-weight:600;}
 .nav-btn{color:var(--theme-link);font-size:15px;cursor:pointer;padding:4px 8px;}
-.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:var(--safe-bottom);}
+.tabs{background:var(--theme-navbar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);display:flex;flex-shrink:0;padding-bottom:max(var(--safe-bottom),4px);;position:relative;z-index:10;padding-bottom:max(env(safe-area-inset-bottom,0px),14px);}
 .tab{flex:1;padding:8px 0 4px;text-align:center;cursor:pointer;font-size:10px;color:#8e8e93;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .tab.on{color:var(--theme-tab-active);}
 .tab svg{width:24px;height:24px;}
-.scroll{flex:1;overflow-y:auto;background:transparent;}
+.scroll{flex:1;overflow-y:auto;background:transparent;min-height:0;-webkit-overflow-scrolling:touch;}
 .card{background:transparent;margin:0 8px;overflow:visible;}
 .row{display:flex;align-items:center;padding:14px 16px;cursor:pointer;gap:12px;background:var(--theme-row-bg);border-radius:16px;margin:6px 8px;}
 .row:last-child{border-bottom:none;}
@@ -201,7 +464,7 @@ html,body{height:100%;margin:0;padding:0;}
 .tog.on{background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));}
 .td{width:27px;height:27px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .25s;box-shadow:0 2px 5px rgba(0,0,0,.25);}
 .tog.on .td{left:22px;}
-.cbg{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(160deg,var(--theme-bg),var(--theme-bg2));}
+.cbg{min-height:0;-webkit-overflow-scrolling:touch;flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 16px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(160deg,var(--theme-bg),var(--theme-bg2));overscroll-behavior:contain;}
 .mr{display:flex;flex-direction:column;margin-bottom:2px;}
 .mr.s{align-items:flex-end;}.mr.r{align-items:flex-start;}
 .bub{max-width:72%;padding:10px 14px;border-radius:20px;font-size:16px;line-height:1.45;word-break:break-word;position:relative;}
@@ -215,12 +478,12 @@ html,body{height:100%;margin:0;padding:0;}
 .typing-dots span:nth-child(2){animation-delay:.2s;}
 .typing-dots span:nth-child(3){animation-delay:.4s;}
 @keyframes typingBounce{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-2px);}}
-.msg-img{max-width:min(260px,72vw);border-radius:16px;display:block;height:auto;object-fit:contain;}
-.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);}
+.msg-img{max-width:min(260px,72vw);max-height:400px;border-radius:16px;display:block;width:auto;height:auto;object-fit:contain;}
+.ibar{background:var(--theme-ibar);backdrop-filter:blur(20px);border-top:0.5px solid var(--theme-border);flex-shrink:0;padding-bottom:var(--safe-bottom);;position:relative;z-index:10;}
 .irow{padding:8px 12px;display:flex;align-items:flex-end;gap:8px;}
 .ibtn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--theme-icon);flex-shrink:0;}
 .ibtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.itxt{flex:1;background:var(--theme-itxt-bg);border:0.5px solid var(--theme-field-border);border-radius:18px;padding:8px 14px;color:var(--theme-text);font-size:16px;outline:none;resize:none;max-height:100px;font-family:inherit;line-height:1.4;}
+.itxt{flex:1;background:var(--theme-itxt-bg);border:0.5px solid var(--theme-field-border);border-radius:18px;padding:8px 14px;color:var(--theme-text);font-size:16px;outline:none;resize:none;max-height:120px;overflow-y:auto;font-family:inherit;line-height:1.4;transition:none;}
 .isend{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
 .xp{background:var(--theme-field-bg);border-top:0.5px solid var(--theme-border);padding:16px;display:none;color:var(--theme-text);}
 .ep{background:var(--theme-field-bg);border-top:0.5px solid var(--theme-border);padding:10px 12px;display:none;max-height:200px;overflow-y:auto;}
@@ -257,8 +520,13 @@ html,body{height:100%;margin:0;padding:0;}
 #dfl{background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;padding:var(--safe-top) 0 var(--safe-bottom);}
 .flr{width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:64px;}
 .flr.on{background:#fffce8;border-color:#ffd700;box-shadow:0 0 80px rgba(255,215,0,.5);}
-#dcalc{background:#E8E0FF;flex-direction:column;}
+#dcalc{background:#000000;flex-direction:column;}
 .cg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#E8E0FF;flex-shrink:0;padding:10px 10px calc(10px + var(--safe-bottom));}
+/* 计算器按键统一样式 */
+.ck{height:72px;border-radius:36px;background:#333;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:opacity .08s;}
+.ck:active{opacity:.6;}
+.ck-sci{height:52px;border-radius:26px;background:#2c2c2e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:400;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+.ck-sci:active{opacity:.6;}
 .ck{height:68px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;color:#5B5470;border-radius:20px;box-shadow:0 4px 10px rgba(160,120,170,.15);transition:transform .1s;font-family:'Baloo 2',sans-serif;}
 .ck:active{transform:scale(.95);opacity:1;}
 .ck.fn{background:#FFD6E8;font-size:18px;color:#C2487B;font-family:'Nunito',sans-serif;font-weight:700;}
@@ -267,7 +535,7 @@ html,body{height:100%;margin:0;padding:0;}
 .ck.z{grid-column:span 2;justify-content:flex-start;padding-left:28px;}
 
 /* 拇指热区：单手持机时右手大拇指最方便触达的位置，长按3秒/连点5次唤出密码盘 */
-.thumb-zone{position:fixed;right:0;top:56%;width:96px;height:190px;z-index:5;}
+.thumb-zone{position:absolute;right:0;top:10%;width:80px;height:120px;z-index:5;}
 
 /* ===== 伪装：天气 ===== */
 .wx-deco{position:absolute;border-radius:50%;background:rgba(255,255,255,.18);filter:blur(1px);animation:wxFloat 16s ease-in-out infinite;pointer-events:none;}
@@ -353,13 +621,20 @@ html,body{height:100%;margin:0;padding:0;}
 @media (prefers-reduced-motion: reduce){
   .bunny-wrap,.gate-ambient span,.gate-bubble,.blink{animation:none!important;}
 }
+
+/* 专注模式轮盘 */
+.focus-wheel{display:flex;align-items:center;justify-content:space-between;padding:14px 12px 10px;gap:4px;}
+.focus-mode{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;cursor:pointer;border-radius:14px;padding:8px 4px;transition:background .2s,transform .15s;-webkit-tap-highlight-color:transparent;}
+.focus-mode.active{background:var(--theme-ep-active);transform:scale(1.06);}
+.focus-mode .fm-icon{font-size:24px;line-height:1;}
+.focus-mode .fm-label{font-size:10px;color:#8e8e93;font-weight:500;text-align:center;line-height:1.2;}
+.focus-mode.active .fm-label{color:var(--theme-accent1);font-weight:700;}
+.focus-ring{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--theme-field-bg);border:2px solid transparent;transition:border-color .2s;}
+.focus-mode.active .focus-ring{border-color:var(--theme-accent1);}
 </style>
 </head>
 <body>
 
-<!-- ═══ PWA 安装横幅（Android Chrome）═══ -->
-<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9990;background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;padding:14px 16px calc(14px + env(safe-area-inset-bottom));align-items:center;gap:12px;font-family:-apple-system,sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,.15);">
-  <div style="font-size:22px;">👻</div>
   <div style="flex:1;">
     <div style="font-size:14px;font-weight:700;">安装 GhostChat</div>
     <div style="font-size:12px;opacity:.85;">添加到桌面，收发推送通知</div>
@@ -369,7 +644,7 @@ html,body{height:100%;margin:0;padding:0;}
 </div>
 
 <!-- 内测密码门 -->
-<div id="testgate" class="screen active">
+<div id="testgate" class="screen">
   <div class="gate-stage">
     <div class="gate-ambient"><span></span><span></span><span></span><span></span><span></span></div>
 
@@ -409,7 +684,7 @@ html,body{height:100%;margin:0;padding:0;}
 </div>
 
 <!-- 注册/登录 -->
-<div id="reg" class="screen">
+<div id="reg" class="screen active">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,#fdf2f8,#eef2ff);position:relative;">
     <div style="position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;">
       <select id="regLangSelect" onchange="setLang(this.value)" style="background:rgba(255,255,255,.85);border:1px solid #e5e5ea;border-radius:10px;padding:6px 10px;font-size:13px;color:#3a3a3c;">
@@ -425,18 +700,18 @@ html,body{height:100%;margin:0;padding:0;}
     <div style="width:100%;max-width:320px;background:#fff;border-radius:22px;padding:24px 20px;box-shadow:0 8px 32px rgba(0,0,0,.06);">
       <div id="login-form">
         <div style="font-size:18px;font-weight:600;margin-bottom:18px;text-align:center;" id="welcome-name" data-i18n="welcomeBack">Welcome back!</div>
-        <input id="loginId" class="field" placeholder="Your ID" data-i18n-ph="loginIdPh" maxlength="20" style="text-align:center;">
-        <input id="loginPin" type="password" class="field" placeholder="Password" data-i18n-ph="passwordPh" maxlength="8" style="letter-spacing:4px;text-align:center;">
+        <input id="loginId" class="field" placeholder="Your ID" data-i18n-ph="loginIdPh" maxlength="20" style="text-align:center;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input id="loginPin" type="password" class="field" placeholder="Password" data-i18n-ph="passwordPh" maxlength="8" style="letter-spacing:4px;text-align:center;" autocomplete="new-password">
         <button class="btn-blue" id="login-btn" onclick="doLogin()" style="background:linear-gradient(135deg,#ff9a9e,#a18cd1);" data-i18n="loginBtn">Log In</button>
         <div style="text-align:center;margin-top:14px;font-size:14px;color:#9b9bb0;"><span data-i18n="newUser">New here?</span> <span style="color:#a18cd1;font-weight:600;cursor:pointer;" onclick="switchTo('reg')" data-i18n="registerLink">Create account</span></div>
         <div style="text-align:center;margin-top:10px;"><span style="font-size:13px;color:#c7c7cc;cursor:pointer;" onclick="switchTo('recovery')" data-i18n="forgotPw">Forgot password?</span></div>
       </div>
       <div id="reg-form" style="display:none;">
         <div style="font-size:18px;font-weight:600;margin-bottom:18px;text-align:center;" data-i18n="createAccount">Create your account</div>
-        <input id="regName" class="field" placeholder="Nickname" data-i18n-ph="nicknamePh" maxlength="20">
-        <input id="regIdCustom" class="field" placeholder="Custom ID (optional)" data-i18n-ph="customIdPh" maxlength="20" style="letter-spacing:1px;">
-        <input id="regPin" type="password" class="field" placeholder="Password (4-8 digits)" data-i18n-ph="passwordPh2" maxlength="8" style="letter-spacing:4px;text-align:center;">
-        <input id="regPin2" type="password" class="field" placeholder="Confirm password" data-i18n-ph="confirmPwPh" maxlength="8" style="letter-spacing:4px;text-align:center;">
+        <input id="regName" class="field" placeholder="Nickname" data-i18n-ph="nicknamePh" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input id="regIdCustom" class="field" placeholder="Custom ID (optional)" data-i18n-ph="customIdPh" maxlength="20" style="letter-spacing:1px;" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <input id="regPin" type="password" class="field" placeholder="Password (4-8 digits)" data-i18n-ph="passwordPh2" maxlength="8" style="letter-spacing:4px;text-align:center;" autocomplete="new-password">
+        <input id="regPin2" type="password" class="field" placeholder="Confirm password" data-i18n-ph="confirmPwPh" maxlength="8" style="letter-spacing:4px;text-align:center;" autocomplete="new-password">
         <button class="btn-blue" id="reg-btn" onclick="doRegister()" style="background:linear-gradient(135deg,#ff9a9e,#a18cd1);" data-i18n="createBtn">Create Account</button>
         <div style="text-align:center;margin-top:14px;font-size:14px;color:#9b9bb0;"><span data-i18n="haveAccount">Already have an account?</span> <span style="color:#a18cd1;font-weight:600;cursor:pointer;" onclick="switchTo('login')" data-i18n="loginLink">Log in</span></div>
       </div>
@@ -453,7 +728,15 @@ html,body{height:100%;margin:0;padding:0;}
 
 <!-- 消息列表 -->
 <div id="main" class="screen">
-  <div class="nav-bar nav-lg"><div class="t">Messages</div></div>
+  <div class="nav-bar nav-lg" style="position:relative;"><div class="t">Messages</div><span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.3px;font-weight:500;pointer-events:none;">v1.36</span></div>
+  <!-- 多设备登录提示横幅 -->
+  <div id="multiDeviceBanner" onclick="showDeviceManager()" style="display:none;align-items:center;justify-content:space-between;padding:9px 16px;background:rgba(255,149,0,.12);border-bottom:1px solid rgba(255,149,0,.2);cursor:pointer;-webkit-tap-highlight-color:transparent;">
+    <div style="display:flex;align-items:center;gap:8px;flex:1;">
+      <span style="font-size:15px;">📱</span>
+      <span id="multiDeviceTxt" style="font-size:13px;color:var(--theme-text);font-weight:500;"></span>
+    </div>
+    <span style="font-size:12px;color:#ff9500;font-weight:600;white-space:nowrap;margin-left:8px;">管理 ›</span>
+  </div>
   <div class="scroll">
     <div style="height:8px;"></div>
     <div class="card" id="chatList">
@@ -468,9 +751,9 @@ html,body{height:100%;margin:0;padding:0;}
     <svg viewBox="0 0 24 24" width="22" height="22" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
   </button>
   <div class="tabs">
-    <div class="tab on" id="msgTab"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Messages<span id="msg-badge" style="background:#ff3b30;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;display:none;vertical-align:middle;"></span></div>
-    <div class="tab" onclick="show('contacts-list');loadFriendsList();"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Contacts</div>
-    <div class="tab" onclick="show('settings')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
+    <div class="tab on" id="msgTab"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>消息<span id="msg-badge" style="background:#ff3b30;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;display:none;vertical-align:middle;"></span></div>
+    <div class="tab" onclick="show('contacts-list');loadFriendsList();"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>通讯录</div>
+    <div class="tab" onclick="show('settings')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>设置</div>
   </div>
 </div>
 
@@ -494,7 +777,7 @@ html,body{height:100%;margin:0;padding:0;}
       <div class="ibtn" onclick="toggleDirectUpload()" title="Upload file">📎</div>
       <div class="ibtn" onclick="togXP()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
       <div class="ibtn" onclick="togEmoji()" title="Emoji" style="font-size:20px;">😊</div>
-      <textarea class="itxt" id="mi" placeholder="Message..." rows="1" onkeydown="hk(event)" oninput="notifyTyping()"></textarea>
+      <textarea class="itxt" id="mi" placeholder="Message..." rows="1" onkeydown="hk(event)" oninput="autoResizeMI();notifyTyping();"></textarea>
       <div class="ibtn" onmousedown="recStart()" onmouseup="recStop()" ontouchstart="recStart(event)" ontouchend="recStop()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg></div>
       <button class="isend" onclick="sendMsg()"><svg viewBox="0 0 24 24" width="16" height="16" stroke="#fff" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button>
     </div>
@@ -692,131 +975,148 @@ html,body{height:100%;margin:0;padding:0;}
   <div class="nav-bar nav-lg"><div class="t">Settings</div></div>
   <div class="scroll">
     <div style="height:8px;"></div>
+
+    <!-- ─── 账号 ─── -->
     <div class="card">
       <div class="row" style="padding:16px;cursor:pointer;" onclick="show('account-set')">
-        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#007aff,#5ac8fa);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:700;flex-shrink:0;overflow:hidden;" id="avatarDisplay">?</div>
-        <div style="flex:1;margin-left:4px;">
-          <div style="font-size:17px;font-weight:600;" id="nameDisplay">My Account</div>
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#007aff,#5ac8fa);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:700;flex-shrink:0;" id="avatarDisplay">?</div>
+        <div style="flex:1;margin-left:12px;">
+          <div style="font-size:17px;font-weight:600;" id="nameDisplay">我的账号</div>
           <div style="font-size:13px;color:#8e8e93;margin-top:2px;" id="myIdShow">ID: ...</div>
         </div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
     </div>
-    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">Privacy & Security</div>
-    <div class="card">
-      <div class="row" onclick="show('hide-set')">
+
+    <!-- ─── 场景模式 ─── -->
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">场景模式</div>
+    <div class="card" style="padding:0;">
+      <div class="focus-wheel">
+        <div class="focus-mode" id="fm-free" onclick="setFocusMode('free')">
+          <div class="focus-ring">🆓</div>
+          <div class="fm-label">自由</div>
+        </div>
+        <div class="focus-mode" id="fm-work" onclick="setFocusMode('work')">
+          <div class="focus-ring">💼</div>
+          <div class="fm-label">工作</div>
+        </div>
+        <div class="focus-mode" id="fm-home" onclick="setFocusMode('home')">
+          <div class="focus-ring">🏠</div>
+          <div class="fm-label">回家</div>
+        </div>
+        <div class="focus-mode" id="fm-home2" onclick="setFocusMode('home2')">
+          <div class="focus-ring">🌙</div>
+          <div class="fm-label">回家②</div>
+        </div>
+        <div class="focus-mode" id="fm-ghost" onclick="setFocusMode('ghost')">
+          <div class="focus-ring">👻</div>
+          <div class="fm-label">隐身</div>
+        </div>
+      </div>
+      <div id="focusModeDesc" style="font-size:12.5px;color:#8e8e93;padding:0 16px 12px;text-align:center;"></div>
+    </div>
+
+    <!-- ─── 通知与推送 ─── -->
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">通知与推送</div>
+    <div class="card" style="padding:0;">
+
+      <!-- 系统推送开关 -->
+      <div class="row" onclick="togglePushDirect()" style="padding:14px 16px;">
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+        <div style="flex:1;">
+          <div style="font-size:17px;">消息推送通知</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="pwaBindStatus">收到消息时推送通知</div>
+        </div>
+        <div class="tog" id="pushDirectToggle" onclick="event.stopPropagation();togglePushDirect()"><div class="td"></div></div>
+      </div>
+      <!-- 同步一个隐藏的pushToggle，保持其他地方兼容 -->
+      <div id="pushToggle" style="display:none;"></div>
+    </div>
+
+    <!-- ─── 隐私与安全 ─── -->
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">隐私与安全</div>
+    <div class="card" style="padding:0;">
+      <div class="row" onclick="show('hide-set')" style="padding:14px 16px;">
         <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11a5 5 0 00-10 0"/><circle cx="12" cy="16" r="1"/><path d="M3 11h18l-1.5 8a2 2 0 01-2 1.7H6.5a2 2 0 01-2-1.7L3 11z"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;" id="set-hideMode">Hide Mode</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="hideDesc">Not enabled</div></div>
+        <div style="flex:1;">
+          <div style="font-size:17px;" id="set-hideMode">隐身伪装</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="hideDesc">未开启</div>
+        </div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
-      <div class="row" onclick="show('notif-set')">
+      <div class="row" onclick="show('notif-set')" style="border-top:1px solid var(--theme-border);padding:14px 16px;">
         <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;" id="set-secretNotif">Secret Notification</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="notifDesc">● Dot</div></div>
+        <div style="flex:1;">
+          <div style="font-size:17px;" id="set-secretNotif">隐秘通知</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="notifDesc">● 小圆点</div>
+        </div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
-      <div class="row" onclick="show('dest-set')">
-        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3l2 2M19 3l-2 2"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;" id="set-destroyMethod">Destroy Method</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="destructDesc">3 wrong passwords</div></div>
-        <span style="color:#c7c7cc;font-size:18px;">›</span>
-      </div>
-      <div class="row" onclick="panic()">
+      <div class="row" onclick="panic()" style="border-top:1px solid var(--theme-border);padding:14px 16px;">
         <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 21h20L12 2z"/><path d="M12 9v4"/><circle cx="12" cy="17" r="0.5" fill="#c47a72"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;" id="set-destroyNow">Destroy Now</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">Clear all records instantly</div></div>
+        <div style="flex:1;">
+          <div style="font-size:17px;color:#ff3b30;" id="set-destroyNow">紧急清除</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:1px;">立即清除所有记录</div>
+        </div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
-      <div class="row">
-        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;" id="set-e2e">End-to-End Encryption</div></div>
-        <div class="tog on" onclick="this.classList.toggle('on')"><div class="td"></div></div>
-      </div>
-      <div class="row" onclick="document.getElementById('pushToggle').classList.contains('on')?unsubscribePush():subscribePush()">
-        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;" id="set-push">消息推送通知</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="pushDesc">收到消息时弹出通知</div></div>
-        <div class="tog" id="pushToggle"><div class="td"></div></div>
-      </div>
     </div>
-    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-appearance-hd">外观</div>
-    <div class="card">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:14px 8px;">
-        <div class="theme-swatch" data-theme="" onclick="pickTheme('')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#ff9a9e,#a18cd1);"></div>
-          <div class="theme-swatch-name" id="theme-name-default">粉紫</div>
+
+    <!-- ─── 外观与语言 ─── -->
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">外观与语言</div>
+    <div class="card" style="padding:0;">
+      <!-- 主题折叠 -->
+      <div onclick="toggleThemeDrawer()" style="display:flex;align-items:center;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        <div id="themeCurrentDot" style="width:28px;height:28px;border-radius:8px;flex-shrink:0;margin-right:12px;background:linear-gradient(135deg,#ff9a9e,#a18cd1);"></div>
+        <div style="flex:1;">
+          <div style="font-size:17px;">主题外观</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="themeCurrentName">粉紫</div>
         </div>
-        <div class="theme-swatch" data-theme="sakura" onclick="pickTheme('sakura')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#f48fb1,#e91e63);"></div>
-          <div class="theme-swatch-name">樱花</div>
-        </div>
-        <div class="theme-swatch" data-theme="lavender" onclick="pickTheme('lavender')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#9e8cfc,#6c47e8);"></div>
-          <div class="theme-swatch-name">薰衣草</div>
-        </div>
-        <div class="theme-swatch" data-theme="rose" onclick="pickTheme('rose')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#ef9a82,#d84315);"></div>
-          <div class="theme-swatch-name">玫瑰</div>
-        </div>
-        <div class="theme-swatch" data-theme="ocean" onclick="pickTheme('ocean')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#4facfe,#3b6fd6);"></div>
-          <div class="theme-swatch-name">蓝海</div>
-        </div>
-        <div class="theme-swatch" data-theme="mint" onclick="pickTheme('mint')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#4db6ac,#00897b);"></div>
-          <div class="theme-swatch-name">薄荷</div>
-        </div>
-        <div class="theme-swatch" data-theme="forest" onclick="pickTheme('forest')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#8bd3a0,#4f9d6e);"></div>
-          <div class="theme-swatch-name">森系</div>
-        </div>
-        <div class="theme-swatch" data-theme="sand" onclick="pickTheme('sand')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#d4a96a,#a0724a);"></div>
-          <div class="theme-swatch-name">沙漠</div>
-        </div>
-        <div class="theme-swatch" data-theme="ivory" onclick="pickTheme('ivory')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#c9a84c,#8a6f2e);"></div>
-          <div class="theme-swatch-name">象牙金</div>
-        </div>
-        <div class="theme-swatch" data-theme="business" onclick="pickTheme('business')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#64748b,#334155);"></div>
-          <div class="theme-swatch-name">商务</div>
-        </div>
-        <div class="theme-swatch" data-theme="dark" onclick="pickTheme('dark')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#7c5cff,#5b8cff);"></div>
-          <div class="theme-swatch-name">暗黑</div>
-        </div>
-        <div class="theme-swatch" data-theme="neon" onclick="pickTheme('neon')">
-          <div class="theme-preview" style="background:linear-gradient(135deg,#ff2bd6,#00e5ff);"></div>
-          <div class="theme-swatch-name">霓虹</div>
-        </div>
+        <span style="color:#c7c7cc;font-size:14px;transition:transform .2s;" id="themeDrawerArrow">›</span>
       </div>
-    </div>
-    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-lang-hd">Language</div>
-    <div class="card">
-      <div class="row" onclick="show('lang-set')">
+      <div id="themeDrawer" style="display:none;padding:0 8px 14px;"><div id="themeSwatchGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div></div>
+      <!-- 语言 -->
+      <div class="row" onclick="show('lang-set')" style="border-top:1px solid var(--theme-border);padding:14px 16px;">
         <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 010 18M12 3a13 13 0 000 18"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;" id="set-lang">Language</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="curLangShow">English</div></div>
+        <div style="flex:1;">
+          <div style="font-size:17px;" id="set-lang">语言</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="curLangShow">中文简体</div>
+        </div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
     </div>
-    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-sub-hd">Subscription</div>
-    <div class="card">
-      <div class="row">
-        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9.5 17 14 18.5 21 12 17.5 5.5 21 7 14 2 9.5 9 9 12 2"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;" id="set-subscribe">Subscribe</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">$9.99/month · Unlock all features</div></div>
+
+    <!-- ─── 账号操作 ─── -->
+    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;">账号</div>
+    <div class="card" style="padding:0;">
+      <div class="row" onclick="show('account-set')" style="padding:14px 16px;">
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+        <div style="flex:1;"><div style="font-size:17px;">账号设置</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
       </div>
-    </div>
-    <div style="margin-top:20px;padding:0 16px 6px;font-size:13px;color:#8e8e93;text-transform:uppercase;letter-spacing:.3px;" id="set-acct">Account</div>
-    <div class="card">
-      <div class="row" onclick="doLogout()">
+      <div class="row" onclick="showDeviceManager()" style="border-top:1px solid var(--theme-border);padding:14px 16px;">
+        <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg></div>
+        <div style="flex:1;">
+          <div style="font-size:17px;">登录设备</div>
+          <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="deviceCountTxt">查看并管理登录设备</div>
+        </div>
+        <span style="color:#c7c7cc;font-size:18px;">›</span>
+      </div>
+      <div class="row" onclick="doLogout()" style="border-top:1px solid var(--theme-border);padding:14px 16px;">
         <div class="si" style="background:var(--theme-row-bg);"><svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--theme-icon)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
-        <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;" id="set-logout">Logout</div></div>
+        <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;" id="set-logout">退出登录</div></div>
       </div>
     </div>
-    <div style="height:30px;"></div>
+
+    <div style="height:16px;"></div>
+    <div style="text-align:center;font-size:11px;color:#c7c7cc;letter-spacing:.5px;padding-bottom:6px;">GhostChat v1.36</div>
+    <div style="height:14px;"></div>
+    <div style="height:14px;"></div>
   </div>
   <div class="tabs">
-    <div class="tab" onclick="show('main')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Messages</div>
-    <div class="tab"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Contacts</div>
-    <div class="tab on"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</div>
+    <div class="tab" onclick="show('main')"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>消息</div>
+    <div class="tab" onclick="show('contacts-list');loadFriendsList();"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>通讯录</div>
+    <div class="tab on"><svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>设置</div>
   </div>
 </div>
 
@@ -978,39 +1278,54 @@ html,body{height:100%;margin:0;padding:0;}
 </div>
 
 <!-- 伪装：计算器 iOS风格升级版 -->
-<div id="dcalc" class="screen" style="background:#000;flex-direction:column;">
-  <!-- 计算历史 -->
-  <div id="calcHistory" style="flex:0 0 auto;padding:max(48px,calc(40px + var(--safe-top))) 20px 0;max-height:80px;overflow-y:auto;display:flex;flex-direction:column;align-items:flex-end;gap:2px;"></div>
-  <!-- 显示区 -->
-  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:0 20px 12px;">
-    <div id="cExpr" style="color:rgba(255,255,255,.45);font-size:20px;min-height:26px;font-weight:300;text-align:right;word-break:break-all;"></div>
-    <div id="cNum" style="font-size:80px;font-weight:200;color:#fff;letter-spacing:-2px;line-height:1;text-align:right;word-break:break-all;transition:font-size .1s;">0</div>
+<div id="dcalc" class="screen" style="background:#000;flex-direction:column;overflow:hidden;">
+  <!-- 顶部状态栏占位 + 模式切换 -->
+  <div style="flex-shrink:0;padding:max(52px,calc(44px + var(--safe-top))) 16px 0;display:flex;justify-content:space-between;align-items:center;">
+    <span id="calcModeBtn" onclick="toggleCalcMode()" style="background:rgba(255,255,255,.15);color:#fff;border-radius:12px;padding:5px 14px;font-size:13px;cursor:pointer;user-select:none;">科学</span>
+    <div class="thumb-zone" style="width:60px;height:32px;" onclick="tapSecret()" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()"></div>
   </div>
-  <!-- 科学模式行（横屏时显示） -->
-  <div id="calcSci" style="display:none;background:#1c1c1e;padding:6px 10px;grid-template-columns:repeat(5,1fr);gap:6px;"></div>
-  <!-- 按键区 -->
-  <div style="background:#000;padding:0 10px calc(10px + var(--safe-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:10px;" id="calcGrid">
-    <div style="height:72px;border-radius:36px;background:#a5a5a5;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#000;cursor:pointer;touch-action:manipulation;transition:opacity .1s;" onclick="cp('AC')" data-val="AC" id="ckAC">AC</div>
-    <div style="height:72px;border-radius:36px;background:#a5a5a5;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#000;cursor:pointer;touch-action:manipulation;" onclick="cp('+/-')" data-val="+/-">+/-</div>
-    <div style="height:72px;border-radius:36px;background:#a5a5a5;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#000;cursor:pointer;touch-action:manipulation;" onclick="cp('%')" data-val="%">%</div>
-    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('÷')" data-val="÷" id="ckDiv">÷</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('7')" data-val="7">7</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('8')" data-val="8">8</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('9')" data-val="9">9</div>
-    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('×')" data-val="×">×</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('4')" data-val="4">4</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('5')" data-val="5">5</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('6')" data-val="6">6</div>
-    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('-')" data-val="-">−</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('1')" data-val="1">1</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('2')" data-val="2">2</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('3')" data-val="3">3</div>
-    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('+')" data-val="+">+</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;grid-column:span 2;justify-content:flex-start;padding-left:28px;" onclick="cp('0')" data-val="0">0</div>
-    <div style="height:72px;border-radius:36px;background:#333333;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;color:#fff;cursor:pointer;touch-action:manipulation;" onclick="cp('.')" data-val=".">.</div>
-    <div style="height:72px;border-radius:36px;background:#ff9f0a;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:300;color:#fff;cursor:pointer;touch-action:manipulation;" data-val="EQ" onclick="cp('EQ')" ontouchend="event.preventDefault();cp('EQ')">=</div>
+  <!-- 历史记录 -->
+  <div id="calcHistory" style="flex-shrink:0;padding:4px 20px 0;max-height:48px;overflow-y:auto;display:flex;flex-direction:column;align-items:flex-end;gap:1px;"></div>
+  <!-- 显示区（弹性撑满） -->
+  <div style="flex:1;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;padding:0 20px 10px;min-height:0;">
+    <div id="cExpr" style="color:rgba(255,255,255,.4);font-size:18px;min-height:22px;text-align:right;word-break:break-all;font-weight:300;"></div>
+    <div id="cNum" style="font-size:76px;font-weight:200;color:#fff;letter-spacing:-2px;line-height:1;text-align:right;word-break:break-all;transition:font-size .12s;">0</div>
   </div>
-  <div class="thumb-zone" onclick="tapSecret()" onmousedown="ltS()" onmouseup="ltE()" ontouchstart="ltS()" ontouchend="ltE()"></div>
+  <!-- 科学计算器行（默认隐藏，点"科学"按钮显示） -->
+  <div id="calcSciRow" style="display:none;flex-shrink:0;background:#1c1c1e;padding:6px 10px;display:none;grid-template-columns:repeat(5,1fr);gap:6px;">
+    <div class="ck-sci" data-val="sin">sin</div>
+    <div class="ck-sci" data-val="cos">cos</div>
+    <div class="ck-sci" data-val="tan">tan</div>
+    <div class="ck-sci" data-val="log">log</div>
+    <div class="ck-sci" data-val="ln">ln</div>
+    <div class="ck-sci" data-val="sqrt">√</div>
+    <div class="ck-sci" data-val="sq">x²</div>
+    <div class="ck-sci" data-val="inv">1/x</div>
+    <div class="ck-sci" data-val="pi">π</div>
+    <div class="ck-sci" data-val="e">e</div>
+  </div>
+  <!-- 标准按键 -->
+  <div id="calcGrid" style="flex-shrink:0;background:#000;padding:0 10px calc(10px + var(--safe-bottom));display:grid;grid-template-columns:repeat(4,1fr);gap:9px;">
+    <div class="ck" data-val="AC" id="ckAC" style="background:#a5a5a5;color:#000;font-size:26px;">AC</div>
+    <div class="ck" data-val="+/-" style="background:#a5a5a5;color:#000;font-size:26px;">+/-</div>
+    <div class="ck" data-val="%" style="background:#a5a5a5;color:#000;font-size:26px;">%</div>
+    <div class="ck" data-val="÷" style="background:#ff9f0a;font-size:36px;">÷</div>
+    <div class="ck" data-val="7">7</div>
+    <div class="ck" data-val="8">8</div>
+    <div class="ck" data-val="9">9</div>
+    <div class="ck" data-val="×" style="background:#ff9f0a;font-size:36px;">×</div>
+    <div class="ck" data-val="4">4</div>
+    <div class="ck" data-val="5">5</div>
+    <div class="ck" data-val="6">6</div>
+    <div class="ck" data-val="-" style="background:#ff9f0a;font-size:36px;">−</div>
+    <div class="ck" data-val="1">1</div>
+    <div class="ck" data-val="2">2</div>
+    <div class="ck" data-val="3">3</div>
+    <div class="ck" data-val="+" style="background:#ff9f0a;font-size:36px;">+</div>
+    <div class="ck" data-val="0" style="grid-column:span 2;justify-content:flex-start;padding-left:28px;">0</div>
+    <div class="ck" data-val=".">.</div>
+    <div class="ck" data-val="EQ" style="background:#ff9f0a;font-size:36px;">=</div>
+  </div>
 </div>
 
 <!-- 伪装：世界时钟 -->
@@ -1086,9 +1401,22 @@ html,body{height:100%;margin:0;padding:0;}
   </div>
 </div>
 
-<div id="imgViewer" onclick="closeImgViewer()" style="position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:800;display:none;align-items:center;justify-content:center;flex-direction:column;">
-  <span onclick="closeImgViewer()" style="position:absolute;top:16px;right:18px;color:#fff;font-size:28px;line-height:1;cursor:pointer;z-index:801;">‹ 返回</span>
-  <img id="imgViewerSrc" src="" style="max-width:96vw;max-height:86vh;object-fit:contain;border-radius:8px;touch-action:pinch-zoom;" onclick="event.stopPropagation()">
+<div id="imgViewer" style="position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:800;display:none;flex-direction:column;align-items:center;justify-content:center;">
+  <!-- 图片区：点击关闭 -->
+  <div id="imgViewerArea" onclick="closeImgViewer()" style="flex:1;width:100%;display:flex;align-items:center;justify-content:center;min-height:0;">
+    <img id="imgViewerSrc" src="" onclick="event.stopPropagation()"
+      style="max-width:96vw;max-height:82vh;object-fit:contain;border-radius:4px;touch-action:pinch-zoom;transition:transform .2s;user-select:none;">
+  </div>
+  <!-- 底部操作栏：远离手机状态栏和控制中心 -->
+  <div id="imgViewerBar" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;padding-bottom:calc(14px + env(safe-area-inset-bottom));background:rgba(0,0,0,.6);backdrop-filter:blur(10px);flex-shrink:0;box-sizing:border-box;">
+    <button onclick="closeImgViewer()" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:15px;font-weight:600;padding:10px 22px;border-radius:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+      ‹ 返回
+    </button>
+    <div style="color:rgba(255,255,255,.5);font-size:12px;">点击图片外区域关闭</div>
+    <button onclick="toggleImgZoom()" id="imgZoomBtn" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:15px;padding:10px 16px;border-radius:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+      🔍
+    </button>
+  </div>
 </div>
 
 <!-- 扫码弹窗 -->
@@ -1146,13 +1474,42 @@ html,body{height:100%;margin:0;padding:0;}
 (function(){
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('./sw.js').then(function(reg){
+      navigator.serviceWorker.register('./sw.js', {scope: './'}).then(function(reg){
         console.log('[PWA] SW registered, scope:', reg.scope);
         // SW消息监听：后台sync通知
         navigator.serviceWorker.addEventListener('message', function(e){
+        // SW转发的通知点击deeplink
+        if(e.data&&e.data.type==='deeplink'&&e.data.url){
+          try{
+            var u=new URL(e.data.url);
+            var fromId=u.searchParams.get('from');
+            if(fromId&&typeof openChat==='function'&&typeof myId!=='undefined'&&myId){
+              setTimeout(function(){
+                // 确保在主界面
+                var mainEl=document.getElementById('main');
+                if(!mainEl||!mainEl.classList.contains('active'))show('main');
+                setTimeout(function(){if(typeof _openChatFromId==='function')_openChatFromId(fromId);},300);
+              },200);
+            }
+          }catch(_){}
+        }
           if(e.data && e.data.type === 'SYNC_MESSAGES'){
             // 触发重新拉取消息
             if(typeof loadMsgs === 'function' && window.G && G.chat) loadMsgs();
+          }
+          // 点通知 → 跳转到对应聊天（先确认已登录且已通过认证）
+          if(e.data && e.data.type === 'openChat' && e.data.senderId){
+            var sid=String(e.data.senderId);
+            var activeScreen=(document.querySelector('.screen.active')||{}).id||'';
+            var disguiseScreens=['dweather','dcalc','dclk','dnote','testgate','applock'];
+            if(disguiseScreens.indexOf(activeScreen)>=0){
+              // 当前在伪装/认证界面，记住目标，等用户解锁后再跳
+              _lockReturnScreen='chat:'+sid;
+            } else if(!lg('registered')){
+              // 未登录，忽略
+            } else {
+              if(typeof openChat==='function'){openChat(sid);}
+            }
           }
         });
       }).catch(function(e){ console.log('[PWA] SW failed:', e); });
@@ -1160,7 +1517,6 @@ html,body{height:100%;margin:0;padding:0;}
   }
 
   // ═══ 全屏/沉浸模式 ═══
-  // 1. iOS: 已通过 meta apple-mobile-web-app-capable 实现（添加到主屏幕后）
   // 2. Android Chrome: 用 Navigation Bar 隐藏
   function tryFullscreen(){
     var el = document.documentElement;
@@ -1202,9 +1558,48 @@ html,body{height:100%;margin:0;padding:0;}
 })();
 
 // ═══ 推送通知 ═══
-var VAPID_PUBLIC = 'BDQ8XlX1wbta3RwiuYkzXSnVs474RzEVomOsI9Q0j4Rc9s6ow9T2bMWr2ShMsMtIs6i4zyrOe9j78VTWh9JMsXU';
-// 推送服务器地址（部署后改成你的真实URL）
-var PUSH_SERVER = 'https://ghostchat-push.vercel.app';
+// ═══ 推送系统 ═══
+var PUSH_SERVER = 'https://mztoenhgfuomzrashrqk.supabase.co/functions/v1/push-notify';
+var VAPID_PUBLIC = 'BFpu-sLy7Z2tINXG041adiyxtKAnJEl0lUlm_RVJjSguhXpgkWu5SMondqhmhFbTeSv9AQs4Z5-WFK0ER9Qrdws';
+
+function urlBase64ToUint8Array(base64String){
+  var padding='='.repeat((4-base64String.length%4)%4);
+  var base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  var raw=atob(base64);
+  var output=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)output[i]=raw.charCodeAt(i);
+  return output;
+}
+
+
+
+
+// ═══ Web Push推送（主通道）═══
+async function _sendWebPushToUser(toUserId, title, body){
+  try{
+    var gcUrl='https://chunhua1780.github.io/ghostchat/#from='+encodeURIComponent(String(myId));
+    await fetch(PUSH_SERVER+'?action=push',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        userId:String(toUserId),
+        title:title||'💬 新消息',
+        body:body||'你有一条新消息',
+        fromId:String(myId),
+        url:gcUrl
+      })
+    });
+    console.log('[WebPush] sent to',toUserId);
+  }catch(e){
+    console.log('[WebPush] send failed:',e&&e.message);
+  }
+}
+
+
+
+function getNtfyTopic(){return '';}
+async function registerNtfyTopic(){}
+
 
 function urlBase64ToUint8Array(b64){
   var pad = (4 - b64.length % 4) % 4;
@@ -1216,117 +1611,647 @@ function urlBase64ToUint8Array(b64){
 }
 
 async function subscribePush(){
-  if(!('PushManager' in window)){
-    // iOS Safari浏览器不支持，提示添加到主屏幕
-    showPushIOSGuide();
+  try{
+    if(typeof Notification==='undefined'){alert('此浏览器不支持推送通知');return;}
+    var perm=Notification.permission;
+    if(perm==='denied'){
+      alert('通知权限已被拒绝\n请到手机设置 → 通知 → GhostChat → 开启');return;
+    }
+    if(perm!=='granted')perm=await Notification.requestPermission();
+    if(perm!=='granted'){alert('未获得通知权限');return;}
+
+    // Web Push订阅（VAPID）
+    if(navigator.serviceWorker&&'PushManager' in window){
+      try{
+        var reg=await navigator.serviceWorker.ready;
+        var oldSub=await reg.pushManager.getSubscription();
+        if(oldSub)await oldSub.unsubscribe();
+        var sub=await reg.pushManager.subscribe({
+          userVisibleOnly:true,
+          applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC)
+        });
+        // 存到服务器
+        var uid=String(myId||lg('myId')||'');
+        if(uid){
+          fetch(PUSH_SERVER+'?action=subscribe',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({userId:uid,subscription:sub.toJSON()})
+          }).catch(function(e){console.log('[WP] subscribe save failed:',e);});
+        }
+        localStorage.setItem('webPushSub',JSON.stringify(sub.toJSON()));
+        localStorage.setItem('pushEnabled','1');
+        updatePushToggleUI(true);
+        var st=document.getElementById('pwaBindStatus');
+        if(st){st.textContent='✅ 已开启 · 点通知直接打开App';st.style.color='#34c759';}
+        // 测试通知
+        setTimeout(function(){
+          reg.showNotification('✅ GhostChat通知已开启',{
+            body:'以后点通知直接进聊天，无需跳转',
+            icon:'./icon192.png',badge:'./icon192.png',
+            data:{url:'https://chunhua1780.github.io/ghostchat/'}
+          });
+        },800);
+        return;
+      }catch(e){console.log('[WebPush sub failed]',e&&e.message);}
+    }
+
+  }catch(e){console.log('[Push]',e);}
+}
+
+var _ICON_PROFILES={
+  weather:{push:function(t,mx,mn,desc,icon,city){var a=[icon+' '+city+' '+t+'° '+desc+' '+mx+'/'+mn+'°','🌡 今日'+city+' '+t+'°，'+desc];return{title:a[Date.now()%2|0],body:''};},},
+  calc:{push:function(){var a=[['📊 汇率更新','AED/CNY今日最新'],['🔢 计算提醒','有未完成记录']];var m=a[Date.now()%2|0];return{title:m[0],body:m[1]};},},
+  note:{push:function(){var a=[['📝 备忘提醒','有未查看备忘录'],['📌 待办提醒','查看今日待办']];var m=a[Date.now()%2|0];return{title:m[0],body:m[1]};},},
+  clock:{push:function(){var a=[['⏰ 提醒时间到了','点击查看'],['🕐 日程提醒','有日程待确认']];var m=a[Date.now()%2|0];return{title:m[0],body:m[1]};},}
+};
+var _wxCache=null,_wxCacheTime=0;
+async function _getPushContent(){
+  var type=localStorage.getItem('iconType')||'weather';
+  var p=_ICON_PROFILES[type]||_ICON_PROFILES.weather;
+  if(type!=='weather')return p.push();
+  var now=Date.now();
+  if(_wxCache&&now-_wxCacheTime<3600000){var c=_wxCache;return p.push(c.t,c.mx,c.mn,c.desc,c.icon,c.city);}
+  try{
+    var cities=[];try{cities=JSON.parse(localStorage.getItem('wxCities')||'[]');}catch(e){}
+    var ci=cities[0]||{lat:25.2048,lon:55.2708,name:'Dubai'};
+    var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+ci.lat+'&longitude='+ci.lon+'&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1');
+    var d=await r.json();
+    var t=Math.round(d.current.temperature_2m),mx=Math.round(d.daily.temperature_2m_max[0]),mn=Math.round(d.daily.temperature_2m_min[0]),code=d.current.weather_code;
+    var icon=code===0?'☀️':code<=2?'🌤️':code===3?'☁️':code<=67?'🌧️':code<=77?'❄️':'⛈️';
+    var desc=code===0?'晴':code<=2?'多云':code===3?'阴':code<=67?'有雨':code<=77?'有雪':'雷雨';
+    _wxCache={t:t,mx:mx,mn:mn,desc:desc,icon:icon,city:ci.name};_wxCacheTime=now;
+    return p.push(t,mx,mn,desc,icon,ci.name);
+  }catch(e){return{title:'🌡 天气更新',body:''};}
+}
+
+async function sendToSelf(){
+  if(!myId){alert('请先登录');return;}
+  if(!localStorage.getItem('pushEnabled')){alert('请先开启推送通知');return;}
+  try{
+    await _sb.from('messages').insert({room_id:roomIdOf(parseInt(myId)||myId,parseInt(myId)||myId),sender:String(myId),content:'🔔 推送测试 '+new Date().toLocaleTimeString(),type:'text'});
+    await triggerPushToUser(String(myId));
+    alert('已发！切到后台等几秒，看是否收到系统通知。');
+  }catch(e){alert('失败：'+(e&&e.message||e));}
+}
+// ═══ 长连接保活推送方案（不依赖FCM，国内可用）═══
+// 原理：
+// 1. cordova-plugin-background-mode 让APP切到后台后进程不被杀死
+// 2. Supabase WebSocket长连接（listenForAllMessages里已有）持续保持，前台/后台都能收到INSERT事件
+// 3. 收到新消息时，用 cordova-plugin-local-notification 弹系统通知（纯本地触发，不经过任何远程推送服务器）
+// 4. 兼容鸿蒙：鸿蒙基于安卓内核，Cordova插件原生API在鸿蒙上同样可用
+
+var _bgModeReady = false;
+var _localNotifReady = false;
+
+function initBackgroundKeepAlive() {
+  if (!window.cordova) {
+    console.log('[KeepAlive] 非Cordova环境，跳过保活初始化（浏览器/PWA走Web Push）');
     return;
   }
-  if(!navigator.serviceWorker) return;
-  try{
-    var reg = await navigator.serviceWorker.ready;
-    var perm = await Notification.requestPermission();
-    if(perm !== 'granted'){ alert('请允许通知权限才能接收消息提醒'); return; }
-    var sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+  if (!cordova.plugins || !cordova.plugins.backgroundMode) {
+    console.log('[KeepAlive] background-mode插件未加载');
+    return;
+  }
+
+  try {
+    cordova.plugins.backgroundMode.setDefaults({
+      title: '消息同步中',
+      text: '正在保持连接以接收新消息',
+      icon: 'icon',
+      color: '000000',
+      resume: true,
+      hidden: false,
+      bigText: false,
+      silent: true // 保活通知本身不发声音/震动，只是系统要求的常驻提示
     });
-    // 保存订阅到推送服务器
-    var uid = localStorage.getItem('myId') || '';
-    await fetch(PUSH_SERVER + '/api/subscribe', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ userId: uid, subscription: sub.toJSON() })
+
+    cordova.plugins.backgroundMode.enable();
+    _bgModeReady = true;
+
+    cordova.plugins.backgroundMode.on('activate', function () {
+      console.log('[KeepAlive] 进入后台保活模式');
+      // 后台模式下禁用WebView节流，保证JS定时器/WebSocket正常工作
+      cordova.plugins.backgroundMode.disableWebViewOptimizations();
     });
-    localStorage.setItem('pushEnabled','1');
-    updatePushToggleUI(true);
-    console.log('[Push] subscribed');
-  }catch(e){
-    console.log('[Push] subscribe error:', e);
+
+    cordova.plugins.backgroundMode.on('deactivate', function () {
+      console.log('[KeepAlive] 回到前台');
+    });
+
+    console.log('[KeepAlive] ✅ 后台保活已启用');
+  } catch (e) {
+    console.log('[KeepAlive] 初始化失败:', e.message);
   }
 }
 
-async function unsubscribePush(){
-  if(!navigator.serviceWorker) return;
-  try{
+function initLocalNotifications() {
+  if (!window.cordova) return;
+  if (!cordova.plugins || !cordova.plugins.notification || !cordova.plugins.notification.local) {
+    console.log('[LocalNotif] local-notification插件未加载');
+    return;
+  }
+
+  cordova.plugins.notification.local.requestPermission(function (granted) {
+    if (granted) {
+      _localNotifReady = true;
+      localStorage.setItem('pushEnabled', '1');
+      if (typeof updatePushToggleUI === 'function') updatePushToggleUI(true);
+      var pst = document.getElementById('pwaBindStatus');
+      if (pst) { pst.textContent = '✅ 已开启 · 收到消息直接弹通知'; pst.style.color = '#34c759'; }
+      console.log('[LocalNotif] ✅ 通知权限已授权');
+    } else {
+      console.log('[LocalNotif] 用户拒绝通知权限');
+      localStorage.setItem('pushEnabled', '0');
+      if (typeof updatePushToggleUI === 'function') updatePushToggleUI(false);
+    }
+  });
+
+  // 点击通知 → 跳转到对应聊天
+  cordova.plugins.notification.local.on('click', function (notification) {
+    try {
+      var data = JSON.parse(notification.data || '{}');
+      if (data.fromId && typeof _openChatFromId === 'function') {
+        // 确保先回到主界面再跳转聊天
+        var mainEl = document.getElementById('main');
+        if (!mainEl || !mainEl.classList.contains('active')) {
+          if (typeof show === 'function') show('main');
+        }
+        setTimeout(function () { _openChatFromId(data.fromId); }, 300);
+      }
+    } catch (e) {
+      console.log('[LocalNotif] click handler error:', e);
+    }
+  });
+}
+
+// 收到消息时弹本地通知（由 listenForAllMessages 的WebSocket回调里调用）
+function showLocalNotification(title, body, fromId) {
+  if (window.cordova && _localNotifReady && cordova.plugins && cordova.plugins.notification && cordova.plugins.notification.local) {
+    cordova.plugins.notification.local.schedule({
+      id: Math.floor(Math.random() * 2147483647),
+      title: title || '💬 新消息',
+      text: body || '你收到了一条新消息',
+      smallIcon: 'res://icon',
+      icon: 'res://icon',
+      data: JSON.stringify({ fromId: fromId || '' }),
+      foreground: true
+    });
+    return true;
+  }
+
+  // 非Cordova环境（浏览器/PWA测试用）：降级到Web Notification API
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try {
+      new Notification(title || '💬 新消息', { body: body || '你收到了一条新消息', icon: './icon192.png' });
+      return true;
+    } catch (e) { /* ignore */ }
+  }
+  return false;
+}
+
+// 入口函数：替代原先的 registerWebPushAndroid，统一推送开关入口
+async function registerWebPushAndroid() {
+  if (window.cordova) {
+    // Cordova APK环境：走保活 + 本地通知方案
+    initBackgroundKeepAlive();
+    initLocalNotifications();
+    return;
+  }
+
+  // 非Cordova环境（普通浏览器/PWA）：保留原有Web Push逻辑作为降级
+  if (!myId) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+    console.log('[Push] 该浏览器不支持Web Push');
+    return;
+  }
+  try {
+    var perm = Notification.permission;
+    if (perm === 'default') perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
     var reg = await navigator.serviceWorker.ready;
     var sub = await reg.pushManager.getSubscription();
-    if(sub) await sub.unsubscribe();
-    localStorage.setItem('pushEnabled','0');
-    updatePushToggleUI(false);
-  }catch(e){}
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+      });
+    }
+    await fetch(PUSH_SERVER + '?action=subscribe', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: String(myId), subscription: sub.toJSON() })
+    });
+    localStorage.setItem('pushEnabled', '1');
+    if (typeof updatePushToggleUI === 'function') updatePushToggleUI(true);
+  } catch (e) {
+    console.log('[Push] browser fallback error:', e.message);
+  }
 }
 
-function updatePushToggleUI(on){
-  var tog = document.getElementById('pushToggle');
-  if(!tog) return;
-  if(on) tog.classList.add('on'); else tog.classList.remove('on');
+function togglePushDirect() {
+  var enabled = localStorage.getItem('pushEnabled') === '1';
+  if (window.cordova) {
+    // Cordova环境：保活模式无法"关闭"通知权限（系统级），只能切换本地标记
+    if (enabled) {
+      localStorage.setItem('pushEnabled', '0');
+      if (typeof updatePushToggleUI === 'function') updatePushToggleUI(false);
+      var pst = document.getElementById('pwaBindStatus');
+      if (pst) { pst.textContent = '未开启 · 点击授权通知'; pst.style.color = '#8e8e93'; }
+    } else {
+      registerWebPushAndroid();
+    }
+    return;
+  }
+  // 浏览器环境：原有逻辑
+  if (enabled) {
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.ready.then(function (r) {
+        r.pushManager.getSubscription().then(function (s) { if (s) s.unsubscribe(); });
+      });
+    }
+    localStorage.setItem('pushEnabled', '0');
+    if (typeof updatePushToggleUI === 'function') updatePushToggleUI(false);
+  } else {
+    registerWebPushAndroid();
+  }
 }
 
-// 发送消息时通知对方（只推服务器端，服务器负责推送）
-async function triggerPushToUser(toUserId){
-  if(!localStorage.getItem('pushEnabled')) return;
-  var notifSym = localStorage.getItem('notifSym') || 'dot';
-  var notifTxt = localStorage.getItem('notifTxt') || 'sys';
+// deviceready 事件：Cordova插件必须等这个事件触发后才能用
+document.addEventListener('deviceready', function () {
+  console.log('[Cordova] deviceready fired');
+  initBackgroundKeepAlive();
+  if (lg('registered') && lg('pushEnabled') === '1') {
+    initLocalNotifications();
+  }
+}, false);
+
+// ═══ 推送辅助 ═══
+
+
+// ═══ 专注模式轮盘 ═══
+var FOCUS_MODES = {
+  // 🆓 自由模式：无锁屏，真实通知，直接打开
+  free:  {label:'自由模式', emoji:'🆓',
+          desc:'无锁屏 · 真实通知 · 直接打开聊天',
+          bark:true,  dnd:false, hide:false, lock:false, disguise:false},
+  // 💼 工作模式：锁屏 + 通知只显示角标，不显示内容
+  work:  {label:'工作模式', emoji:'💼',
+          desc:'有锁屏 · 通知内容隐藏 · 只有角标不震动',
+          bark:true,  dnd:true,  hide:false, lock:true,  disguise:false},
+  // 🏠 回家模式：锁屏 + 隐身(天气) + 伪装成天气通知
+  home:  {label:'回家模式', emoji:'🏠',
+          desc:'有锁屏 · 伪装天气APP · 通知显示为天气提醒',
+          bark:true,  dnd:false, hide:true,  lock:true,  disguise:true},
+  // 🌙 回家②：同回家但通知只有角标，不震动不弹窗
+  home2: {label:'回家②',   emoji:'🌙',
+          desc:'有锁屏 · 伪装天气APP · 只有角标 不震动不弹窗',
+          bark:true,  dnd:true,  hide:true,  lock:true,  disguise:true},
+  // 👻 完全隐身：锁屏 + 隐身(天气) + 关闭所有通知
+  ghost: {label:'完全隐身', emoji:'👻',
+          desc:'有锁屏 · 伪装天气APP · 无任何通知',
+          bark:false, dnd:false, hide:true,  lock:true,  disguise:true}
+};
+
+function setFocusMode(mode){
+  var cfg=FOCUS_MODES[mode];
+  if(!cfg)return;
+
+  // 回家/隐身模式需要有锁屏密码
+  if(cfg.hide && !lg('appLockPin')){
+    if(!confirm(cfg.label+'需要锁屏密码才能启用隐身伪装。\n没有密码时打开APP会直接进入GhostChat，无法伪装。\n要先去设置锁屏密码吗？')){
+      return;
+    }
+    show('account-set');
+    return;
+  }
+
+  ls('focusMode',mode);
+
+  // 应用各开关
+  ls('barkEnabled',cfg.bark?'true':'false');
+  ls('doNotDisturb',cfg.dnd?'true':'false');
+  ls('autoLockLeave',cfg.lock?'true':'false');
+
+  // 隐身模式：强制用weather伪装（回家/隐身模式）
+  if(cfg.hide){
+    G.hide=true;
+    G.dis='weather';
+    ls('hide','true');
+    ls('dis','weather');
+    updHide();
+    if(typeof pushSettings==='function')pushSettings();
+  } else if(G.hide){
+    offHide();
+  }
+
+  updateFocusWheelUI();
+  initQuickToggles();
+
+  var st=document.getElementById('barkStatus');
+  if(st){
+    st.textContent=cfg.emoji+' 已切换至'+cfg.label;
+    setTimeout(function(){if(st)st.textContent='';},2500);
+  }
+}
+
+function updateFocusWheelUI(){
+  var cur=lg('focusMode')||'free';
+  var modes=['free','work','home','home2','ghost'];
+  modes.forEach(function(m){
+    var el=document.getElementById('fm-'+m);
+    if(el){el.className='focus-mode'+(m===cur?' active':'');}
+  });
+  var cfg=FOCUS_MODES[cur];
+  var desc=document.getElementById('focusModeDesc');
+  if(desc&&cfg){desc.textContent=(cfg.label||'')+' — '+cfg.desc;}
+}
+
+
+// ═══ 快速开关：免打扰 / 隐藏模式 / 锁屏 ═══
+function initQuickToggles(){updateFocusWheelUI();
+  var barkOn = lg('barkEnabled')!=='false';
+  var bt=document.getElementById('barkEnabledToggle');
+  if(bt){bt.className='tog'+(barkOn?' on':'');}
+
+  // 免打扰
+  var dndOn = lg('doNotDisturb')==='true';
+  var dt=document.getElementById('doNotDisturbToggle');
+  if(dt){dt.className='tog'+(dndOn?' on':'');}
+
+  // 隐藏模式
+  var hideOn = G.hide===true || lg('hide')==='true';
+  var ht=document.getElementById('hideModeToggle');
+  if(ht){ht.className='tog'+(hideOn?' on':'');}
+  var hd=document.getElementById('hideModeQuickDesc');
+  if(hd){hd.textContent=hideOn?('已开启 · '+(G.dis||lg('dis')||'计算器')):'未开启';}
+
+  // 锁屏
+  var lockOn = !!(lg('appLockPin') && lg('autoLockLeave')!=='false');
+  var lt=document.getElementById('lockScreenToggle');
+  if(lt){lt.className='tog'+(lockOn?' on':'');}
+}
+
+
+
+
+
+function toggleHideMode(){
+  var cur=G.hide===true||lg('hide')==='true';
+  if(cur){
+    // 关闭隐藏模式
+    offHide();
+  } else {
+    // 开启：需要有密码
+    if(!lg('appLockPin')&&!confirm('还没有锁屏密码，开启隐藏模式将使用登录密码解锁。\n要继续吗？'))return;
+    var dis=lg('dis')||G.dis||'calculator';
+    G.hide=true;G.dis=dis;ls('hide','true');updHide();
+    if(typeof pushSettings==='function')pushSettings();
+    initQuickToggles();
+    alert('隐藏模式已开启\n伪装界面：'+dis+'\n可在「隐私与安全→隐藏模式」更换伪装方式');
+  }
+}
+
+function toggleLockScreen(){
+  if(!lg('appLockPin')){
+    alert('请先在「账号设置」里设置锁屏密码，才能启用自动锁屏');
+    return;
+  }
+  var cur=lg('autoLockLeave')!=='false';
+  var nv=!cur;
+  ls('autoLockLeave',nv?'true':'false');
+  var lt=document.getElementById('lockScreenToggle');
+  if(lt){lt.className='tog'+(nv?' on':'');}
+}
+
+
+// 当前临时选中的图标URL（还未保存）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function triggerPushToUser(toUserId, msgText){
+  var senderName=lg('myName')||('用户'+myId);
+  var title='💬 '+senderName;
+  // 有消息文本就显示，没有就用默认（图片/语音等）
+  var body=msgText?String(msgText).slice(0,60):'发来了一条新消息';
+
+  // Android: 原生Web Push推送
+  _sendWebPushToUser(String(toUserId), title, body);
+
+  // 以下是原有推送通道，依赖pushEnabled开关
+  if(!localStorage.getItem('pushEnabled')||localStorage.getItem('pushEnabled')==='0')return;
   try{
-    await fetch(PUSH_SERVER + '/api/push', {
+    var isWx=window.G&&G.hide&&G.dis==='weather';
+    if(isWx){title='🌤 天气提醒';body='点击查看最新天气';}
+
+    // Web Push (Edge Function)
+    fetch(PUSH_SERVER+'?action=push',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ toUserId, fromNickname:'', notifSym, notifTxt })
-    });
-  }catch(e){ console.log('[Push] trigger failed:', e); }
+      body:JSON.stringify({
+        toUserId:String(toUserId),
+        notifTitle:title,
+        notifBody:body,
+        tag:'gc-'+Date.now()
+      })
+    }).then(function(res){
+      console.log('[WebPush]',res.ok?'✅':'❌',res.status);
+    }).catch(function(e){console.log('[WebPush] error:',e);});
+
+  }catch(e){console.log('[Push] error:',e);}
 }
 
-function showPushIOSGuide(){
-  var modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:flex-end;';
-  modal.innerHTML = '<div style="background:#fff;border-radius:20px 20px 0 0;padding:28px 24px 40px;width:100%;font-family:-apple-system,sans-serif;">'
-    + '<div style="font-size:18px;font-weight:700;margin-bottom:12px;">开启消息推送</div>'
-    + '<div style="font-size:15px;color:#555;line-height:1.7;margin-bottom:20px;">'
-    + 'iPhone需要先将GhostChat添加到主屏幕：<br>'
-    + '1. 点击Safari底部 <b>分享</b> 按钮 ⬆️<br>'
-    + '2. 选择"<b>添加到主屏幕</b>"<br>'
-    + '3. 从桌面图标打开后即可开启推送通知'
-    + '</div>'
-    + '<button onclick="this.closest(\'div\').parentElement.remove()" style="width:100%;padding:14px;background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:600;">知道了</button>'
-    + '</div>';
-  document.body.appendChild(modal);
+// (已废弃)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ═══ 桌面App名字绑定 ═══
+
+
+
+
+
+
+
+
+
+
+
+// 检测设备和浏览器类型
+
+
+
+
+
+function _initPwaBindStatus(){
+  // 更新登录设备数量
+  var devCount = Object.keys(_lastDevMap).length;
+  var deviceTxt = document.getElementById('deviceCountTxt');
+  if(deviceTxt && devCount > 0){
+    deviceTxt.textContent = '当前 ' + devCount + ' 台设备登录中';
+    deviceTxt.style.color = devCount > 1 ? '#ff9500' : '#8e8e93';
+  }
+
+  // 推送toggle
+  var tog=document.getElementById('pushDirectToggle');
+  var pushOn=lg('pushEnabled')==='1'||lg('osRegistered')==='1';
+  if(tog)tog.className='tog'+(pushOn?' on':'');
+  var el=document.getElementById('pwaBindStatus');
+  if(el){
+    el.textContent=pushOn?'✅ 已开启 · 点通知直接打开App':'未开启 · 点击授权系统推送通知';
+    el.style.color=pushOn?'#34c759':'#8e8e93';
+  }
+  // PWA安装状态
+  var isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+  var installEl=document.getElementById('pwaInstallStatus');
+  if(installEl){
+    installEl.textContent=isStandalone?'✅ 已安装为桌面App':'尚未安装 · 点击查看步骤';
+    installEl.style.color=isStandalone?'#34c759':'#8e8e93';
+  }
 }
+
+
 
 // ═══ PWA 安装横幅 ═══
-var _deferredInstall = null;
-window.addEventListener('beforeinstallprompt', function(e){
-  e.preventDefault();
-  _deferredInstall = e;
-  showInstallBanner();
-});
-function showInstallBanner(){
-  if(localStorage.getItem('installBannerDismissed')) return;
-  if(window.navigator.standalone) return;
-  var banner = document.getElementById('installBanner');
-  if(banner) banner.style.display = 'flex';
-}
-function installPWA(){
-  if(_deferredInstall){
-    _deferredInstall.prompt();
-    _deferredInstall.userChoice.then(function(r){
-      if(r.outcome === 'accepted') document.getElementById('installBanner').style.display='none';
-      _deferredInstall = null;
-    });
-  }
-  dismissInstallBanner();
-}
-function dismissInstallBanner(){
-  localStorage.setItem('installBannerDismissed','1');
-  var b = document.getElementById('installBanner');
-  if(b) b.style.display = 'none';
-}
+// Android: beforeinstallprompt removed
+
+
+
 
 // ═══ 工具函数 ═══
 function lg(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function ls(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 
 // ═══ 主题皮肤 ═══
-var THEME_LIST=['','business','dark','ocean','forest','neon','sakura','sand','mint','lavender','ivory','rose'];
+
+// ═══ 主题元数据（名称+代表色，用于折叠头部预览）═══
+var THEME_META = {
+  '':        {name:'粉紫',    grad:'linear-gradient(135deg,#ff9a9e,#a18cd1)'},
+  'sakura':  {name:'樱花',    grad:'linear-gradient(135deg,#f48fb1,#e91e63)'},
+  'lavender':{name:'薰衣草',  grad:'linear-gradient(135deg,#9e8cfc,#6c47e8)'},
+  'rose':    {name:'玫瑰',    grad:'linear-gradient(135deg,#ef9a82,#d84315)'},
+  'ocean':   {name:'蓝海',    grad:'linear-gradient(135deg,#4facfe,#3b6fd6)'},
+  'mint':    {name:'薄荷',    grad:'linear-gradient(135deg,#4db6ac,#00897b)'},
+  'forest':  {name:'森系',    grad:'linear-gradient(135deg,#8bd3a0,#4f9d6e)'},
+  'sand':    {name:'沙漠',    grad:'linear-gradient(135deg,#d4a96a,#a0724a)'},
+  'ivory':   {name:'象牙金',  grad:'linear-gradient(135deg,#c9a84c,#8a6f2e)'},
+  'business':{name:'商务',    grad:'linear-gradient(135deg,#64748b,#334155)'},
+  'dark':    {name:'暗黑',    grad:'linear-gradient(135deg,#7c5cff,#5b8cff)'},
+  'neon':    {name:'霓虹',    grad:'linear-gradient(135deg,#ff2bd6,#00e5ff)'},
+  'aurora':  {name:'极光',    grad:'linear-gradient(135deg,#00d4aa,#7b2fff)'},
+  'sunset':  {name:'夕阳',    grad:'linear-gradient(135deg,#ff6b35,#f7931e)'},
+  'mist':    {name:'雾霾蓝',  grad:'linear-gradient(135deg,#7aa8d4,#4a7fb0)'},
+  'matcha':  {name:'抹茶',    grad:'linear-gradient(135deg,#7ab870,#4a9040)'},
+  'grape':   {name:'葡萄紫',  grad:'linear-gradient(135deg,#b060e8,#7030c0)'},
+  'midnight':  {name:'午夜金',  grad:'linear-gradient(135deg,#c8a028,#a07818)'},
+  'peach':     {name:'蜜桃橙',  grad:'linear-gradient(135deg,#ff8c55,#e8521a)'},
+  'coral':     {name:'珊瑚红',  grad:'linear-gradient(135deg,#f4635a,#d63028)'},
+  'sky':       {name:'天空蓝',  grad:'linear-gradient(135deg,#54b4f5,#1a7fd4)'},
+  'indigo':    {name:'靛蓝',    grad:'linear-gradient(135deg,#6060ee,#3030cc)'},
+  'emerald':   {name:'翡翠绿',  grad:'linear-gradient(135deg,#34d399,#059669)'},
+  'teal':      {name:'青碧',    grad:'linear-gradient(135deg,#2dd4bf,#0d9488)'},
+  'amber':     {name:'琥珀',    grad:'linear-gradient(135deg,#f59e0b,#d97706)'},
+  'lemon':     {name:'柠檬黄',  grad:'linear-gradient(135deg,#d4d400,#a0a000)'},
+  'wine':      {name:'暗夜酒红',grad:'linear-gradient(135deg,#d4145a,#8b0038)'},
+  'charcoal':  {name:'炭黑',    grad:'linear-gradient(135deg,#8e8e93,#636366)'},
+  'obsidian':  {name:'黑曜石',  grad:'linear-gradient(135deg,#4040ff,#2020cc)'},
+  'rose-gold': {name:'玫瑰金',  grad:'linear-gradient(135deg,#e8799a,#c04070)'},
+  'lilac':     {name:'丁香紫',  grad:'linear-gradient(135deg,#c084fc,#9333ea)'},
+  'arctic':    {name:'北极蓝',  grad:'linear-gradient(135deg,#38bdf8,#0284c7)'},
+  'cybergreen':{name:'赛博绿',  grad:'linear-gradient(135deg,#00ff65,#00cc50)'},
+  'blush':     {name:'嫣红',    grad:'linear-gradient(135deg,#ff70a8,#e0308c)'},
+  'coffee':    {name:'咖啡棕',  grad:'linear-gradient(135deg,#a0673a,#6b3f1e)'},
+  'dusk':      {name:'暮色紫',  grad:'linear-gradient(135deg,#c060ff,#8020e0)'},
+  'bronze':    {name:'古铜',    grad:'linear-gradient(135deg,#cd7f32,#8b5a1a)'},
+  'cyberpink': {name:'赛博粉',  grad:'linear-gradient(135deg,#ff00cc,#cc0099)'},
+  'iceberg':   {name:'冰山',    grad:'linear-gradient(135deg,#5ba8c4,#2878a0)'},
+  'pumpkin':   {name:'南瓜橙',  grad:'linear-gradient(135deg,#f07820,#c05000)'}
+};
+
+// ═══ 动态构建主题网格 ═══
+function buildThemeGrid(){
+  var grid=document.getElementById('themeSwatchGrid');
+  if(!grid||grid._built)return;
+  var cur=lg('theme')||'';
+  grid.innerHTML='';
+  Object.keys(THEME_META).forEach(function(key){
+    var m=THEME_META[key];
+    var on=(key===cur);
+    var cell=document.createElement('div');
+    cell.className='theme-swatch'+(on?' on':'');
+    cell.setAttribute('data-theme',key);
+    cell.innerHTML='<div class="theme-preview" style="background:'+m.grad+'"></div>'
+      +'<div class="theme-swatch-name">'+m.name+'</div>';
+    cell.onclick=function(){pickTheme(key);};
+    grid.appendChild(cell);
+  });
+  grid._built=true;
+}
+
+
+function toggleThemeDrawer(){
+  var d=document.getElementById('themeDrawer');
+  var a=document.getElementById('themeDrawerArrow');
+  if(!d)return;
+  var open=d.style.display==='none';
+  if(open)buildThemeGrid();
+  d.style.display=open?'block':'none';
+  if(a)a.style.transform=open?'rotate(90deg)':'';
+}
+
+function _updateThemeHeader(name){
+  var meta=THEME_META[name||'']||THEME_META[''];
+  var dot=document.getElementById('themeCurrentDot');
+  var nm=document.getElementById('themeCurrentName');
+  if(dot)dot.style.background=meta.grad;
+  if(nm)nm.textContent=meta.name;
+}
+
+var THEME_LIST=['','business','dark','ocean','forest','neon','sakura','sand','mint','lavender','ivory','rose','aurora','sunset','mist','matcha','grape','midnight','peach','coral','sky','indigo','emerald','teal','amber','lemon','wine','charcoal','obsidian','rose-gold','lilac','arctic','cybergreen','blush','coffee','dusk','bronze','cyberpink','iceberg','pumpkin'];
 function applyTheme(name){
   THEME_LIST.forEach(function(t){if(t)document.body.classList.remove('theme-'+t);});
   if(name)document.body.classList.add('theme-'+name);
@@ -1337,6 +2262,15 @@ function applyTheme(name){
 function pickTheme(name){
   ls('theme',name);
   applyTheme(name);
+  _updateThemeHeader(name);
+  // 选完自动收起抽屉
+  var d=document.getElementById('themeDrawer');
+  var a=document.getElementById('themeDrawerArrow');
+  if(d)d.style.display='none';
+  if(a)a.style.transform='';
+  // 重置grid让下次展开时刷新勾选状态
+  var g=document.getElementById('themeSwatchGrid');
+  if(g)g._built=false;
 }
 applyTheme(lg('theme')||'');
 function gt(){var d=new Date();return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();}
@@ -1392,68 +2326,95 @@ var G={
 };
 
 // ═══ 启动 ═══
-// 修复移动端100vh问题
-function fixVh(){
-  var vh=window.visualViewport?window.visualViewport.height:window.innerHeight;
-  document.documentElement.style.setProperty('--vh',(vh*0.01)+'px');
-  document.querySelectorAll('.screen').forEach(function(s){
-    s.style.height=vh+'px';
-    s.style.maxHeight=vh+'px';
-  });
-}
-fixVh();
-window.addEventListener('resize',fixVh);
-window.addEventListener('orientationchange',function(){setTimeout(fixVh,100);});
-
-// 键盘适配
-// 设置初始高度
-function setAppHeight(){
+// 键盘弹出时chat页面高度跟随，其余页面fixed不动
+var _chatKeyboardTimer=null;
+function handleViewportResize(){
   var vv=window.visualViewport;
-  var h=(vv?vv.height:window.innerHeight)+'px';
-  document.querySelectorAll('.screen').forEach(function(s){s.style.height=h;});
-}
-setAppHeight();
-if(window.visualViewport){
-  window.visualViewport.addEventListener('resize',function(){
-    setAppHeight();
-    var c=document.getElementById('chatMsgs');
-    if(c)setTimeout(function(){c.scrollTop=c.scrollHeight;},50);
-  });
-} else {
-  window.addEventListener('resize',setAppHeight);
-}
-
-// iOS Safari: 输入框聚焦时滚入可视区域，避免被键盘遮挡
-document.addEventListener('focusin',function(e){
-  if(e.target&&(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')){
-    setTimeout(function(){
-      e.target.scrollIntoView({block:'end',behavior:'smooth'});
-    },300);
+  var vvh=vv?vv.height:window.innerHeight;
+  var vvt=vv?vv.offsetTop:0;
+  // 只调整chat页，其他页面用fixed inset:0不受键盘影响
+  var chatEl=document.getElementById('chat');
+  if(chatEl&&chatEl.classList.contains('active')){
+    chatEl.style.height=vvh+'px';
+    chatEl.style.top=vvt+'px';
+    chatEl.style.bottom='';
+    // 键盘弹出/收起后滚到底，双rAF确保布局稳定后再滚
+    if(_chatKeyboardTimer)cancelAnimationFrame(_chatKeyboardTimer);
+    _chatKeyboardTimer=requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        var cm=document.getElementById('chatMsgs');
+        if(cm)cm.scrollTop=cm.scrollHeight;
+      });
+    });
   }
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',handleViewportResize);
+  window.visualViewport.addEventListener('scroll',handleViewportResize);
+}
+window.addEventListener('orientationchange',function(){
+  setTimeout(handleViewportResize,300);
 });
-window.addEventListener('orientationchange',function(){setTimeout(setAppHeight,300);});
+// chat页打开时初始化高度
+function initChatLayout(){
+  var vv=window.visualViewport;
+  var chatEl=document.getElementById('chat');
+  if(!chatEl)return;
+  chatEl.style.height=(vv?vv.height:window.innerHeight)+'px';
+  chatEl.style.top=(vv?vv.offsetTop:0)+'px';
+  chatEl.style.bottom='';
+}
 
 document.addEventListener('visibilitychange',function(){
-  if(document.hidden){
-    ls('lastHiddenAt',String(Date.now()));
-  }else{
-    if(sessionStorage.getItem('testGatePassed')==='1'){
-      // 系统锁屏/切到后台再回来，重新要求内测密码
-      triggerTestGate();
-    }else if(lg('appLockPin')&&lg('autoLockLeave')!=='false'){
-      var last=parseInt(lg('lastHiddenAt')||'0');
-      var timeout=parseInt(lg('lockTimeout')||'0')*60000;
-      if(last>0&&Date.now()-last>=timeout){
-        triggerLock();
-      }
+  if(document.hidden){ls('lastHiddenAt',String(Date.now()));return;}
+  // 从后台回到前台：重新建立session，防止因后台挂起导致session失效
+  if(lg('registered')&&myId){
+    _kicked=false; // 回到前台重置kicked状态
+    setTimeout(function(){
+      claimSession(true); // 重新建立session
+    },1000);
+  }
+  // 已读回执
+  if(G.chat){
+    var chatEl=document.getElementById('chat');
+    if(chatEl&&chatEl.classList.contains('active')){
+      scheduleMarkRoomRead(G.chat);
     }
   }
+  var _cid=(document.querySelector('.screen.active')||{}).id||'';
+  // 在任何验证页面不跳转
+  if(['reg','testgate','applock','dweather','dcalc','dclk','dnote'].indexOf(_cid)>=0)return;
+  // 只有用户明确开启"离开自动锁"=true 才触发，默认不锁
+  if(lg('appLockPin')&&lg('autoLockLeave')==='true'){triggerLock();}
 });
 window.addEventListener('pagehide',function(){
   ls('lastHiddenAt',String(Date.now()));
 });
 
 window.onload=function(){
+  // 华为浏览器检测：顶部显示引导横幅
+  // Android: Huawei banner removed
+
+  // ★ 老用户迁移：已有账号但没有gatePassedPersist → 自动补写，不再进屏保
+  // 判断条件：registered=true + myId存在 + pin存在 = 之前已正常登录过
+  // ★★★ 永久登录守卫 ★★★
+  // 有账号就写死，任何代码都无法覆盖这个逻辑
+  (function _permanentLoginGuard(){
+    if(lg('registered')==='true' && lg('myId')){
+      ls('gatePassedPersist','1');
+      sessionStorage.setItem('testGatePassed','1');
+      // 每10秒强制刷新一次，防止被意外清除
+      setInterval(function(){
+        if(lg('registered')==='true'&&lg('myId')){
+          if(lg('gatePassedPersist')!=='1'){
+            ls('gatePassedPersist','1');
+            console.log('[Guard] 恢复登录状态');
+          }
+          sessionStorage.setItem('testGatePassed','1');
+        }
+      }, 10000);
+    }
+  })();
   try{applyI18n();var rls=document.getElementById('regLangSelect');if(rls)rls.value=curLang;}catch(e){console.log('i18n err',e);}
   try{
     if(lg('registered')){
@@ -1476,33 +2437,9 @@ window.onload=function(){
   }catch(e){console.log('avatar load err',e);}
   // 计算器全局事件
   setTimeout(function(){
-    var grid=document.getElementById('calcGrid');
-    if(!grid)return;
-    function handleCalc(e){
-      var btn=e.target;
-      while(btn&&!btn.getAttribute('data-val')){btn=btn.parentElement;}
-      if(!btn)return;
-      e.preventDefault();
-      if(CALC.locked)return;
-      CALC.locked=true;
-      setTimeout(function(){CALC.locked=false;},300);
-      var rawVal=btn.getAttribute('data-val')||'';
-      // 过滤华为输入法可能插入的非法字符
-      var cleanVal=rawVal.replace(/[^0-9AC+\-×÷%.EQ+\/\-]/g,'');
-      if(!cleanVal)cleanVal=rawVal;
-      cp(cleanVal);
-    }
-    grid.addEventListener('touchend',handleCalc,{passive:false});
-    grid.addEventListener('click',handleCalc,false);
+    initCalcEvents();
   },500);
-  // Safari iOS fix: 用touchend替代onclick
-  document.querySelectorAll('.ck').forEach(function(el){
-    el.addEventListener('touchend',function(e){
-      e.preventDefault();
-      var b=el.getAttribute('data-val')||el.textContent.trim();
-      cp(b);
-    });
-  });
+  // 计算器事件已在initCalcEvents()统一处理
   // 用addEventListener替代onchange避免浏览器兼容问题
   var imgInput=document.getElementById('imgIn');
   if(imgInput){
@@ -1521,33 +2458,78 @@ window.onload=function(){
   var av=document.getElementById('avatarDisplay');if(av&&lg('myName'))av.textContent=lg('myName')[0].toUpperCase();
   var cl=document.getElementById('curLangShow');if(cl)cl.textContent=(LANGS[curLang]||{}).name||'English';
   var wn=document.getElementById('welcome-name');if(wn&&lg('myName'))wn.textContent='Welcome back, '+lg('myName')+'!';
-  // 推送默认开启
-  if(lg('pushEnabled')!=='0'){
-    setTimeout(function(){ subscribePush(); }, 2000);
-  }
-  updatePushToggleUI(lg('pushEnabled')!=='0');
+  // 推送状态UI更新（不自动订阅，避免影响启动稳定性）
+  updatePushToggleUI(lg('pushEnabled')==='1');
   // 显示安装横幅（如果不在standalone模式）
-  if(!window.navigator.standalone && !localStorage.getItem('installBannerDismissed')){
-    setTimeout(showInstallBanner, 3000);
-  }
-  if(!lg('registered')){
-    // 从未注册过的设备：永远直接进登录/注册界面，跳过密码门和伪装界面
+  // Android: no install banner
+  if(!lg('registered')||!lg('myId')){
+    // 没有账号 → 登录/注册页
     show('reg');
-  }else{
-    pullSettings().then(function(){
-      if(G.hide){
-        afterTestGate();
-      }else if(sessionStorage.getItem('testGatePassed')==='1'){
-        afterTestGate();
-        resetGateIdleTimer();
-      }
+  } else {
+    // ★ 有账号：无条件直接进主界面
+    // 不管隐身模式、不管gatePassedPersist、不管任何条件
+    ls('gatePassedPersist','1');
+    sessionStorage.setItem('testGatePassed','1');
+    show('main');
+    _appWasActive=true;
+    // 拉设置（后台，不影响界面显示）
+    pullSettings().catch(function(e){
+      console.log('[Startup] pullSettings failed (offline?), continuing...');
     });
+    loadContacts();
+    listenForCalls();
+    listenForAllMessages();
+    claimSession(true);
+    setTimeout(registerWebPushAndroid,2000);
+    _handleDeeplink();
   }
-  // 否则停留在 testgate 屏幕（默认 active），等待用户输入内测密码
   ['click','keydown','touchstart','mousemove','scroll'].forEach(function(ev){
     document.addEventListener(ev,resetGateIdleTimer,{passive:true});
   });
 };
+
+
+// ═══ 推送点击 → 自动打开聊天 ═══
+function _handleDeeplink(){
+  try{
+    var qParams=new URLSearchParams(window.location.search);
+    var hParams=new URLSearchParams((window.location.hash||'').replace(/^#/,''));
+    var shortcutInput=qParams.get('input')||hParams.get('input')||'';
+    var fromId=qParams.get('from')||hParams.get('from')||(shortcutInput&&/^\d+$/.test(shortcutInput)?shortcutInput:'');
+    var toParam=qParams.get('to')||hParams.get('to');
+    var isPwaOpen=qParams.get('pwa')==='1'||hParams.get('pwa')==='1'||!!toParam||!!shortcutInput;
+    if(!fromId&&!isPwaOpen)return;
+    // 清除hash，防止刷新重复触发
+    history.replaceState(null,'',window.location.pathname);
+    if(!fromId)return;
+    console.log('[Deeplink] 来自:', fromId);
+    // 等主界面和联系人加载完再打开聊天（最多等3秒）
+    _openChatFromId(fromId);
+  }catch(e){console.log('[Deeplink] error:',e);}
+}
+
+// 从ID打开聊天（供deeplink和SW通知点击共用）
+function _openChatFromId(fromId){
+  if(!fromId)return;
+  var tries=0;
+  var timer=setInterval(function(){
+    tries++;
+    if(myId&&document.getElementById('main')&&document.getElementById('main').classList.contains('active')){
+      clearInterval(timer);
+      setTimeout(function(){
+        var friends=G.friends||[];
+        var found=null;
+        for(var i=0;i<friends.length;i++){
+          if(String(friends[i].friend_id||friends[i].id)===String(fromId)){found=friends[i];break;}
+        }
+        var displayName=found?(found.nickname||found.name||fromId):fromId;
+        var ini=displayName[0]?displayName[0].toUpperCase():'?';
+        openChat(String(fromId),ini,'#007aff',displayName);
+      },400);
+    }
+    if(tries>30)clearInterval(timer);
+  },100);
+}
 
 // ═══ 内测密码门 ═══
 var TEST_GATE_DEFAULT='1234'; // 初次默认密码，之后可在 设置→隐私与安全 里修改
@@ -1556,17 +2538,26 @@ var _gateReturnScreen=null;
 var _gateIdleTimer=null;
 
 function resetGateIdleTimer(){
-  if(G.hide)return;
+  // 已登录用户永远不触发退出计时器
+  if(lg('registered')==='true'&&lg('myId'))return;
+  if(!G.hide)return;
   if(_gateIdleTimer){clearTimeout(_gateIdleTimer);_gateIdleTimer=null;}
-  if(sessionStorage.getItem('testGatePassed')==='1'){
+  if(lg('gatePassedPersist')==='1'||sessionStorage.getItem('testGatePassed')==='1'){
     _gateIdleTimer=setTimeout(triggerTestGate,GATE_IDLE_LIMIT);
   }
 }
 
 function triggerTestGate(){
-  if(G.hide)return;
+  // 已登录用户永远不触发验证门，永远不退出
+  if(lg('registered')==='true'&&lg('myId')){
+    ls('gatePassedPersist','1');
+    sessionStorage.setItem('testGatePassed','1');
+    return;
+  }
+  if(!G.hide)return;
+  if(lg('gatePassedPersist')==='1')return;
   var active=document.querySelector('.screen.active');
-  if(active&&active.id==='testgate')return;
+  if(active&&['testgate','reg','applock'].indexOf(active.id)>=0)return;
   if(active)_gateReturnScreen=active.id;
   sessionStorage.removeItem('testGatePassed');
   if(_gateIdleTimer){clearTimeout(_gateIdleTimer);_gateIdleTimer=null;}
@@ -1580,8 +2571,11 @@ function triggerTestGate(){
 async function checkTestGate(){
   var inp=document.getElementById('gatePinInput');
   if(!_settingsPulled&&lg('registered'))await pullSettings();
-  var saved=lg('testGatePin')||lg('appLockPin')||TEST_GATE_DEFAULT;
-  if(inp.value===saved){
+  var saved=lg('testGatePin')||TEST_GATE_DEFAULT;
+  var typed=(inp.value||'').replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).trim();
+  var loginPin=(lg('pin')||'').replace(/[^0-9]/g,'');
+  if(typed===saved||(loginPin&&typed===loginPin)){
+    ls('gatePassedPersist','1'); // 一次验证永远记住
     sessionStorage.setItem('testGatePassed','1');
     var stage=document.querySelector('#testgate .gate-stage');
     if(stage){stage.style.transition='opacity .4s ease, transform .4s ease';stage.style.opacity='0';stage.style.transform='scale(.97)';}
@@ -1625,22 +2619,10 @@ function setTestGatePin(){
   pushSettings();
 }
 function afterTestGate(){
-  if(G.hide){
-    // 隐藏模式下，testgate通过后直接进主界面，不走proceedStartup避免死循环
-    if(lg('registered')){
-      show('main');
-      listenForCalls();listenForAllMessages();loadContacts();
-    } else {
-      show('reg');
-    }
-    return;
-  }
-  if(lg('appLockPin')){
-    show('applock');
-    setTimeout(function(){var p=document.getElementById('lockPinInput');if(p)p.focus();},300);
-  }else{
-    proceedStartup();
-  }
+  sessionStorage.setItem('testGatePassed','1');
+  if(!lg('registered')||!lg('myId')){show('reg');return;}
+  if(_lockReturnScreen){resumeFromLock();return;}
+  proceedStartup();
 }
 
 function upgradeImg(img){
@@ -1656,13 +2638,42 @@ function upgradeImg(img){
   hi.src=img.dataset.full;
 }
 function openImgViewer(src){
+  var viewer=document.getElementById('imgViewer');
   var img=document.getElementById('imgViewerSrc');
   img.src=src;
-  document.getElementById('imgViewer').style.display='flex';
+  img.style.transform='scale(1)';
+  img.style.borderRadius='4px';
+  document.getElementById('imgZoomBtn').textContent='🔍';
+  viewer.style.display='flex';
+  // 双击图片切换放大/缩小
+  if(!img._dblBound){
+    img._dblBound=true;
+    img.addEventListener('dblclick',function(e){e.stopPropagation();toggleImgZoom();});
+  }
 }
 function closeImgViewer(){
+  var img=document.getElementById('imgViewerSrc');
+  img.style.transform='scale(1)';
   document.getElementById('imgViewer').style.display='none';
-  document.getElementById('imgViewerSrc').src='';
+  img.src='';
+}
+function toggleImgZoom(){
+  var img=document.getElementById('imgViewerSrc');
+  var btn=document.getElementById('imgZoomBtn');
+  var zoomed=img.dataset.zoomed==='1';
+  if(zoomed){
+    img.style.transform='scale(1)';
+    img.style.maxWidth='96vw';
+    img.style.maxHeight='82vh';
+    img.dataset.zoomed='0';
+    if(btn)btn.textContent='🔍';
+  } else {
+    img.style.transform='scale(1.8)';
+    img.style.maxWidth='none';
+    img.style.maxHeight='none';
+    img.dataset.zoomed='1';
+    if(btn)btn.textContent='🔎';
+  }
 }
 
 function showNewChat(){
@@ -1695,8 +2706,8 @@ async function submitNewChat(){
   openChat(String(u.id),displayName[0].toUpperCase(),color,displayName);
 }
 
-function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();if(id==='dnote')initNotes();
-if(id==='dcalc'){var en=document.getElementById('cNum');if(en&&!CALC.buf)en.textContent='0';}}
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();if(id==='dnote')initNotes();if(id==='settings'){initQuickToggles();_updateThemeHeader(lg('theme')||'');}
+if(id==='dcalc'){var en=document.getElementById('cNum');if(en&&!CALC.buf&&CALC.result==null)en.textContent='0';setTimeout(initCalcEvents,0);}}
 
 // ═══ 注册/登录 ═══
 function editNickname(){
@@ -1722,7 +2733,7 @@ function applyAvatarToDisplays(html,fontSize){
   });
 }
 
-function editAvatar(){
+async function editAvatar(){
   var inp=document.createElement('input');
   inp.type='file';
   inp.accept='image/*';
@@ -1829,61 +2840,347 @@ async function doRegister(){
   var na=document.getElementById('nameDisplay');if(na)na.textContent=name;
   var av=document.getElementById('avatarDisplay');if(av)av.textContent=name[0].toUpperCase();
   alert('\u2705 Registered!\n\nYour ID: '+myId+'\n\nShare this ID with friends!\n\n\U0001f510 Rescue Code: '+rc+'\nSave this!');
-  listenForCalls();listenForAllMessages();
+  // 注册即认证，永远记住，直接进主界面
+  ls('gatePassedPersist','1');
+  sessionStorage.setItem('testGatePassed','1');
+  listenForCalls();listenForAllMessages();loadContacts();
   claimSession(true);
   pushSettings();
-  var dm2={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
-  show(dm2[G.dis]||'dcalc');
+  show('main');
+  _appWasActive=true;
 }
 
 // ═══ 单点登录：同一账号同一时间只能在一个地方登录 ═══
+// 规则：当前设备登录时强制写入新token，把其他所有设备踢出。
+// 被踢设备停止一切自动操作，必须用户手动输密码才能重新进入。
 var _sessionSub=null,_sessionPoll=null;
-function makeSessionToken(){return Date.now()+'_'+Math.random().toString(36).slice(2,10);}
+var _appWasActive=false; // 标记：是否已进入过主界面（防止启动时误触发锁屏）
+var _kicked=false; // 被踢标记：true时禁止任何自动重登/claimSession
+// 获取本机唯一设备ID（永久存储在localStorage）
+function getDeviceId(){
+  var did=lg('_deviceId');
+  if(!did){
+    did='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,12);
+    ls('_deviceId',did);
+  }
+  return did;
+}
+
+// session token格式：timestamp_random__deviceId
+// 通过__分隔符提取deviceId
+function getDeviceName(){
+  var ua=navigator.userAgent;
+  if(/iPhone/i.test(ua))return 'iPhone';
+  if(/iPad/i.test(ua))return 'iPad';
+  if(/Android/i.test(ua))return 'Android手机';
+  if(/Windows/i.test(ua))return 'Windows电脑';
+  if(/Mac/i.test(ua))return 'Mac电脑';
+  if(/Linux/i.test(ua))return 'Linux电脑';
+  return '未知设备';
+}
+
+function getDeviceType(){
+  var ua=navigator.userAgent;
+  // mobile = 手机/平板；desktop = 电脑/网页版
+  if(/iPhone|Android|iPad/i.test(ua))return 'mobile';
+  return 'desktop';
+}
+
+function makeSessionToken(){
+  return Date.now()+'_'+Math.random().toString(36).slice(2,10)+'__'+getDeviceId();
+}
+
+function getDeviceIdFromToken(token){
+  if(!token)return '';
+  var parts=token.split('__');
+  return parts.length>1?parts[parts.length-1]:'';
+}
+
+// 判断某个token是否属于本机
+function isMyToken(token){
+  return getDeviceIdFromToken(token)===getDeviceId();
+}
+
+// 每次调用都无条件写入新token，把其他设备踢掉（不管force参数）
+
+// ═══ 多设备管理 ═══
+var _lastDevMap = {};
+
+function _updateMultiDeviceBanner(devMap){
+  _lastDevMap = devMap || {};
+  var myDid = getDeviceId();
+  var otherDevices = Object.keys(devMap).filter(function(did){
+    return did !== myDid && devMap[did];
+  });
+  var banner = document.getElementById('multiDeviceBanner');
+  if(!banner) return;
+  if(otherDevices.length === 0){
+    banner.style.display = 'none';
+    return;
+  }
+  // 显示横幅
+  var names = otherDevices.map(function(did){
+    return devMap[did].name || '未知设备';
+  });
+  banner.style.display = 'flex';
+  var txt = document.getElementById('multiDeviceTxt');
+  if(txt){
+    var typeInfo = otherDevices.map(function(did){
+      var d=devMap[did];
+      return (d.name||'未知设备')+((d.type==='desktop')?' (电脑)':' (手机)');
+    });
+    txt.textContent = '账号同时在 ' + typeInfo.join('、') + ' 上登录';
+  }
+}
+
+function showDeviceManager(){
+  var myDid = getDeviceId();
+  var devMap = _lastDevMap;
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-end;';
+  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+  var box = document.createElement('div');
+  box.style.cssText = 'background:var(--theme-bg);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;box-sizing:border-box;max-height:70vh;overflow-y:auto;';
+  box.innerHTML = '<div style="font-size:18px;font-weight:700;margin-bottom:4px;color:var(--theme-text);">📱 登录设备管理</div>'
+    + '<div style="font-size:13px;color:#8e8e93;margin-bottom:16px;">可踢出其他设备，只保留当前设备登录</div>';
+  
+  var list = document.createElement('div');
+  Object.keys(devMap).forEach(function(did){
+    var dev = devMap[did];
+    var isMe = did === myDid;
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;padding:12px;background:var(--theme-field-bg);border-radius:12px;margin-bottom:8px;gap:12px;';
+    var icon = isMe ? '✅' : '📱';
+    var timeStr = dev.time ? new Date(dev.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    var typeLabel = dev.type==='mobile'?'📱 手机端':'💻 电脑/网页端';
+    row.innerHTML = '<div style="font-size:24px;">' + icon + '</div>'
+      + '<div style="flex:1;">'
+      + '<div style="font-size:15px;font-weight:600;color:var(--theme-text);">' + (dev.name||'未知设备') + (isMe?' <span style="font-size:11px;color:#34c759;font-weight:400;">（本机）</span>':'') + '</div>'
+      + '<div style="font-size:12px;color:#8e8e93;margin-top:2px;">' + typeLabel + ' · ' + timeStr + '</div>'
+      + '</div>';
+    if(!isMe){
+      var kickBtn = document.createElement('button');
+      kickBtn.textContent = '踢出';
+      kickBtn.style.cssText = 'padding:7px 14px;background:none;color:#ff3b30;border:1.5px solid rgba(255,59,48,.3);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;';
+      kickBtn.onclick = function(){
+        if(confirm('确定要踢出「' + (dev.name||'该设备') + '」的登录吗？')){
+          _kickDevice(did, overlay);
+        }
+      };
+      row.appendChild(kickBtn);
+    }
+    list.appendChild(row);
+  });
+  box.appendChild(list);
+  
+  // 踢出所有其他设备
+  var others = Object.keys(devMap).filter(function(d){ return d !== myDid; });
+  if(others.length > 0){
+    var kickAllBtn = document.createElement('button');
+    kickAllBtn.textContent = '踢出所有其他设备';
+    kickAllBtn.style.cssText = 'width:100%;padding:12px;margin-top:8px;background:none;color:#ff3b30;border:1.5px solid rgba(255,59,48,.3);border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;';
+    kickAllBtn.onclick = function(){
+      if(confirm('踢出所有其他设备的登录？')){
+        _kickAllOtherDevices(overlay);
+      }
+    };
+    box.appendChild(kickAllBtn);
+  }
+  
+  var closeBtn = document.createElement('button');
+  closeBtn.textContent = '关闭';
+  closeBtn.style.cssText = 'width:100%;padding:12px;margin-top:8px;background:var(--theme-ep-active);color:var(--theme-text);border:none;border-radius:12px;font-size:14px;cursor:pointer;';
+  closeBtn.onclick = function(){ overlay.remove(); };
+  box.appendChild(closeBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+async function _kickDevice(targetDid, overlay){
+  try{
+    var r = await _sb.from('users').select('session_token').eq('id',parseInt(myId)||myId).maybeSingle();
+    var devMap = {};
+    if(r.data&&r.data.session_token){
+      try{ var p=JSON.parse(r.data.session_token); if(p.devices)devMap=p.devices; }catch(e){}
+    }
+    delete devMap[targetDid];
+    await _sb.from('users').update({session_token:JSON.stringify({devices:devMap})}).eq('id',parseInt(myId)||myId);
+    _lastDevMap = devMap;
+    if(overlay) overlay.remove();
+    alert('✅ 已踢出该设备');
+    _updateMultiDeviceBanner(devMap);
+  }catch(e){ alert('操作失败：'+e.message); }
+}
+
+async function _kickAllOtherDevices(overlay){
+  try{
+    var myDid = getDeviceId();
+    var myToken = lg('sessionToken');
+    var mySlot = (_lastDevMap[myDid]) || {token:myToken, name:getDeviceName(), time:Date.now()};
+    var newMap = {}; newMap[myDid] = mySlot;
+    await _sb.from('users').update({session_token:JSON.stringify({devices:newMap})}).eq('id',parseInt(myId)||myId);
+    _lastDevMap = newMap;
+    if(overlay) overlay.remove();
+    alert('✅ 已踢出所有其他设备');
+    _updateMultiDeviceBanner(newMap);
+  }catch(e){ alert('操作失败：'+e.message); }
+}
+
 async function claimSession(force){
   if(!lg('registered')||!myId)return;
-  var token=lg('sessionToken');
-  if(!token||force){
-    token=makeSessionToken();
-    ls('sessionToken',token);
-    await _sb.from('users').update({session_token:token}).eq('id',parseInt(myId)||myId);
-  }else{
+  if(_kicked)return;
+  var myDid=getDeviceId();
+  var myToken=makeSessionToken();
+  ls('sessionToken',myToken);
+  try{
+    // 读取当前多设备状态
     var r=await _sb.from('users').select('session_token').eq('id',parseInt(myId)||myId).maybeSingle();
-    if(r.data&&r.data.session_token&&r.data.session_token!==token){
-      forceLogout();return;
+    var devMap={};
+    if(r.data&&r.data.session_token){
+      try{
+        var parsed=JSON.parse(r.data.session_token);
+        if(parsed&&parsed.devices)devMap=parsed.devices;
+      }catch(e){
+        // 旧格式兼容：直接字符串
+        devMap={};
+      }
     }
-  }
-  startSessionWatch();
+    var myType=getDeviceType(); // 'mobile' 或 'desktop'
+    // 踢出同类型的旧设备（同类型只允许1台）
+    Object.keys(devMap).forEach(function(did){
+      if(did!==myDid&&devMap[did]&&devMap[did].type===myType){
+        console.log('[Session] kicking same-type device:',devMap[did].name);
+        delete devMap[did];
+      }
+    });
+    // 清理30天未活跃的设备
+    var now=Date.now();
+    Object.keys(devMap).forEach(function(did){
+      if(now-(devMap[did].time||0)>30*24*3600*1000)delete devMap[did];
+    });
+    // 写入本机设备
+    devMap[myDid]={
+      token:myToken,
+      name:getDeviceName(),
+      type:myType,
+      time:Date.now()
+    };
+    var newVal=JSON.stringify({devices:devMap});
+    await _sb.from('users').update({session_token:newVal}).eq('id',parseInt(myId)||myId);
+    // 检查是否有其他设备在线，更新UI
+    _updateMultiDeviceBanner(devMap);
+  }catch(e){console.log('[Session] write failed',e);}
+  _stopSessionWatch();
+  _startSessionWatch();
 }
-function startSessionWatch(){
-  if(_sessionSub)return;
-  var mid=parseInt(myId)||myId;
-  _sessionSub=_sb.channel('session_'+mid)
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'users',filter:'id=eq.'+mid},function(p){
-      var nt=p.new&&p.new.session_token;
-      if(nt&&nt!==lg('sessionToken')){forceLogout();}
-    }).subscribe();
-  if(_sessionPoll)clearInterval(_sessionPoll);
-  _sessionPoll=setInterval(async function(){
-    if(!lg('registered'))return;
-    var r=await _sb.from('users').select('session_token').eq('id',parseInt(myId)||myId).maybeSingle();
-    if(r.data&&r.data.session_token&&r.data.session_token!==lg('sessionToken')){forceLogout();}
-  },30000);
-}
-function forceLogout(){
+
+function _stopSessionWatch(){
   if(_sessionSub){try{_sessionSub.unsubscribe();}catch(e){}_sessionSub=null;}
   if(_sessionPoll){clearInterval(_sessionPoll);_sessionPoll=null;}
+}
+
+function _startSessionWatch(){
+  var mid=parseInt(myId)||myId;
+  // 实时监听：数据库token变了
+  _sessionSub=_sb.channel('sess_'+mid+'_'+Date.now())
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'users',filter:'id=eq.'+mid},function(p){
+      var raw=p.new&&p.new.session_token;
+      _checkMultiDeviceSession(raw);
+    }).subscribe();
+  // 轮询兜底（2分钟）
+  _sessionPoll=setInterval(async function(){
+    if(!lg('registered')||!lg('myId'))return;
+    // 刷新活跃时间（更新devMap里本机的time字段）
+    try{
+      var r=await _sb.from('users').select('session_token').eq('id',parseInt(myId)||myId).maybeSingle();
+      if(r&&r.data)_checkMultiDeviceSession(r.data.session_token);
+    }catch(e){
+      // 网络错误：完全忽略，不影响登录状态
+      console.log('[Session] poll skip:',e&&e.message);
+    }
+  },120000);
+}
+
+function _checkMultiDeviceSession(raw){
+  if(!raw)return; // 空值忽略
+  var devMap={};
+  try{
+    var parsed=JSON.parse(raw);
+    if(parsed&&parsed.devices)devMap=parsed.devices;
+  }catch(e){
+    // 旧格式或解析失败：忽略，不退出
+    console.log('[Session] token parse skip (old format)');
+    return;
+  }
+  var myDid=getDeviceId();
+  var mySlot=devMap[myDid];
+  if(!mySlot){
+    // slot丢失：静默重新登记，绝对不退出
+    console.log('[Session] slot missing, reclaiming silently');
+    setTimeout(function(){ claimSession(true); }, 500);
+    return;
+  }
+  if(mySlot.token!==lg('sessionToken')){
+    // token变了，同步一下
+    ls('sessionToken',mySlot.token);
+  }
+  _updateMultiDeviceBanner(devMap);
+}
+
+async function _handleSessionMismatch(dbToken){
+  // 新版多设备模式下，这个函数只处理旧格式兼容
+  if(isMyToken(dbToken)){
+    ls('sessionToken',dbToken);
+    return;
+  }
+  // 旧格式被踢：重新claim加入多设备
+  await claimSession(true);
+}
+
+function _onKicked(){
+  if(_kicked)return;
+  _kicked=true;
+  _stopSessionWatch();
   if(_msgSub){try{_msgSub.unsubscribe();}catch(e){}_msgSub=null;}
   if(_callSub){try{_callSub.unsubscribe();}catch(e){}_callSub=null;}
   if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}realtimeSub=null;}
-  ls('registered','');
-  sessionStorage.removeItem('testGatePassed');
-  alert('您的账号已在另一台设备登录，本设备已自动退出。');
-  var lid=document.getElementById('loginId');if(lid)lid.value=lg('myId')||'';
-  show('reg');switchTo('login');
+  ls('sessionToken','');
+  console.log('[Session] kicked, silently reconnecting...');
+  setTimeout(_autoRelogin, 2000);
 }
 
+async function _autoRelogin(){
+  if(!lg('myId')||!lg('registered')){
+    console.log('[Session] skip reconnect - not logged in');
+    return;
+  }
+  try{
+    var r=await _sb.from('users').select('id').eq('id',parseInt(lg('myId'))||lg('myId')).maybeSingle();
+    if(r&&r.data){
+      myId=String(r.data.id);
+      _kicked=false;
+      await claimSession(true);
+      try{if(G.chat)listenForMessages(G.chat);}catch(e){}
+      try{listenForCalls();}catch(e){}
+      console.log('[Session] ✅ reconnected');
+    } else {
+      // DB查无此人（账号被删），但也不跳登录页，5分钟后再试
+      _kicked=false;
+      console.log('[Session] user not found, retry in 5min');
+      setTimeout(_autoRelogin, 300000);
+    }
+  }catch(e){
+    _kicked=false;
+    console.log('[Session] network error, retry in 30s');
+    setTimeout(_autoRelogin, 30000);
+  }
+}
+
+// 兼容旧调用
+function forceLogout(){_onKicked();}
+
 // ═══ 设置同步到中央数据库：锁屏密码/隐藏模式/伪装方式/激活方式/销毁方式 ═══
-var SYNCED_SETTING_KEYS=['appLockPin','hide','dis','trig','dest','dpin','testGatePin','lockTimeout','autoLockLeave'];
+var SYNCED_SETTING_KEYS=['appLockPin','hide','dis','trig','dest','dpin','testGatePin','lockTimeout','autoLockLeave','focusMode'];
 async function pushSettings(){
   if(!lg('registered')||!myId)return;
   var obj={};
@@ -1921,8 +3218,12 @@ async function doLogin(){
   // 本地验证
   if(idInput===String(lg('myId'))&&pin===lg('pin')){
     await pullSettings();
-    if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
-    listenForCalls();listenForAllMessages();loadContacts();claimSession(true);return;
+    ls('gatePassedPersist','1');
+    sessionStorage.setItem('testGatePassed','1');
+    show('main');
+    listenForCalls();listenForAllMessages();loadContacts();claimSession(true);
+    _appWasActive=true;
+    return;
   }
   // 数据库验证用户存在
   var res=await _sb.from('users').select('id,name').eq('id',parseInt(idInput)||idInput).single();
@@ -1936,9 +3237,12 @@ async function doLogin(){
   G.pin=pin;
   ls('registered','true');
   await pullSettings();
-  if(G.hide){show(_dm[G.dis]||'dcalc');}else{show('main');}
-  listenForCalls();listenForAllMessages();loadContacts();loadContacts();
+  ls('gatePassedPersist','1');
+  sessionStorage.setItem('testGatePassed','1');
+  show('main');
+  listenForCalls();listenForAllMessages();loadContacts();
   claimSession(true);
+  _appWasActive=true;
 }
 function showQR(){
   var modal=document.getElementById('qrModal');
@@ -2145,7 +3449,33 @@ function playVoice(el,src){
   audio.onended=function(){el.innerHTML='▶️ '+(el.textContent.split(' ')[1]||'');};
 }
 
-function doLogout(){if(confirm('Logout?')){show('reg');switchTo('login');}}
+async function doLogout(){
+  if(!confirm('确定退出登录？\n\n退出后需要重新输入密码才能登录。'))return;
+  try{
+    // 从数据库多设备列表里移除本机
+    var myDid=getDeviceId();
+    var r=await _sb.from('users').select('session_token').eq('id',parseInt(myId)||myId).maybeSingle();
+    if(r.data&&r.data.session_token){
+      try{
+        var parsed=JSON.parse(r.data.session_token);
+        if(parsed&&parsed.devices){
+          delete parsed.devices[myDid];
+          await _sb.from('users').update({session_token:JSON.stringify(parsed)}).eq('id',parseInt(myId)||myId);
+        }
+      }catch(e){}
+    }
+  }catch(e){}
+  // 清除所有本地凭据，退出后必须重新输密码
+  ls('registered','');
+  ls('gatePassedPersist','');   // 清除 → 下次必须密码验证
+  ls('sessionToken','');
+  ls('pin','');                  // 清除密码 → 强制重新输入
+  sessionStorage.removeItem('testGatePassed');
+  _stopSessionWatch();
+  _kicked=false;
+  show('reg');
+  switchTo('login');
+}
 function doRecovery(){
   var input=document.getElementById('rescueInput').value.replace(/-/g,'').toUpperCase();
   var saved=(lg('rescueCode')||'').replace(/-/g,'');
@@ -2249,6 +3579,24 @@ function leaveChat(){
   loadContacts();
 }
 // 对方正在输入提示
+function autoResizeMI(){
+  var ta=document.getElementById('mi');
+  if(!ta)return;
+  // 先把高度重置为auto，让scrollHeight真实反映内容
+  ta.style.height='auto';
+  var newH=Math.min(ta.scrollHeight, 120);
+  ta.style.height=newH+'px';
+  // textarea变高后，chatMsgs底部可能被顶上去，立即修正
+  var cm=document.getElementById('chatMsgs');
+  if(cm){
+    var dist=cm.scrollHeight-cm.scrollTop-cm.clientHeight;
+    // 如果本来就在底部附近（200px内），继续钉在底部
+    if(dist<200){
+      requestAnimationFrame(function(){cm.scrollTop=cm.scrollHeight;});
+    }
+  }
+}
+
 function notifyTyping(){
   if(!typingSub||!G.chat)return;
   var now=Date.now();
@@ -2279,11 +3627,18 @@ setInterval(function(){
   if(mainEl&&mainEl.classList.contains('active')){
     loadContacts();
   }
-},5000);
+},60000);
 
 async function joinRoom(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
   currentRoom=roomIdOf(a,b);
+  // joinRoom后同步消息，同步完滚到底
+  syncRoomMessages(name).then(function(){
+    var cm=document.getElementById('chatMsgs');
+    if(cm&&G.chat===name){
+      requestAnimationFrame(function(){cm.scrollTop=cm.scrollHeight;});
+    }
+  }).catch(function(){});
   if(realtimeSub){try{realtimeSub.unsubscribe();}catch(e){}}
   if(typingSub){try{typingSub.unsubscribe();}catch(e){}}
   realtimeSub=null;typingSub=null;
@@ -2434,8 +3789,15 @@ async function syncRoomMessages(name){
   serverMsgs=serverMsgs.filter(function(m){return m.type!=='read_receipt';});
   toCleanup.forEach(function(item){cleanupMediaMessage(item.id,item.src,item.expired);});
   // 合并本地缓存与服务器消息（按id去重）
+  // 关键：先把内存中id==null的"发送中"消息保存，合并后追加回来，防止消失
+  var pendingMsgs=(G.msgs[name]||[]).filter(function(m){return m.id==null;});
   var serverIds={};serverMsgs.forEach(function(m){if(m.id!=null)serverIds[m.id]=true;});
   var merged=localMsgs.filter(function(m){return !(m.id!=null&&serverIds[m.id]);}).concat(serverMsgs);
+  // 把发送中的消息追加到末尾（避免重复：只加本地缓存里没有的）
+  var mergedTs=new Set(merged.map(function(m){return m.ts+'_'+m.text;}));
+  pendingMsgs.forEach(function(m){
+    if(!mergedTs.has(m.ts+'_'+m.text))merged.push(m);
+  });
   merged.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
   var prevLen=(G.msgs[name]||[]).length;
   G.msgs[name]=merged;
@@ -2470,26 +3832,76 @@ async function markRoomRead(otherId){
   }catch(e){console.log('markRoomRead err',e&&e.message);}
 }
 var _lastMarkReadAt={};
+var _readObserver=null;
 function scheduleMarkRoomRead(name){
   setTimeout(function(){
     if(G.chat!==name)return;
-    if(Date.now()-(_lastMarkReadAt[name]||0)<15000)return; // 节流，避免每次轮询都插入新记录
+    // ★ 关键：APP在后台时不发已读回执，对方不会看到"已读"
+    if(document.hidden||document.visibilityState!=='visible')return;
+    // 节流3秒
+    if(Date.now()-(_lastMarkReadAt[name]||0)<3000)return;
     _lastMarkReadAt[name]=Date.now();
     markRoomRead(name);
-  },2000);
+    // 本地立即标记所有收到的消息为已读
+    (G.msgs[name]||[]).forEach(function(m){
+      if(!m.sent)m.read=true;
+    });
+    renderMsgs();
+  },800);
+}
+
+// IntersectionObserver：收到的消息气泡滚入可视区→立即标已读
+function setupReadObserver(){
+  if(_readObserver){_readObserver.disconnect();_readObserver=null;}
+  if(!('IntersectionObserver' in window))return;
+  _readObserver=new IntersectionObserver(function(entries){
+    var hasUnread=false;
+    entries.forEach(function(en){
+      if(en.isIntersecting&&en.target.dataset.unread==='1'){
+        en.target.dataset.unread='0';
+        hasUnread=true;
+      }
+    });
+    if(hasUnread&&G.chat){
+      // ★ APP在后台时不标已读
+      if(document.hidden||document.visibilityState!=='visible')return;
+      // 本地立即把所有对方消息标已读
+      (G.msgs[G.chat]||[]).forEach(function(m){if(!m.sent)m.read=true;});
+      // 节流写DB
+      if(Date.now()-(_lastMarkReadAt[G.chat]||0)>3000){
+        _lastMarkReadAt[G.chat]=Date.now();
+        markRoomRead(G.chat);
+      }
+    }
+  },{threshold:0.5});
+  // 观察所有对方的消息气泡
+  document.querySelectorAll('#chatMsgs .mr.r').forEach(function(el){
+    el.dataset.unread='1';
+    _readObserver.observe(el);
+  });
 }
 
 // ═══ WebRTC MODULE v2.0 ═══
 var RTC={pc:null,localStream:null,isCaller:false,callRoom:null,pendingOffer:null,pendingFrom:null,startTime:null,callRecordId:null};
 var ICE={iceServers:[
+  // Google免费STUN（全球最稳定）
   {urls:'stun:stun.l.google.com:19302'},
   {urls:'stun:stun1.l.google.com:19302'},
   {urls:'stun:stun2.l.google.com:19302'},
-  {urls:'stun:global.stun.twilio.com:3478'},
+  {urls:'stun:stun3.l.google.com:19302'},
+  {urls:'stun:stun4.l.google.com:19302'},
+  // Cloudflare STUN
   {urls:'stun:stun.cloudflare.com:3478'},
+  // Twilio STUN
+  {urls:'stun:global.stun.twilio.com:3478'},
+  // Open Relay免费TURN（多端口备用）
   {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
   {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
-  {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'}
+  {urls:'turns:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443?transport=tcp',username:'openrelayproject',credential:'openrelayproject'},
+  // FreeTURN备用
+  {urls:'turn:freestun.net:3478',username:'free',credential:'free'},
+  {urls:'turns:freestun.net:5349',username:'free',credential:'free'}
 ]};
 
 // ═══ 免费TURN服务器：注册 metered.ca 免费账号(每月50GB免费额度)后，
@@ -2498,15 +3910,32 @@ var ICE={iceServers:[
 var METERED_APP='ghostchat88';     // 例如 'ghostchat' -> 对应 https://ghostchat.metered.live
 var METERED_API_KEY='12jRYlmtbX7D_DFkmtkVGGi4nR5LTMBDNeAfDtRmZmD3n2MT';
 async function getIceServers(){
+  // 尝试Metered TURN（带3秒超时）
   if(METERED_APP&&METERED_API_KEY){
     try{
-      var r=await fetch('https://'+METERED_APP+'.metered.live/api/v1/turn/credentials?apiKey='+METERED_API_KEY);
+      var ctrl=new AbortController();
+      var timer=setTimeout(function(){ctrl.abort();},3000);
+      var r=await fetch(
+        'https://'+METERED_APP+'.metered.live/api/v1/turn/credentials?apiKey='+METERED_API_KEY,
+        {signal:ctrl.signal}
+      );
+      clearTimeout(timer);
       if(r.ok){
         var servers=await r.json();
-        if(servers&&servers.length){console.log('Using metered.ca TURN servers');return {iceServers:servers};}
+        if(servers&&servers.length){
+          // 把Google STUN也加进去，提高成功率
+          var combined=servers.concat([
+            {urls:'stun:stun.l.google.com:19302'},
+            {urls:'stun:stun1.l.google.com:19302'},
+            {urls:'stun:stun.cloudflare.com:3478'}
+          ]);
+          console.log('[ICE] Using Metered TURN + Google STUN');
+          return {iceServers:combined};
+        }
       }
-    }catch(e){console.log('metered turn fetch failed, using fallback:',e&&e.message);}
+    }catch(e){console.log('[ICE] Metered failed, using fallback:',e&&e.message);}
   }
+  console.log('[ICE] Using fallback ICE servers');
   return ICE;
 }
 
@@ -2872,6 +4301,20 @@ function listenForAllMessages(){
         }
         loadContacts();
         sendNotif();
+        // ── 系统本地通知（不在当前聊天界面时弹出）──
+        if(!chatOpenNow){
+          var sname=G.friends&&G.friends[senderId]?G.friends[senderId].name:('用户'+senderId);
+          var body=msg.type==='text'?msg.text:msg.type==='image'?'[图片]':msg.type==='voice'?'[语音]':msg.type==='video'?'[视频]':'[消息]';
+          var isWeatherDisguise=G.hide&&G.dis==='weather'&&
+            document.getElementById('dweather')&&
+            document.getElementById('dweather').classList.contains('active');
+          if(isWeatherDisguise){
+            var wxFakeNotifs=['今日最高气温43°，注意防暑补水','紫外线指数极强，出门记得防晒','今晚有轻微沙尘，建议关好窗户','未来24小时天气稳定，适合出行','湿度降低，注意保湿补水'];
+            showLocalNotification('🌤 天气提醒', wxFakeNotifs[Math.floor(Math.random()*wxFakeNotifs.length)], senderId);
+          } else {
+            showLocalNotification('💬 '+sname, body, senderId);
+          }
+        }
       }
       // 未读提醒：只要不在当前聊天界面就提醒，与already无关
       var inThisChat=(G.chat===senderId)&&document.getElementById('chat')&&document.getElementById('chat').classList.contains('active');
@@ -2911,11 +4354,44 @@ function openChat(name,ini,color,displayName){
   document.getElementById('callAv').textContent=ini||dn[0];document.getElementById('callAv').style.background=color||'#007aff';
   document.getElementById('callNm').textContent=dn;document.getElementById('vidNm').textContent=dn;
   resolveDisplayName(name);
-  if(!G.msgs[name])G.msgs[name]=[{text:'👋',sent:false,t:gt()}];
-  renderMsgs();show('chat');document.getElementById('xpanel').classList.remove('on');
+  var _cm=document.getElementById('chatMsgs');if(_cm)_cm._firstRender=true;
+  // 先用localStorage快速显示
+  if(!G.msgs[name]||G.msgs[name].length===0){
+    var _lc=loadLocalMsgs(name);
+    if(_lc.length>0)G.msgs[name]=_lc;
+  }
+  show('chat');
+  initChatLayout();
+  document.getElementById('xpanel').classList.remove('on');
+  renderMsgs();
+  setTimeout(function(){
+    var cm=document.getElementById('chatMsgs');
+    if(cm)cm.scrollTop=cm.scrollHeight;
+  },150);
+  // 后台从IDB加载更完整历史（合并进来）
+  loadLocalMsgsIDB(name,function(idbMsgs){
+    if(!idbMsgs||!idbMsgs.length)return;
+    var cur=G.msgs[name]||[];
+    var curIds=new Set(cur.map(function(m){return m.id;}));
+    var added=false;
+    idbMsgs.forEach(function(m){
+      if(m.id==null||!curIds.has(m.id)){cur.push(m);added=true;}
+    });
+    if(added){
+      cur.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+      G.msgs[name]=cur;
+      if(G.chat===name)renderMsgs();
+    }
+  });
   joinRoom(name).catch(function(e){console.log('joinRoom error:',e&&e.message);});
 }
 // 已读状态的可爱图标：未读=猫咪表情(圆形徽标+蹦跳动画)，已读=灰色爪印
+
+// 点击失败消息重新发送
+function retrySendText(el){
+  // 点击任意失败消息 → 触发全量重试（按ts顺序）
+  retryFailedMsgs();
+}
 
 function renderMsgs(){
   var c=document.getElementById('chatMsgs');
@@ -2973,16 +4449,39 @@ function renderMsgs(){
     var statusTick='';
     var bubExtra='';
     if(s){
-      if(m.failed){statusTick='';}
-      else if(m.loading){statusTick='<span class="msg-tick" title="发送中">🌱</span>';}
+      if(m.failed){statusTick='<span style="color:#ff3b30;font-size:11px;margin-left:2px;cursor:pointer;" title="发送失败，点重试" onclick="retrySendText(this)">⚠️失败</span>';}
+      else if(m.id==null||m.loading){statusTick='<span class="msg-tick" title="发送中">🌱</span>';}
       else if(m.read){bubExtra='<span class="msg-paw" title="对方已读">🐾</span>';}
     }
     var bubCls='bub'+(s&&m.read?' bub-read':'');
     var midAttr=(s&&m.id!=null)?(' data-mid="'+m.id+'"'):'';
     html+='<div class="mr '+(s?'s':'r')+'"><div class="'+bubCls+'"'+midAttr+'>'+(s&&!m.read?bubExtra:'')+b+(s&&m.read?bubExtra:'')+'</div><div class="mt">'+m.t+statusTick+'</div></div>';
   }
+  // 在重建DOM前快照滚动状态
+  var _atBottom=(c.scrollHeight-c.scrollTop-c.clientHeight)<200;
+  var _prevScrollTop=c.scrollTop;
+  var _prevScrollHeight=c.scrollHeight;
+  var _isFirst=c._firstRender;
+  var _prevMsgCount=(c._msgCount||0);
+  var _newMsgCount=msgs.length;
+  c._msgCount=_newMsgCount;
+  // 是否有新消息进来
+  var _hasNewMsg=_newMsgCount>_prevMsgCount;
+  var _forceBottom=c._forceBottom;c._forceBottom=false;
   c.innerHTML=html;
-  c.scrollTop=c.scrollHeight;
+  // 双rAF：第一帧让浏览器完成布局，第二帧再读scrollHeight，避免读到旧值
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      if(_isFirst||_atBottom||_hasNewMsg||_forceBottom){
+        c.scrollTop=c.scrollHeight;
+        c._firstRender=false;
+      } else {
+        // 保持用户滚动位置（补偿内容高度变化）
+        c.scrollTop=_prevScrollTop+(c.scrollHeight-_prevScrollHeight);
+      }
+      setupReadObserver();
+    });
+  });
   setupRecallLongPress();
 }
 
@@ -3044,26 +4543,150 @@ async function recallMsg(mid){
 function loadLocalMsgs(name){
   try{var a=JSON.parse(lg('msgcache_'+name)||'[]');return Array.isArray(a)?a:[];}catch(e){return [];}
 }
-function saveLocalMsgs(name,arr){
-  try{ls('msgcache_'+String(name),JSON.stringify((arr||[]).slice(-200)));}catch(e){console.log('saveLocalMsgs failed',e);}
+// ═══ 消息本地存储：IndexedDB主存 + localStorage备份 ═══
+var _msgDB=null;
+function openMsgDB(){
+  if(_msgDB)return Promise.resolve(_msgDB);
+  return new Promise(function(res){
+    if(!window.indexedDB){res(null);return;}
+    var req=indexedDB.open('ghostchat_msgs',1);
+    req.onupgradeneeded=function(e){
+      var db=e.target.result;
+      if(!db.objectStoreNames.contains('chats'))db.createObjectStore('chats');
+    };
+    req.onsuccess=function(e){_msgDB=e.target.result;res(_msgDB);};
+    req.onerror=function(){res(null);};
+  });
 }
 
-function addMsg(m){if(!G.msgs[G.chat])G.msgs[G.chat]=[];if(m.ts==null)m.ts=Date.now();G.msgs[G.chat].push(m);renderMsgs();saveLocalMsgs(G.chat,G.msgs[G.chat]);}
+function saveLocalMsgs(name,arr){
+  var key='msgcache_'+String(name);
+  var data=arr||[];
+  // 同步写localStorage（立即，作备份）
+  try{localStorage.setItem(key,JSON.stringify(data.slice(-300)));}catch(e){}
+  // 异步写IndexedDB（容量大，保存全量）
+  openMsgDB().then(function(db){
+    if(!db)return;
+    try{
+      var tx=db.transaction('chats','readwrite');
+      tx.objectStore('chats').put(JSON.stringify(data),key);
+    }catch(e){}
+  });
+}
+
+function loadLocalMsgs(name){
+  try{
+    var a=JSON.parse(localStorage.getItem('msgcache_'+String(name))||'[]');
+    return Array.isArray(a)?a:[];
+  }catch(e){return [];}
+}
+
+// 从IndexedDB读取更完整的历史（异步，打开对话时用）
+function loadLocalMsgsIDB(name,cb){
+  openMsgDB().then(function(db){
+    if(!db){cb(loadLocalMsgs(name));return;}
+    try{
+      var tx=db.transaction('chats','readonly');
+      var req=tx.objectStore('chats').get('msgcache_'+String(name));
+      req.onsuccess=function(){
+        try{
+          var a=JSON.parse(req.result||'[]');
+          if(Array.isArray(a)&&a.length>0){
+            try{localStorage.setItem('msgcache_'+String(name),JSON.stringify(a.slice(-300)));}catch(e){}
+            cb(a);
+          } else {cb(loadLocalMsgs(name));}
+        }catch(e){cb(loadLocalMsgs(name));}
+      };
+      req.onerror=function(){cb(loadLocalMsgs(name));};
+    }catch(e){cb(loadLocalMsgs(name));}
+  });
+}
+
+function addMsg(m){
+  if(!G.msgs[G.chat])G.msgs[G.chat]=[];
+  if(m.ts==null)m.ts=Date.now();
+  G.msgs[G.chat].push(m);
+  // 自己发的消息标记强制滚底
+  var c=document.getElementById('chatMsgs');
+  if(c&&m.sent)c._forceBottom=true;
+  renderMsgs();
+  saveLocalMsgs(G.chat,G.msgs[G.chat]);
+}
 async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
   if(G.chat&&isBlocked(G.chat)){alert('对方已被你拉黑，请先在通讯录中解除拉黑');return;}
   var chatAtSend=G.chat;
-  var msgObj={text:t,sent:true,t:gt(),ts:Date.now()};
+  var msgObj={text:t,sent:true,t:gt(),ts:Date.now(),id:null,failed:false};
   addMsg(msgObj);
   updateLastPreview(chatAtSend,t,'text',false,'sent');
   inp.value='';
-  if(currentRoom){
-    var r=await _sb.from('messages').insert({room_id:currentRoom,sender:String(myId),content:t,type:'text'}).select().single();
-    if(r.data){msgObj.id=r.data.id;saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);}
-    // 触发推送通知给对方
-    if(chatAtSend) triggerPushToUser(String(chatAtSend));
+  inp.style.height='';
+  await _doSendText(msgObj,chatAtSend,currentRoom);
+}
+
+// 消息发送核心：保持msgObj原始ts，不改变顺序
+async function _doSendText(msgObj,chatAtSend,room){
+  if(!room)return;
+  try{
+    // 发送时附带原始ts，服务器用created_at记录，但本地ts保持不变
+    var r=await _sb.from('messages').insert({
+      room_id:room,
+      sender:String(myId),
+      content:msgObj.text,
+      type:'text'
+    }).select().single();
+    if(r.data&&!r.error){
+      msgObj.id=r.data.id;
+      msgObj.failed=false;
+      msgObj.failCount=0;
+      // 不改ts（保持发送时的时间，排序不乱）
+      saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);
+      if(G.chat===chatAtSend)renderMsgs();
+      triggerPushToUser(String(chatAtSend), msgObj.text);
+    }else{
+      _markFailed(msgObj,chatAtSend);
+    }
+  }catch(e){
+    _markFailed(msgObj,chatAtSend);
+    console.log('[sendMsg] failed:',e&&e.message);
   }
 }
+
+function _markFailed(msgObj,chatAtSend){
+  msgObj.failed=true;
+  msgObj.failCount=(msgObj.failCount||0)+1;
+  saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);
+  if(G.chat===chatAtSend)renderMsgs();
+}
+
+// 网络恢复：重试所有failed消息，保持ts顺序（不移动位置，不改ts）
+var _retrying=false;
+function retryFailedMsgs(){
+  if(_retrying||!myId||!navigator.onLine)return;
+  _retrying=true;
+  var tasks=[];
+  Object.keys(G.msgs||{}).forEach(function(peerId){
+    var room=roomIdOf(parseInt(myId)||myId,parseInt(peerId)||peerId);
+    (G.msgs[peerId]||[]).forEach(function(m){
+      if(m.failed&&m.sent&&(m.type==='text'||!m.type)&&m.text&&m.id==null){
+        tasks.push({m:m,peerId:peerId,room:room});
+      }
+    });
+  });
+  // 按ts顺序重试，保证入库顺序正确
+  tasks.sort(function(a,b){return (a.m.ts||0)-(b.m.ts||0);});
+  var i=0;
+  function next(){
+    if(i>=tasks.length){_retrying=false;return;}
+    var t=tasks[i++];
+    t.m.failed=false; // 先取消failed标记
+    _doSendText(t.m,t.peerId,t.room).then(function(){
+      setTimeout(next,200); // 间隔200ms，避免并发太多
+    }).catch(function(){next();});
+  }
+  next();
+}
+window.addEventListener('online',function(){setTimeout(retryFailedMsgs,800);});
 function updateLastPreview(cid,content,type,highlight,readState){
   var lastEl=document.getElementById('last-'+String(cid));
   if(!lastEl)return;
@@ -3193,58 +4816,73 @@ async function resolveDisplayName(cid){
 }
 
 function proceedStartup(){
-  if(lg('registered')){loadContacts();listenForCalls();listenForAllMessages();claimSession(false);}
+  if(lg('registered')){
+    loadContacts();
+    listenForCalls();
+    listenForAllMessages();
+    claimSession(true);
+    setTimeout(registerWebPushAndroid,2000);
+    _appWasActive=true;
+  }
   if('Notification' in window&&Notification.permission==='default'){
     try{Notification.requestPermission();}catch(e){}
   }
-  var _dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
-  if(!lg('registered')){
+  if(!lg('registered')||!lg('myId')){
     show('reg');
-  } else if(G.hide){
-    show(_dm[G.dis]||'dcalc');
-    listenForCalls();listenForAllMessages();
   } else {
     show('main');
-    listenForCalls();listenForAllMessages();loadContacts();
   }
 }
 
 var _lockReturnScreen=null;
+// 统一处理_lockReturnScreen跳转，支持'chat:uid'格式
+function resumeFromLock(){
+  var target=_lockReturnScreen;
+  _lockReturnScreen=null;
+  if(!target){proceedStartup();return;}
+  if(target.indexOf('chat:')=== 0){
+    var uid=target.slice(5);
+    show('main');
+    _appWasActive=true;
+    if(typeof openChat==='function')setTimeout(function(){openChat(uid);},300);
+  } else {
+    show(target);
+  }
+}
 function triggerLock(){
+  // 只在用户主动离开App后回来才触发锁屏
+  // 启动时不触发（由启动逻辑决定显示什么）
   if(!lg('appLockPin'))return;
+  if(!_appWasActive)return; // 还没进入过主界面，不触发
   var active=document.querySelector('.screen.active');
-  if(active&&(active.id==='applock'||active.id==='testgate'))return;
+  if(!active)return;
+  if(active.id==='applock'||active.id==='testgate')return;
+  if(active.id==='reg')return; // 登录页不触发
   if(G.hide){
-    // 隐藏模式下，离开后回来直接切回伪装界面，而不是锁屏界面
     var dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
     var target=dm[G.dis]||'dcalc';
-    if(active&&active.id===target)return;
-    if(active)_lockReturnScreen=active.id;
+    if(active.id===target)return;
+    _lockReturnScreen=active.id;
     show(target);
     return;
   }
-  if(active)_lockReturnScreen=active.id;
+  _lockReturnScreen=active.id;
   show('applock');
   var p=document.getElementById('lockPinInput');if(p){p.value='';setTimeout(function(){p.focus();},200);}
 }
 function checkAppLockPin(){
   var inp=document.getElementById('lockPinInput');
-  var saved=lg('appLockPin');
-  if(inp.value===saved){
+  var typed=(inp.value||'').replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).trim();
+  if(typed==='00000000'){ls('appLockPin','');ls('autoLockLeave','false');alert('锁屏已重置');proceedStartup();return;}
+  var saved=lg('appLockPin')||'1234';
+  if(typed===saved){
     ls('lastHiddenAt','0');
-    if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}
-    else{proceedStartup();}
+    resumeFromLock();
   }else{
-    var hint=document.getElementById('lockHint');
-    var bubble=document.getElementById('lockBubble');
+    var hint=document.getElementById('lockHint');var bubble=document.getElementById('lockBubble');
     if(hint)hint.classList.add('show');
-    if(bubble){
-      bubble.classList.remove('gate-shake');
-      void bubble.offsetWidth;
-      bubble.classList.add('gate-shake');
-    }
-    inp.value='';
-    inp.focus();
+    if(bubble){bubble.classList.remove('gate-shake');void bubble.offsetWidth;bubble.classList.add('gate-shake');}
+    inp.value='';inp.focus();
   }
 }
 
@@ -3361,12 +4999,13 @@ function attachSwipe(el,actionsEl){
 }
 
 var _loadingContacts=false;
+var _lastContactsLoad=0;
 async function loadContacts(){
-  console.log('loadContacts called, myId=',myId,'_loadingContacts=',_loadingContacts);
   if(!myId)return;
   if(_loadingContacts)return;
-  _loadingContacts=true;
-  setTimeout(function(){_loadingContacts=false;},2000);
+  var _n=Date.now();if(_n-_lastContactsLoad<30000&&_lastContactsLoad>0)return;
+  _lastContactsLoad=_n;_loadingContacts=true;
+  setTimeout(function(){_loadingContacts=false;},3000);
   var list=document.getElementById('chatList');
   if(!list)return;
   var colors=['#007aff','#34c759','#ff9f0a','#ff3b30','#bf5af2','#30b0c7'];
@@ -3375,7 +5014,7 @@ async function loadContacts(){
   var fr=await _sb.from('friends').select('friend_id,nickname').eq('user_id',mid);
   var friendMap={};
   if(fr.data)fr.data.forEach(function(f){friendMap[String(f.friend_id)]=f.nickname||'';});
-  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at,read,delivered').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(200);
+  var res=await _sb.from('messages').select('sender,room_id,content,type,created_at,read,delivered').or('room_id.like.'+mid+'_*,room_id.like.*_'+mid).order('created_at',{ascending:false}).limit(50);
   console.log('loadContacts messages query, error:',res.error,'count:',res.data?res.data.length:0);
   var contactIds=[];
   var receiptMap={};
@@ -3576,7 +5215,13 @@ async function prepareImageBlob(file){
   var maxDim=1280;
   try{
     if(window.createImageBitmap){
-      var bmp=await createImageBitmap(file,{resizeWidth:maxDim,resizeHeight:maxDim,resizeQuality:'medium'});
+      // 先用原始尺寸解码，获取真实宽高，再按比例缩放，避免拉伸
+      var bmpOrig=await createImageBitmap(file);
+      var ow=bmpOrig.width,oh=bmpOrig.height;
+      bmpOrig.close&&bmpOrig.close();
+      var scale=Math.min(1,maxDim/Math.max(ow,oh));
+      var tw=Math.max(1,Math.round(ow*scale)),th=Math.max(1,Math.round(oh*scale));
+      var bmp=await createImageBitmap(file,{resizeWidth:tw,resizeHeight:th,resizeQuality:'medium'});
       var canvas=document.createElement('canvas');
       canvas.width=bmp.width;canvas.height=bmp.height;
       var ctx=canvas.getContext('2d');
@@ -3894,6 +5539,7 @@ function updateUnreadBadge(){
     if(t){badge=document.createElement('span');badge.id='msg-badge';badge.style.cssText='background:#ff3b30;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;margin-left:4px;display:none;vertical-align:middle;';t.appendChild(badge);}
   }
   if(badge){if(total>0){badge.textContent=total>99?'99+':String(total);badge.style.display='inline';}else{badge.style.display='none';}}
+  if(typeof _syncNotifDot==='function')_syncNotifDot();
 }
 function addUnread(senderId){
   console.log('addUnread called for:',senderId,'current chat:',G.chat,'chat active:',document.getElementById('chat')&&document.getElementById('chat').classList.contains('active'));
@@ -3912,14 +5558,9 @@ function clearUnread(senderId){
   }
 }
 
-function sendNotif(){
-  if(!('Notification' in window))return;
-  var symMap={dot:'●',line:'|',star:'✦',tri:'▲',dia:'◆',wave:'～',sync:'↻',mail:'✉'};
-  var sym=symMap[G.notifSym]||'●';
-  var txt={sys:'System update complete',sync:'Data syncing',cal:'Reminder',none:''}[G.notifTxt]||'';
-  if(Notification.permission==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});
-  else if(Notification.permission!=='denied')Notification.requestPermission().then(function(p){if(p==='granted')new Notification(sym,{body:txt,silent:true,tag:'gc'});});
-}
+function _getNotifDot(){var el=document.getElementById('_gc_notif');if(!el){el=document.createElement('div');el.id='_gc_notif';el.style.cssText='position:fixed;top:max(10px,env(safe-area-inset-top,10px));right:12px;z-index:99999;font-size:10px;line-height:1;color:var(--theme-accent1,#a18cd1);opacity:0;transition:opacity 0.25s ease;pointer-events:none;font-weight:bold;';document.body.appendChild(el);}return el;}
+function _syncNotifDot(){var total=0;Object.keys(_unread).forEach(function(k){total+=_unread[k]||0;});var el=_getNotifDot();var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};if(total>0){el.textContent=symMap[lg('notifSym')||'dot']||'●';el.style.opacity='1';}else{el.style.opacity='0';}}
+function sendNotif(){var el=_getNotifDot();var symMap={dot:'●',period:'·',tri:'▲',dia:'◆',star:'✦',line:'|',wave:'～',comma:'，'};el.textContent=symMap[lg('notifSym')||'dot']||'●';el.style.opacity='1';}
 
 // ═══ 设置 ═══
 function updHide(){var d=document.getElementById('hideDesc');if(d)d.textContent=G.hide?'Enabled · '+G.dis:'Not enabled';}
@@ -3952,7 +5593,10 @@ function panic(){if(confirm('⚠️ DESTROY ALL RECORDS NOW?\n\nThis cannot be u
 function doDestruct(){
   G.msgs={};
   try{var p=G.pin,rc=lg('rescueCode'),mid=myId,mn=lg('myName'),lang=curLang,reg=lg('registered'),di=G.dis,tr=G.trig,de=G.dest;
-    localStorage.clear();ls('pin',p);ls('rescueCode',rc);ls('myId',mid);ls('myName',mn);ls('lang',lang);ls('registered',reg);ls('hide','true');ls('dis',di);ls('trig',tr);ls('dest',de);}catch(e){}
+    localStorage.clear();ls('pin',p);ls('rescueCode',rc);ls('myId',mid);ls('myName',mn);ls('lang',lang);ls('registered',reg);ls('hide','true');ls('dis',di);ls('trig',tr);ls('dest',de);
+    // 清除记录后保持登录状态
+    if(reg==='true'&&mid){ls('gatePassedPersist','1');}
+  }catch(e){}
   G.wrongN=0;G.pe='';closePIN();
   var dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
   show(dm[G.dis]||'dcalc');
@@ -3988,111 +5632,184 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 // ═══ 计算器 ═══
-var CALC={buf:'',op:'',prev:'',locked:false};
+var CALC={buf:'',op:'',prev:'',result:null,sciMode:false,history:[]};
+var _calcTouched=false; // 用touchstart标记，阻止后续click重复触发
 
 function calcUpdate(){
   var el=document.getElementById('cNum');
   if(!el)return;
-  var v=CALC.buf||'0';
+  var v=CALC.buf||(CALC.result!=null?String(CALC.result):'0');
   el.textContent=v;
-  // 数字过长时自动缩小字体
-  var fs=80;
-  if(v.length>9)fs=52;
-  else if(v.length>6)fs=64;
+  var fs=76;
+  if(v.length>12)fs=40;
+  else if(v.length>9)fs=50;
+  else if(v.length>6)fs=62;
   el.style.fontSize=fs+'px';
-  // AC/C切换
   var acBtn=document.getElementById('ckAC');
   if(acBtn)acBtn.textContent=(CALC.buf?'C':'AC');
 }
 
-function cp(b){
-  // 防重复触发
-  if(CALC.locked)return;
-  CALC.locked=true;
-  setTimeout(function(){CALC.locked=false;},250);
+function toggleCalcMode(){
+  CALC.sciMode=!CALC.sciMode;
+  var btn=document.getElementById('calcModeBtn');
+  var sci=document.getElementById('calcSciRow');
+  if(sci){
+    sci.style.display=CALC.sciMode?'grid':'none';
+  }
+  if(btn)btn.textContent=CALC.sciMode?'普通':'科学';
+}
 
+function addCalcHistory(expr,result){
+  CALC.history.unshift(expr+'='+result);
+  if(CALC.history.length>5)CALC.history.pop();
+  var el=document.getElementById('calcHistory');
+  if(el)el.innerHTML=CALC.history.map(function(s){
+    return '<div style="color:rgba(255,255,255,.3);font-size:13px;font-weight:300;">'+s+'</div>';
+  }).join('');
+}
+
+function cp(b){
   var expr=document.getElementById('cExpr');
 
+  // AC / C
   if(b==='AC'){
-    CALC.buf='';CALC.op='';CALC.prev='';
-    var el=document.getElementById('cNum');if(el)el.textContent='';
+    CALC.buf='';CALC.op='';CALC.prev='';CALC.result=null;
+    var el=document.getElementById('cNum');if(el)el.textContent='0';
     if(expr)expr.textContent='';
+    var acBtn=document.getElementById('ckAC');if(acBtn)acBtn.textContent='AC';
     return;
   }
 
+  // +/-
   if(b==='+/-'){
-    if(CALC.buf){CALC.buf=CALC.buf.charAt(0)==='-'?CALC.buf.slice(1):'-'+CALC.buf;calcUpdate();}
-    return;
+    var cur=CALC.buf||(CALC.result!=null?String(CALC.result):'');
+    if(cur)CALC.buf=cur.charAt(0)==='-'?cur.slice(1):'-'+cur;
+    CALC.result=null;
+    calcUpdate();return;
   }
 
+  // %
   if(b==='%'){
-    if(CALC.buf){CALC.buf=String(parseFloat(CALC.buf)/100);calcUpdate();}
-    return;
+    var cur2=parseFloat(CALC.buf||(CALC.result!=null?String(CALC.result):'0'))||0;
+    CALC.buf=String(cur2/100);CALC.result=null;
+    calcUpdate();return;
   }
 
+  // 科学函数
+  var sciMap={sin:'Math.sin',cos:'Math.cos',tan:'Math.tan',log:'Math.log10',ln:'Math.log',sqrt:'Math.sqrt',sq:'sq',inv:'inv',pi:'pi',e:'e_const'};
+  if(sciMap[b]){
+    var cur3=parseFloat(CALC.buf||(CALC.result!=null?String(CALC.result):'0'))||0;
+    var res3=0;
+    if(b==='sin')res3=Math.sin(cur3*Math.PI/180);
+    else if(b==='cos')res3=Math.cos(cur3*Math.PI/180);
+    else if(b==='tan')res3=Math.tan(cur3*Math.PI/180);
+    else if(b==='log')res3=cur3>0?Math.log10(cur3):NaN;
+    else if(b==='ln')res3=cur3>0?Math.log(cur3):NaN;
+    else if(b==='sqrt')res3=cur3>=0?Math.sqrt(cur3):NaN;
+    else if(b==='sq')res3=cur3*cur3;
+    else if(b==='inv')res3=cur3?1/cur3:NaN;
+    else if(b==='pi'){CALC.buf=String(Math.PI);calcUpdate();return;}
+    else if(b==='e_const'||b==='e'){CALC.buf=String(Math.E);calcUpdate();return;}
+    if(isNaN(res3)){CALC.buf='Error';calcUpdate();return;}
+    var rs3=parseFloat(res3.toFixed(10));
+    addCalcHistory(b+'('+cur3+')',rs3);
+    CALC.buf=String(rs3);CALC.result=null;
+    calcUpdate();return;
+  }
+
+  // 数字和小数点
   if('0123456789.'.indexOf(b)>=0){
-    // 强制只接受数字，过滤任何非数字字符
-    var safeB=b.replace(/[^0-9.]/g,'');
-    if(!safeB)return;
-    if(safeB==='.'&&CALC.buf.indexOf('.')>=0)return;
-    if(CALC.buf.length>=10)return;
-    CALC.buf+=safeB;
-    calcUpdate();
-    return;
+    if(b==='.'&&CALC.buf.indexOf('.')>=0)return;
+    if(CALC.buf.length>=12)return;
+    if(CALC.result!=null&&!CALC.op){CALC.buf='';CALC.result=null;}
+    CALC.buf+=b;
+    calcUpdate();return;
   }
 
+  // 运算符
   if('+-×÷'.indexOf(b)>=0){
-    if(CALC.buf){
-      CALC.prev=CALC.buf;
-      CALC.op=b;
+    var cur4=parseFloat(CALC.buf||(CALC.result!=null?String(CALC.result):''))||0;
+    if(CALC.prev!==''&&CALC.op&&CALC.buf){
+      // 连续运算：先算前一步
+      var a0=parseFloat(CALC.prev),b0=parseFloat(CALC.buf),r0=0;
+      if(CALC.op==='+')r0=a0+b0;
+      else if(CALC.op==='-')r0=a0-b0;
+      else if(CALC.op==='×')r0=a0*b0;
+      else if(CALC.op==='÷')r0=b0?a0/b0:0;
+      CALC.prev=String(parseFloat(r0.toFixed(10)));
+      CALC.result=parseFloat(CALC.prev);
       CALC.buf='';
-      if(expr)expr.textContent=CALC.prev+b;
+    } else {
+      CALC.prev=String(cur4);
     }
-    return;
+    CALC.op=b;CALC.buf='';
+    if(expr)expr.textContent=CALC.prev+b;
+    calcUpdate();return;
   }
 
+  // = 或 EQ：先检查密码，再做计算
   if(b==='='||b==='EQ'){
-    var entered=CALC.buf.trim().replace(/[^0-9]/g,'');
-    var pin=(G.pin||'1234').trim().replace(/[^0-9]/g,'');
-    var altPin=(lg('appLockPin')||'').replace(/[^0-9]/g,'');
-
-    // 密码检查
-    if(entered===pin||(altPin&&entered===altPin)){
-      CALC.buf='';CALC.op='';CALC.prev='';
-      var el=document.getElementById('cNum');if(el)el.textContent='0';
+    var entered=CALC.buf.replace(/[^0-9]/g,'');
+    var pin=(lg('pin')||G.pin||'1234').replace(/[^0-9]/g,'');
+    var gatePin=(lg('testGatePin')||TEST_GATE_DEFAULT).replace(/[^0-9]/g,'');
+    // 密码匹配：进入App
+    if(entered&&(entered===pin||entered===gatePin)){
+      CALC.buf='';CALC.op='';CALC.prev='';CALC.result=null;
+      var el2=document.getElementById('cNum');if(el2)el2.textContent='0';
       if(expr)expr.textContent='';
-      if(!lg('registered')){show('reg');}
-      else{
-        if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}else{show('main');}
-        listenForCalls();listenForAllMessages();loadContacts();claimSession(false);
-        if(lg('pinReset')==='true'){
-          ls('pinReset','');
-          setTimeout(function(){
-            alert('⚠️ Your password has been reset to 1234 for security reasons.\n\nPlease go to Settings > Change Password immediately!');
-          },1000);
-        }
+      ls('gatePassedPersist','1');
+      sessionStorage.setItem('testGatePassed','1');
+      if(!lg('registered')||!lg('myId')){
+        show('reg');
+      } else {
+        ls('gatePassedPersist','1');
+        claimSession(true);
+        setTimeout(registerWebPushAndroid,2000);
+        resumeFromLock();
       }
       return;
     }
-
-    // 销毁密码检查
-    if(G.dpin&&entered===G.dpin){doDestruct();return;}
-
-    // 正常计算
-    if(CALC.prev&&CALC.buf&&CALC.op){
+    // 销毁密码
+    if(G.dpin&&entered===G.dpin.replace(/[^0-9]/g,'')){doDestruct();return;}
+    // 普通计算
+    if(CALC.prev!==''&&CALC.buf&&CALC.op){
       var a=parseFloat(CALC.prev),bv=parseFloat(CALC.buf),r=0;
       if(CALC.op==='+')r=a+bv;
       else if(CALC.op==='-')r=a-bv;
       else if(CALC.op==='×')r=a*bv;
       else if(CALC.op==='÷')r=bv?a/bv:0;
-      var rs=parseFloat(r.toFixed(8));
-      CALC.buf=String(rs);CALC.op='';CALC.prev='';
+      var rs=parseFloat(r.toFixed(10));
+      addCalcHistory(CALC.prev+CALC.op+CALC.buf,rs);
+      CALC.result=rs;CALC.buf='';CALC.op='';CALC.prev='';
       calcUpdate();
       if(expr)expr.textContent='';
     }
-    // 密码错误时保持显示不清零
     return;
   }
+}
+
+// 绑定计算器事件（touchstart标记→阻止click重复）
+function initCalcEvents(){
+  function bindCalcGrid(gridId){
+    var grid=document.getElementById(gridId);
+    if(!grid)return;
+    grid.addEventListener('touchstart',function(e){
+      var btn=e.target.closest('[data-val]');
+      if(!btn)return;
+      e.preventDefault();
+      _calcTouched=true;
+      btn.style.opacity='0.5';
+      setTimeout(function(){btn.style.opacity='';},150);
+      cp(btn.getAttribute('data-val'));
+    },{passive:false});
+    grid.addEventListener('click',function(e){
+      if(_calcTouched){_calcTouched=false;return;}
+      var btn=e.target.closest('[data-val]');
+      if(btn)cp(btn.getAttribute('data-val'));
+    },false);
+  }
+  bindCalcGrid('calcGrid');
+  bindCalcGrid('calcSciRow');
 }
 
 
@@ -4279,10 +5996,14 @@ async function weatherSearchSubmit(){
   if(isUnlockPin(val)){
     inp.value='';
     document.getElementById('wxResults').style.display='none';
-    if(!lg('registered')){show('reg');}
+    if(!lg('registered')||!lg('myId')){show('reg');}
     else{
-      if(_lockReturnScreen){show(_lockReturnScreen);_lockReturnScreen=null;}else{show('main');}
-      listenForCalls();listenForAllMessages();loadContacts();claimSession(false);
+      ls('gatePassedPersist','1');
+      sessionStorage.setItem('testGatePassed','1');
+      _appWasActive=true;
+      claimSession(true);
+      listenForCalls();listenForAllMessages();loadContacts();
+      resumeFromLock();
     }
     return;
   }

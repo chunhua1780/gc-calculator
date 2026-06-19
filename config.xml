@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.ghostchat.calculator" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Calculator</name>
+    <description>Calculator app</description>
+    <author email="admin@example.com" href="https://example.com">Calculator</author>
+    <content src="index.html" />
+
+    <!-- 屏幕方向锁定竖屏 -->
+    <preference name="Orientation" value="portrait" />
+
+    <!-- 兼容老设备：不强制要求过高安卓版本 -->
+    <preference name="android-minSdkVersion" value="22" />
+    <preference name="android-targetSdkVersion" value="33" />
+
+    <!-- WebView性能与兼容性 -->
+    <preference name="AndroidXEnabled" value="true" />
+    <preference name="AndroidInsecureFileModeEnabled" value="true" />
+    <preference name="MixedContentMode" value="0" />
+
+    <!-- 不显示安装包默认的Cordova启动闪屏耽误时间 -->
+    <preference name="AutoHideSplashScreen" value="true" />
+    <preference name="SplashScreenDelay" value="0" />
+    <preference name="FadeSplashScreen" value="false" />
+
+    <platform name="android">
+        <!-- 图标（圆角计算器图标） -->
+        <icon density="mdpi" src="res/icon/android/icon-mdpi.png" />
+        <icon density="hdpi" src="res/icon/android/icon-hdpi.png" />
+        <icon density="xhdpi" src="res/icon/android/icon-xhdpi.png" />
+        <icon density="xxhdpi" src="res/icon/android/icon-xxhdpi.png" />
+        <icon density="xxxhdpi" src="res/icon/android/icon-xxxhdpi.png" />
+
+        <!-- 应用权限：保活+通知必需 -->
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+            <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+            <uses-permission android:name="android.permission.VIBRATE" />
+            <uses-permission android:name="android.permission.CAMERA" />
+            <uses-permission android:name="android.permission.RECORD_AUDIO" />
+            <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+        </config-file>
+
+        <!-- 允许https明文/混合内容，老WebView兼容 -->
+        <edit-config target="/manifest/application" file="AndroidManifest.xml" mode="merge">
+            <application android:usesCleartextTraffic="true" />
+        </edit-config>
+    </platform>
+
+    <!-- ═══ 核心：长连接保活插件 ═══ -->
+    <!-- 前台服务保活：APP切到后台时保持进程存活，维持Supabase WebSocket连接不断 -->
+    <plugin name="cordova-plugin-background-mode" spec="^0.7.3" />
+
+    <!-- 本地通知：收到新消息时弹系统通知，不依赖任何远程推送服务，纯本地触发 -->
+    <plugin name="cordova-plugin-local-notification" spec="^0.9.0-beta.3" />
+
+    <!-- 设备信息：用于区分安卓/鸿蒙环境做兼容判断 -->
+    <plugin name="cordova-plugin-device" spec="^2.1.0" />
+
+    <!-- 状态栏 -->
+    <plugin name="cordova-plugin-statusbar" spec="^4.0.0" />
+
+    <!-- 启动屏 -->
+    <plugin name="cordova-plugin-splashscreen" spec="^6.0.2" />
+
+    <!-- 文件/相机（聊天功能依赖） -->
+    <plugin name="cordova-plugin-camera" spec="^7.0.0" />
+    <plugin name="cordova-plugin-file" spec="^8.1.0" />
+
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+    <access origin="*" />
+</widget>
