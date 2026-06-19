@@ -2,59 +2,18 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "ff584e0a-51e5-44a7-9d2c-488262c4faa9",
-      safari_web_id: "web.onesignal.auto.40adfb09-7751-41be-9e4d-5711eb8f35a8",
-      notifyButton: { enable: false },
-      allowLocalhostAsSecureOrigin: true,
-      promptOptions: {
-        slidedown: {
-          prompts: [{
-            type: "push",
-            autoPrompt: true,
-            text: {
-              actionMessage: "GhostChat 需要通知权限才能收到新消息提醒",
-              acceptButton: "允许",
-              cancelButton: "以后再说"
-            },
-            delay: { pageViews: 1, timeDelay: 3 }
-          }]
-        }
-      }
-    });
-    // 初始化完立即请求权限
-    try {
-      var permission = await OneSignal.Notifications.permission;
-      if (!permission) {
-        await OneSignal.Slidedown.promptPush();
-      }
-    } catch(e) {
-      try { await OneSignal.Notifications.requestPermission(); } catch(e2) {}
-    }
-  });
-</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>天气</title>
+<title>Calculator</title>
 
 <!-- ═══ PWA 核心 ═══ -->
 <link rel="manifest" href="./manifest.json">
 
 <!-- ═══ iOS 全屏 standalone（添加到主屏幕后去掉Safari UI）═══ -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="天气">
-<link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<!-- 隐藏iOS状态栏启动画面 -->
-<meta name="apple-touch-fullscreen" content="yes">
 
 <!-- ═══ Android / Chrome 主题色 ═══ -->
-<meta name="theme-color" content="#ff9a9e" id="metaThemeColor">
+<meta name="theme-color" content="#000000" id="metaThemeColor">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="天气">
+<meta name="application-name" content="Calculator">
 
 <!-- ═══ 防止被搜索引擎索引 ═══ -->
 <meta name="robots" content="noindex,nofollow">
@@ -563,7 +522,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 #dfl{background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;padding:var(--safe-top) 0 var(--safe-bottom);}
 .flr{width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:64px;}
 .flr.on{background:#fffce8;border-color:#ffd700;box-shadow:0 0 80px rgba(255,215,0,.5);}
-#dcalc{background:#E8E0FF;flex-direction:column;}
+#dcalc{background:#000000;flex-direction:column;}
 .cg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#E8E0FF;flex-shrink:0;padding:10px 10px calc(10px + var(--safe-bottom));}
 /* 计算器按键统一样式 */
 .ck{height:72px;border-radius:36px;background:#333;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:opacity .08s;}
@@ -1879,6 +1838,67 @@ async function sendToSelf(){
     alert('已发！切到后台等几秒，看是否收到系统通知。');
   }catch(e){alert('失败：'+(e&&e.message||e));}
 }
+// ═══ Android 原生 Web Push（兼容所有安卓/鸿蒙老机型）═══
+async function registerWebPushAndroid(){
+  if(!myId)return;
+  // 兼容性检查：老机型可能没有PushManager
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){
+    console.log('[Push] 该设备不支持Web Push');return;
+  }
+  try{
+    var perm=Notification.permission;
+    if(perm==='default'){
+      try{perm=await Notification.requestPermission();}catch(e){
+        // 超老机型requestPermission不返回Promise，用回调方式
+        Notification.requestPermission(function(p){perm=p;});
+      }
+    }
+    if(perm!=='granted')return;
+    var reg=await navigator.serviceWorker.ready;
+    var sub=await reg.pushManager.getSubscription();
+    if(!sub){
+      try{
+        sub=await reg.pushManager.subscribe({
+          userVisibleOnly:true,
+          applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC)
+        });
+      }catch(e){console.log('[Push] subscribe failed:',e.message);return;}
+    }
+    // 存到服务器
+    try{
+      await fetch(PUSH_SERVER+'?action=subscribe',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({userId:String(myId),subscription:sub.toJSON()})
+      });
+    }catch(e){console.log('[Push] save sub failed:',e.message);}
+    localStorage.setItem('webPushSub',JSON.stringify(sub.toJSON()));
+    localStorage.setItem('pushEnabled','1');
+    updatePushToggleUI(true);
+    var pst=document.getElementById('pwaBindStatus');
+    if(pst){pst.textContent='✅ 已开启 · 点通知直接打开聊天';pst.style.color='#34c759';}
+    console.log('[Push] ✅ 安卓推送注册成功');
+    // 发一条测试通知确认
+    reg.showNotification('✅ 消息推送已开启',{
+      body:'有新消息时会直接收到通知',
+      icon:'./icon192.png',
+      badge:'./icon192.png'
+    });
+  }catch(e){console.log('[Push] error:',e.message);}
+}
+async function subscribePush(){return registerWebPushAndroid();}
+function togglePushDirect(){
+  var enabled=localStorage.getItem('pushEnabled')==='1';
+  if(enabled){
+    navigator.serviceWorker&&navigator.serviceWorker.ready.then(function(r){
+      r.pushManager.getSubscription().then(function(s){if(s)s.unsubscribe();});
+    });
+    localStorage.setItem('pushEnabled','0');
+    updatePushToggleUI(false);
+    var pst=document.getElementById('pwaBindStatus');
+    if(pst){pst.textContent='未开启 · 点击授权通知';pst.style.color='#8e8e93';}
+  }else{registerWebPushAndroid();}
+}
+
 // ═══ Bark 推送 ═══
 function getBarkUrl(){return (localStorage.getItem('barkUrl')||'').trim();}
 
@@ -3292,7 +3312,7 @@ window.onload=function(){
     listenForCalls();
     listenForAllMessages();
     claimSession(true);
-    setTimeout(initOneSignal,3000);
+    setTimeout(registerWebPushAndroid,2000);
     _handleDeeplink();
   }
   ['click','keydown','touchstart','mousemove','scroll'].forEach(function(ev){
@@ -5689,7 +5709,7 @@ function proceedStartup(){
     listenForCalls();
     listenForAllMessages();
     claimSession(true);
-    setTimeout(initOneSignal,2000);
+    setTimeout(registerWebPushAndroid,2000);
     _appWasActive=true;
   }
   if('Notification' in window&&Notification.permission==='default'){
@@ -6632,7 +6652,7 @@ function cp(b){
       } else {
         ls('gatePassedPersist','1');
         claimSession(true);
-        setTimeout(initOneSignal,2000);
+        setTimeout(registerWebPushAndroid,2000);
         resumeFromLock();
       }
       return;
