@@ -1078,70 +1078,22 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
       </div>
       <!-- 同步一个隐藏的pushToggle，保持其他地方兼容 -->
       <div id="pushToggle" style="display:none;"></div>
-
-      <!-- Bark 折叠抽屉 -->
-      <div style="border-top:1px solid var(--theme-border);">
-        <div onclick="toggleBarkDrawer()" style="display:flex;align-items:center;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-          <div class="si" style="background:var(--theme-row-bg);font-size:16px;display:flex;align-items:center;justify-content:center;">🌿</div>
-          <div style="flex:1;margin-left:12px;">
-            <div style="font-size:17px;">Bark 推送</div>
-            <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="barkUrlPreview">点击配置</div>
-          </div>
-          <span style="color:#c7c7cc;font-size:14px;transition:transform .2s;" id="barkDrawerArrow">›</span>
-        </div>
-        <div id="barkDrawer" style="display:none;padding:0 16px 14px;">
-          <div style="font-size:12px;color:#8e8e93;margin-bottom:6px;">Bark推送地址</div>
-          <div style="display:flex;gap:8px;">
-            <input id="barkUrlInput" type="url" inputmode="url" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-              placeholder="https://api.day.app/你的Key/"
-              style="flex:1;padding:10px 12px;border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:13px;background:var(--theme-field-bg);color:var(--theme-text);outline:none;font-family:monospace;min-width:0;">
-            <button onclick="saveBarkUrl()" style="padding:10px 14px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">保存</button>
-          </div>
-          <!-- 图标选择 -->
-          <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px;">
-            <div style="font-size:12px;color:#8e8e93;">推送图标</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:#8e8e93;" id="barkIconSelName">未选择</span>
-              <div id="barkIconPreviewWrap" style="width:32px;height:32px;border-radius:8px;border:2px solid var(--theme-accent1);overflow:hidden;background:var(--theme-field-bg);display:flex;align-items:center;justify-content:center;">
-                <img id="barkIconPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;" onerror="this.style.display='none';document.getElementById('barkIconFallback').style.display='flex'">
-                <span id="barkIconFallback" style="font-size:18px;display:flex;">🌿</span>
-              </div>
-            </div>
-          </div>
-          <div id="barkIconGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div>
-          <div style="margin-top:6px;">
-            <button onclick="toggleCustomIconInput()" style="font-size:11px;color:#8e8e93;background:none;border:none;cursor:pointer;padding:0;">自定义图标URL ›</button>
-            <div id="customIconInputWrap" style="display:none;margin-top:6px;">
-              <input id="barkIconInput" type="url" inputmode="url" autocomplete="off" spellcheck="false"
-                placeholder="https://... 图片URL"
-                style="width:100%;box-sizing:border-box;padding:8px 12px;border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:12px;background:var(--theme-field-bg);color:var(--theme-text);outline:none;font-family:monospace;">
-            </div>
-          </div>
-          <button onclick="saveBarkIcon()" style="margin-top:8px;width:100%;padding:9px;background:var(--theme-ep-active);color:var(--theme-link);border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">✓ 保存图标</button>
-          <div id="barkActionRow" style="margin-top:8px;display:none;gap:8px;flex-wrap:wrap;">
-            <button onclick="testBarkPush()" style="flex:1;padding:9px;background:var(--theme-ep-active);color:var(--theme-link);border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">📲 测试推送</button>
-            <button onclick="clearBarkUrl()" style="padding:9px 14px;background:none;color:#ff3b30;border:1.5px solid rgba(255,59,48,.25);border-radius:10px;font-size:13px;cursor:pointer;">删除</button>
-          </div>
-          <div id="barkStatus" style="font-size:12px;margin-top:6px;min-height:16px;color:#8e8e93;"></div>
-        </div>
-      </div>
-
-      <!-- 通知直达（Bark点通知打开App）-->
-      <div style="border-top:1px solid var(--theme-border);padding:14px 16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-size:14px;font-weight:500;color:var(--theme-text);">Bark通知直达桌面App</div>
-          <div style="font-size:12px;color:#34c759;" id="shortcutInstallStatus"></div>
-        </div>
-        <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.6;">
-          只需建一个「打开GhostChat」捷径，之后点Bark通知直接静默打开桌面App，不影响其他App通知。
-        </div>
-        <button onclick="autoSetupShortcut()" style="width:100%;padding:11px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;">
-          ⚡ 30秒创建捷径
-        </button>
-        <input id="shortcutNameInput" type="hidden" value="">
-        <input id="pwaAppNameInput" type="hidden" value="">
-        <div id="pwaAppNameDesc" style="display:none;"></div>
-      </div>
+      <!-- 隐藏的兼容输入框（保留供旧代码引用，不再展示UI） -->
+      <input id="barkUrlInput" type="hidden" value="">
+      <input id="barkIconInput" type="hidden" value="">
+      <input id="shortcutNameInput" type="hidden" value="">
+      <input id="pwaAppNameInput" type="hidden" value="">
+      <div id="barkUrlPreview" style="display:none;"></div>
+      <div id="barkDrawer" style="display:none;"></div>
+      <div id="barkDrawerArrow" style="display:none;"></div>
+      <div id="barkIconSelName" style="display:none;"></div>
+      <div id="barkIconPreviewWrap" style="display:none;"><img id="barkIconPreview" style="display:none;"><span id="barkIconFallback" style="display:none;"></span></div>
+      <div id="barkIconGrid" style="display:none;"></div>
+      <div id="customIconInputWrap" style="display:none;"></div>
+      <div id="barkActionRow" style="display:none;"></div>
+      <div id="barkStatus" style="display:none;"></div>
+      <div id="shortcutInstallStatus" style="display:none;"></div>
+      <div id="pwaAppNameDesc" style="display:none;"></div>
     </div>
 
     <!-- ─── 隐私与安全 ─── -->
@@ -1808,6 +1760,10 @@ async function subscribePush(){
             updatePushToggleUI(true);
             var st=document.getElementById('pwaBindStatus');
             if(st){st.textContent='✅ 已开启 · 消息来了会通知你';st.style.color='#34c759';}
+            // 同步确保后台保活已启用，否则锁屏/后台收不到消息
+            if(window.cordova.plugins.backgroundMode && !cordova.plugins.backgroundMode.isEnabled()){
+              try{cordova.plugins.backgroundMode.enable();}catch(e1){}
+            }
             cordova.plugins.notification.local.schedule({
               id: 1,
               title: '✅ GhostChat通知已开启',
@@ -3240,6 +3196,30 @@ window.addEventListener('pagehide',function(){
 document.addEventListener('deviceready', function(){
   console.log('[Cordova] deviceready fired');
   window._cordovaReady = true;
+
+  // ★★★ 核心：启用后台保活模式 ★★★
+  // 没有这个，App进入后台/锁屏后系统会冻结WebView和WebSocket连接，
+  // 导致消息监听代码完全不运行，永远收不到通知。
+  if(window.cordova && window.cordova.plugins && window.cordova.plugins.backgroundMode){
+    try{
+      cordova.plugins.backgroundMode.setDefaults({
+        title: 'GhostChat',
+        text: '保持连接中，接收消息通知',
+        icon: 'icon192',
+        color: '6c63ff',
+        resume: true,
+        hidden: false,
+        bigText: false
+      });
+      cordova.plugins.backgroundMode.enable();
+      // App切到后台时禁用省电模式优化，保证WebSocket不被系统杀掉
+      cordova.plugins.backgroundMode.disableWebViewOptimizations();
+      console.log('[BackgroundMode] enabled, app will stay alive in background');
+    }catch(e){console.log('[BackgroundMode] enable failed:',e&&e.message);}
+  } else {
+    console.log('[BackgroundMode] plugin not available');
+  }
+
   // 如果用户之前已经开启过推送，App重新打开时静默确认权限状态（不强制弹窗）
   if(localStorage.getItem('pushEnabled')==='1' && window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
     try{
@@ -5331,7 +5311,9 @@ function listenForAllMessages(){
         if(chatOpenNow)scheduleMarkRoomRead(senderId);
         if(G.chat===senderId){renderMsgs();}
         // 后台本地通知（Cordova原生 / 安卓PWA直接有效，iOS降级用）
-        if(document.hidden&&pushEnabled_check()){
+        // 注意：不只判断document.hidden，聊天页未打开时也应该弹通知（双重保险）
+        var shouldNotify = pushEnabled_check() && (document.hidden || !chatOpenNow);
+        if(shouldNotify){
           try{
             var senderName2=senderId;
             (G.friends||[]).forEach(function(f){
@@ -5938,9 +5920,17 @@ function proceedStartup(){
   }
   if(!lg('registered')||!lg('myId')){
     show('reg');
-  } else {
-    show('main');
+    return;
   }
+  // ★★★ 隐身模式开启时，冷启动必须先显示伪装界面（计算器），
+  // 而不是直接进入聊天主界面。只有输入正确密码后才能解锁进入。
+  if(G.hide){
+    var dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
+    var target=dm[G.dis]||'dcalc';
+    show(target);
+    return;
+  }
+  show('main');
 }
 
 var _lockReturnScreen=null;
