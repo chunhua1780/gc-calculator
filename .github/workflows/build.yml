@@ -41,7 +41,7 @@ jobs:
 
         # 核心插件：后台保活 + 本地通知（不依赖任何远程推送服务）
         cordova plugin add cordova-plugin-background-mode
-        cordova plugin add cordova-plugin-local-notifications
+        cordova plugin add cordova-plugin-local-notification@1.2.3
         cordova plugin add cordova-plugin-device
         cordova plugin add cordova-plugin-statusbar
         cordova plugin add cordova-plugin-camera
