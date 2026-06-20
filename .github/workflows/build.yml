@@ -25,8 +25,8 @@ jobs:
     - name: Build APK with keep-alive + local notification plugins
       run: |
         cordova create app com.ghostchat.calculator Calculator
-        cp ghostchat-push/index.html app/www/index.html
-        cp ghostchat-push/sw.js app/www/sw.js 2>/dev/null || true
+        cp index.html app/www/index.html
+        cp sw.js app/www/sw.js 2>/dev/null || true
         cp manifest.json app/www/manifest.json 2>/dev/null || true
 
         # icon文件复制到app根目录，供config.xml的<icon src="icon192.png">引用
@@ -41,10 +41,9 @@ jobs:
 
         # 核心插件：后台保活 + 本地通知（不依赖任何远程推送服务）
         cordova plugin add cordova-plugin-background-mode
-        cordova plugin add cordova-plugin-local-notification
+        cordova plugin add cordova-plugin-local-notifications
         cordova plugin add cordova-plugin-device
         cordova plugin add cordova-plugin-statusbar
-        cordova plugin add cordova-plugin-splashscreen
         cordova plugin add cordova-plugin-camera
         cordova plugin add cordova-plugin-file
 

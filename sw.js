@@ -1,90 +1,67 @@
-// GhostChat Android SW v1.0
-// Android原生Web Push，点通知直接打开PWA聊天
-const PWA_URL = './';
+const CACHE_NAME = 'ghostchat-v3';
+const VAPID_PUBLIC = 'BDQ8XlX1wbta3RwiuYkzXSnVs474RzEVomOsI9Q0j4Rc9s6ow9T2bMWr2ShMsMtIs6i4zyrOe9j78VTWh9JMsXU';
 
-self.addEventListener('install', function(e) {
+const CACHE_URLS = ['./index.html','./manifest.json','./icon192.png'];
+
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(CACHE_URLS)).catch(()=>{}));
   self.skipWaiting();
 });
 
-self.addEventListener('activate', function(e) {
-  e.waitUntil(self.clients.claim());
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys =>
+    Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))
+  ));
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', function(e) {
-  if (!e.request.url.startsWith(self.location.origin)) return;
+self.addEventListener('fetch', e => {
+  if(e.request.method!=='GET') return;
   e.respondWith(
-    fetch(e.request).catch(function() {
-      return caches.match('./index.html');
+    fetch(e.request).then(res=>{
+      const clone=res.clone();
+      caches.open(CACHE_NAME).then(c=>c.put(e.request,clone));
+      return res;
+    }).catch(()=>caches.match(e.request))
+  );
+});
+
+// ─── 收到推送：只显示标点符号 ───
+self.addEventListener('push', e => {
+  let data = { title:'，', body:'，', icon:'./icon192.png' };
+  try { data = { ...data, ...e.data.json() }; } catch(err) {}
+
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: '',           // body留空，只显示标点符号作为标题
+      icon: data.icon,
+      badge: './icon192.png',
+      tag: data.tag || 'gc',
+      renotify: true,
+      silent: false,
+      vibrate: [100, 50, 100],
+      data: data.data || {}
     })
   );
 });
 
-// ★ 接收Web Push（Supabase Edge Function发来的push）
-self.addEventListener('push', function(e) {
-  if (!e.data) return;
-  var data = {};
-  try { data = e.data.json(); } catch(err) {
-    data = { title: '💬 新消息', body: e.data.text() };
-  }
-
-  var fromId = data.fromId || (data.url && new URL(data.url).hash.match(/from=([^&]+)/)?.[1]) || '';
-
-  var options = {
-    body: data.body || '你收到了一条新消息',
-    icon: './icon192.png',
-    badge: './icon192.png',
-    tag: 'gc-msg-' + (fromId || Date.now()),
-    renotify: true,
-    silent: false,
-    requireInteraction: false,
-    // Android：data里放fromId，点击通知时用来跳转聊天
-    data: {
-      url: data.url || PWA_URL,
-      fromId: fromId
-    }
-  };
-
-  e.waitUntil(
-    self.registration.showNotification(data.title || '💬 GhostChat', options)
-  );
-});
-
-// ★ 核心：拦截通知点击，直接打开PWA并跳转到对应聊天
-self.addEventListener('notificationclick', function(e) {
+// ─── 点通知：打开App ───
+self.addEventListener('notificationclick', e => {
   e.notification.close();
-
-  var notifData = e.notification.data || {};
-  var targetUrl = notifData.url || PWA_URL;
-  var fromId = notifData.fromId || '';
-
-  console.log('[SW Android] 通知点击, fromId:', fromId, 'url:', targetUrl);
-
   e.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then(function(clients) {
-        // 找已打开的PWA窗口
-        for (var i = 0; i < clients.length; i++) {
-          var c = clients[i];
-          if ('focus' in c) {
-            // PWA已打开：发消息让它跳转到对应聊天
-            if (fromId) {
-              c.postMessage({ type: 'deeplink', url: targetUrl, fromId: fromId });
-            }
-            return c.focus();
-          }
-        }
-        // PWA未打开：直接打开
-        // Android Chrome会自动在standalone模式中打开已安装的PWA
-        if (self.clients.openWindow) {
-          return self.clients.openWindow(targetUrl);
-        }
-      })
+    clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
+      for(const c of list){
+        if(c.url.includes('ghostchat')&&'focus' in c) return c.focus();
+      }
+      return clients.openWindow('./index.html');
+    })
   );
 });
 
-// 后台消息同步（可选）
-self.addEventListener('message', function(e) {
-  if (e.data && e.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+self.addEventListener('sync', e => {
+  if(e.tag==='sync-messages'){
+    e.waitUntil(clients.matchAll({type:'window'}).then(list=>{
+      list.forEach(c=>c.postMessage({type:'SYNC_MESSAGES'}));
+    }));
   }
 });
