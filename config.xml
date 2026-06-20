@@ -31,7 +31,10 @@
         <icon density="xxhdpi" src="icon512.png" />
         <icon density="xxxhdpi" src="icon512.png" />
 
-        <!-- 应用权限：保活+通知必需 -->
+        <!-- 应用权限：保活+通知必需
+             注意：READ/WRITE_EXTERNAL_STORAGE 不在这里手动声明，
+             cordova-plugin-file 插件会自动注入这两个权限，
+             手动重复声明会导致 AndroidManifest 合并时报错冲突 -->
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -45,8 +48,6 @@
             <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
             <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
             <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </config-file>
 
         <!-- 允许https明文/混合内容，老WebView兼容 -->
@@ -67,8 +68,6 @@
 
     <!-- 状态栏 -->
     <plugin name="cordova-plugin-statusbar" spec="^4.0.0" />
-
-    <!-- 启动屏 -->
 
     <!-- 文件/相机（聊天功能依赖） -->
     <plugin name="cordova-plugin-camera" spec="^7.0.0" />
