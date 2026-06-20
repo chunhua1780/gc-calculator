@@ -2,16 +2,59 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "ff584e0a-51e5-44a7-9d2c-488262c4faa9",
+      safari_web_id: "web.onesignal.auto.40adfb09-7751-41be-9e4d-5711eb8f35a8",
+      notifyButton: { enable: false },
+      allowLocalhostAsSecureOrigin: true,
+      promptOptions: {
+        slidedown: {
+          prompts: [{
+            type: "push",
+            autoPrompt: true,
+            text: {
+              actionMessage: "GhostChat 需要通知权限才能收到新消息提醒",
+              acceptButton: "允许",
+              cancelButton: "以后再说"
+            },
+            delay: { pageViews: 1, timeDelay: 3 }
+          }]
+        }
+      }
+    });
+    // 初始化完立即请求权限
+    try {
+      var permission = await OneSignal.Notifications.permission;
+      if (!permission) {
+        await OneSignal.Slidedown.promptPush();
+      }
+    } catch(e) {
+      try { await OneSignal.Notifications.requestPermission(); } catch(e2) {}
+    }
+  });
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Calculator</title>
+<title>天气</title>
 
 <!-- ═══ PWA 核心 ═══ -->
 <link rel="manifest" href="./manifest.json">
 
+<!-- ═══ iOS 全屏 standalone（添加到主屏幕后去掉Safari UI）═══ -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="天气">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<!-- 隐藏iOS状态栏启动画面 -->
+<meta name="apple-touch-fullscreen" content="yes">
+
 <!-- ═══ Android / Chrome 主题色 ═══ -->
-<meta name="theme-color" content="#000000" id="metaThemeColor">
+<meta name="theme-color" content="#ff9a9e" id="metaThemeColor">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="application-name" content="Calculator">
+<meta name="application-name" content="天气">
 
 <!-- ═══ 防止被搜索引擎索引 ═══ -->
 <meta name="robots" content="noindex,nofollow">
@@ -520,7 +563,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 #dfl{background:#000;align-items:center;justify-content:center;flex-direction:column;gap:32px;padding:var(--safe-top) 0 var(--safe-bottom);}
 .flr{width:160px;height:160px;border-radius:50%;background:#1a1a1a;border:3px solid #2a2a2a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;font-size:64px;}
 .flr.on{background:#fffce8;border-color:#ffd700;box-shadow:0 0 80px rgba(255,215,0,.5);}
-#dcalc{background:#000000;flex-direction:column;}
+#dcalc{background:#E8E0FF;flex-direction:column;}
 .cg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#E8E0FF;flex-shrink:0;padding:10px 10px calc(10px + var(--safe-bottom));}
 /* 计算器按键统一样式 */
 .ck{height:72px;border-radius:36px;background:#333;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:400;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:opacity .08s;}
@@ -634,7 +677,11 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 </style>
 </head>
 <body>
+<script src="cordova.js"></script>
 
+<!-- ═══ PWA 安装横幅（Android Chrome）═══ -->
+<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9990;background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;padding:14px 16px calc(14px + env(safe-area-inset-bottom));align-items:center;gap:12px;font-family:-apple-system,sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,.15);">
+  <div style="font-size:22px;">👻</div>
   <div style="flex:1;">
     <div style="font-size:14px;font-weight:700;">安装 GhostChat</div>
     <div style="font-size:12px;opacity:.85;">添加到桌面，收发推送通知</div>
@@ -728,7 +775,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 
 <!-- 消息列表 -->
 <div id="main" class="screen">
-  <div class="nav-bar nav-lg" style="position:relative;"><div class="t">Messages</div><span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.3px;font-weight:500;pointer-events:none;">v1.36</span></div>
+  <div class="nav-bar nav-lg" style="position:relative;"><div class="t">Messages</div><span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:11px;color:rgba(255,255,255,.45);letter-spacing:.3px;font-weight:500;pointer-events:none;">v1.38</span></div>
   <!-- 多设备登录提示横幅 -->
   <div id="multiDeviceBanner" onclick="showDeviceManager()" style="display:none;align-items:center;justify-content:space-between;padding:9px 16px;background:rgba(255,149,0,.12);border-bottom:1px solid rgba(255,149,0,.2);cursor:pointer;-webkit-tap-highlight-color:transparent;">
     <div style="display:flex;align-items:center;gap:8px;flex:1;">
@@ -1031,6 +1078,70 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
       </div>
       <!-- 同步一个隐藏的pushToggle，保持其他地方兼容 -->
       <div id="pushToggle" style="display:none;"></div>
+
+      <!-- Bark 折叠抽屉 -->
+      <div style="border-top:1px solid var(--theme-border);">
+        <div onclick="toggleBarkDrawer()" style="display:flex;align-items:center;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+          <div class="si" style="background:var(--theme-row-bg);font-size:16px;display:flex;align-items:center;justify-content:center;">🌿</div>
+          <div style="flex:1;margin-left:12px;">
+            <div style="font-size:17px;">Bark 推送</div>
+            <div style="font-size:13px;color:#8e8e93;margin-top:1px;" id="barkUrlPreview">点击配置</div>
+          </div>
+          <span style="color:#c7c7cc;font-size:14px;transition:transform .2s;" id="barkDrawerArrow">›</span>
+        </div>
+        <div id="barkDrawer" style="display:none;padding:0 16px 14px;">
+          <div style="font-size:12px;color:#8e8e93;margin-bottom:6px;">Bark推送地址</div>
+          <div style="display:flex;gap:8px;">
+            <input id="barkUrlInput" type="url" inputmode="url" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+              placeholder="https://api.day.app/你的Key/"
+              style="flex:1;padding:10px 12px;border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:13px;background:var(--theme-field-bg);color:var(--theme-text);outline:none;font-family:monospace;min-width:0;">
+            <button onclick="saveBarkUrl()" style="padding:10px 14px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">保存</button>
+          </div>
+          <!-- 图标选择 -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 6px;">
+            <div style="font-size:12px;color:#8e8e93;">推送图标</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:#8e8e93;" id="barkIconSelName">未选择</span>
+              <div id="barkIconPreviewWrap" style="width:32px;height:32px;border-radius:8px;border:2px solid var(--theme-accent1);overflow:hidden;background:var(--theme-field-bg);display:flex;align-items:center;justify-content:center;">
+                <img id="barkIconPreview" src="" style="width:100%;height:100%;object-fit:cover;display:none;" onerror="this.style.display='none';document.getElementById('barkIconFallback').style.display='flex'">
+                <span id="barkIconFallback" style="font-size:18px;display:flex;">🌿</span>
+              </div>
+            </div>
+          </div>
+          <div id="barkIconGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div>
+          <div style="margin-top:6px;">
+            <button onclick="toggleCustomIconInput()" style="font-size:11px;color:#8e8e93;background:none;border:none;cursor:pointer;padding:0;">自定义图标URL ›</button>
+            <div id="customIconInputWrap" style="display:none;margin-top:6px;">
+              <input id="barkIconInput" type="url" inputmode="url" autocomplete="off" spellcheck="false"
+                placeholder="https://... 图片URL"
+                style="width:100%;box-sizing:border-box;padding:8px 12px;border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:12px;background:var(--theme-field-bg);color:var(--theme-text);outline:none;font-family:monospace;">
+            </div>
+          </div>
+          <button onclick="saveBarkIcon()" style="margin-top:8px;width:100%;padding:9px;background:var(--theme-ep-active);color:var(--theme-link);border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">✓ 保存图标</button>
+          <div id="barkActionRow" style="margin-top:8px;display:none;gap:8px;flex-wrap:wrap;">
+            <button onclick="testBarkPush()" style="flex:1;padding:9px;background:var(--theme-ep-active);color:var(--theme-link);border:1.5px solid var(--theme-field-border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">📲 测试推送</button>
+            <button onclick="clearBarkUrl()" style="padding:9px 14px;background:none;color:#ff3b30;border:1.5px solid rgba(255,59,48,.25);border-radius:10px;font-size:13px;cursor:pointer;">删除</button>
+          </div>
+          <div id="barkStatus" style="font-size:12px;margin-top:6px;min-height:16px;color:#8e8e93;"></div>
+        </div>
+      </div>
+
+      <!-- 通知直达（Bark点通知打开App）-->
+      <div style="border-top:1px solid var(--theme-border);padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:14px;font-weight:500;color:var(--theme-text);">Bark通知直达桌面App</div>
+          <div style="font-size:12px;color:#34c759;" id="shortcutInstallStatus"></div>
+        </div>
+        <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.6;">
+          只需建一个「打开GhostChat」捷径，之后点Bark通知直接静默打开桌面App，不影响其他App通知。
+        </div>
+        <button onclick="autoSetupShortcut()" style="width:100%;padding:11px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;">
+          ⚡ 30秒创建捷径
+        </button>
+        <input id="shortcutNameInput" type="hidden" value="">
+        <input id="pwaAppNameInput" type="hidden" value="">
+        <div id="pwaAppNameDesc" style="display:none;"></div>
+      </div>
     </div>
 
     <!-- ─── 隐私与安全 ─── -->
@@ -1109,7 +1220,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
     </div>
 
     <div style="height:16px;"></div>
-    <div style="text-align:center;font-size:11px;color:#c7c7cc;letter-spacing:.5px;padding-bottom:6px;">GhostChat v1.36</div>
+    <div onclick="showDiagLog()" style="text-align:center;font-size:11px;color:#c7c7cc;letter-spacing:.5px;padding-bottom:6px;cursor:pointer;">GhostChat v1.38</div>
     <div style="height:14px;"></div>
     <div style="height:14px;"></div>
   </div>
@@ -1122,74 +1233,71 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 
 <!-- 隐藏模式设置 -->
 <div id="hide-set" class="screen">
-  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Hide Mode</span><span></span></div>
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')" data-i18n="backToSettings">‹ 设置</span><span class="t" data-i18n="hideModeTitle">隐藏模式</span><span></span></div>
   <div class="scroll" style="padding:16px;">
-    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">App will completely disguise as another app. Only you know how to unlock it.</p>
-    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Disguise Shell</div>
+    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;" data-i18n="hideModeDesc">App将完全伪装成另一个应用，只有你知道如何解锁。</p>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;" data-i18n="disguiseShell">伪装外壳</div>
     <div class="og">
-      <div class="oc on" id="od-weat" onclick="selD('weather')"><div style="font-size:36px;margin-bottom:8px;">🌤️</div><div style="font-size:14px;font-weight:500;" id="d-wt-name">Weather</div></div>
-      <div class="oc" id="od-calc" onclick="selD('calculator')"><div style="font-size:36px;margin-bottom:8px;">🧮</div><div style="font-size:14px;font-weight:500;" id="d-calc-name">Calculator</div></div>
-      <div class="oc" id="od-cloc" onclick="selD('clock')"><div style="font-size:36px;margin-bottom:8px;">🕐</div><div style="font-size:14px;font-weight:500;" id="d-clk-name">Clock</div></div>
-      <div class="oc" id="od-note" onclick="selD('note')"><div style="font-size:36px;margin-bottom:8px;">📝</div><div style="font-size:14px;font-weight:500;" id="d-note-name">Notes</div></div>
+      <div class="oc on" id="od-calc" onclick="selD('calculator')"><div style="font-size:36px;margin-bottom:8px;">🧮</div><div style="font-size:14px;font-weight:500;" id="d-calc-name" data-i18n="calculator">计算器</div></div>
     </div>
-    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Activation Method</div>
-    <div class="tr2 on" id="tr-pin" onclick="selT('pin')"><div style="font-size:22px;width:36px;text-align:center;">🔢</div><div><div style="font-size:15px;font-weight:500;">Password activation</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Enter password to unlock</div></div></div>
-    <div class="tr2" id="tr-tap" onclick="selT('tap')"><div style="font-size:22px;width:36px;text-align:center;">👆</div><div><div style="font-size:15px;font-weight:500;">Tap corner 5 times</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Quickly tap bottom-right corner</div></div></div>
-    <div class="tr2" id="tr-ltap" onclick="selT('ltap')"><div style="font-size:22px;width:36px;text-align:center;">✋</div><div><div style="font-size:15px;font-weight:500;">Long press top-left 3s</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Hold top-left corner for 3 seconds</div></div></div>
-    <div class="tr2" id="tr-shake" onclick="selT('shake')"><div style="font-size:22px;width:36px;text-align:center;">📳</div><div><div style="font-size:15px;font-weight:500;">Shake to activate</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Shake phone to activate</div></div></div>
-    <div style="font-size:13px;color:#8e8e93;margin:16px 0 12px;text-transform:uppercase;letter-spacing:.3px;">Entry Password</div>
-    <div style="background:#f7f3fa;border-radius:12px;padding:14px 16px;font-size:13.5px;color:#8e8e93;line-height:1.6;margin-bottom:14px;" id="hidePinNote">
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;" data-i18n="activationMethod">激活方式</div>
+    <div class="tr2 on" id="tr-pin" onclick="selT('pin')"><div style="font-size:22px;width:36px;text-align:center;">🔢</div><div><div style="font-size:15px;font-weight:500;" data-i18n="passwordActivation">密码激活</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="enterPasswordToUnlock">输入密码解锁</div></div></div>
+    <div class="tr2" id="tr-tap" onclick="selT('tap')"><div style="font-size:22px;width:36px;text-align:center;">👆</div><div><div style="font-size:15px;font-weight:500;" data-i18n="tapCorner5">连续点击5次</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="tapCornerDesc">快速点击右下角</div></div></div>
+    <div class="tr2" id="tr-ltap" onclick="selT('ltap')"><div style="font-size:22px;width:36px;text-align:center;">✋</div><div><div style="font-size:15px;font-weight:500;" data-i18n="longPress3s">长按左上角3秒</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="longPressDesc">按住左上角3秒钟</div></div></div>
+    <div class="tr2" id="tr-shake" onclick="selT('shake')"><div style="font-size:22px;width:36px;text-align:center;">📳</div><div><div style="font-size:15px;font-weight:500;" data-i18n="shakeToActivate">摇一摇激活</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="shakePhoneDesc">摇晃手机激活</div></div></div>
+    <div style="font-size:13px;color:#8e8e93;margin:16px 0 12px;text-transform:uppercase;letter-spacing:.3px;" data-i18n="entryPassword">进入密码</div>
+    <div style="background:#f7f3fa;border-radius:12px;padding:14px 16px;font-size:13.5px;color:#8e8e93;line-height:1.6;margin-bottom:14px;" id="hidePinNote" data-i18n="hidePinNote">
       解锁伪装界面使用「锁屏密码」。还没设置的话，先去 设置 → 隐私与安全 → 锁屏密码 设置一个。
     </div>
-    <button class="btn-blue" id="enable-hide-btn" onclick="saveHide()">Enable Hide Mode</button>
-    <button class="btn-red" id="disable-hide-btn" style="margin-top:10px;" onclick="offHide()">Disable Hide Mode</button>
+    <button class="btn-blue" id="enable-hide-btn" onclick="saveHide()" data-i18n="enableHideModeBtn">开启隐藏模式</button>
+    <button class="btn-red" id="disable-hide-btn" style="margin-top:10px;" onclick="offHide()" data-i18n="disableHideModeBtn">关闭隐藏模式</button>
     <div style="height:30px;"></div>
   </div>
 </div>
 
 <!-- 通知设置 -->
 <div id="notif-set" class="screen">
-  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Secret Notification</span><span></span></div>
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')" data-i18n="backToSettings">‹ 设置</span><span class="t" data-i18n="secretNotifTitle">隐秘通知</span><span></span></div>
   <div class="scroll" style="padding:16px;">
-    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">When you receive a new message, a subtle symbol appears in notifications. Only you know its meaning.</p>
-    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Notification Symbol</div>
+    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;" data-i18n="secretNotifDesc">收到新消息时，通知栏会显示一个不起眼的符号，只有你知道它的含义。</p>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;" data-i18n="notifSymbol">通知符号</div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;">
-      <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.5;">选一个你收到消息时通知栏显示的符号，别人看不出含义</div>
+      <div style="font-size:12px;color:#8e8e93;margin-bottom:10px;line-height:1.5;" data-i18n="notifSymbolDesc">选一个你收到消息时通知栏显示的符号，别人看不出含义</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">
-        <div class="nc on" id="ns-dot" onclick="selN('dot','，')"><div style="font-size:22px;margin-bottom:2px;">，</div><div style="font-size:10px;color:#8e8e93;">逗号</div></div>
-        <div class="nc" id="ns-period" onclick="selN('period','。')"><div style="font-size:22px;margin-bottom:2px;">。</div><div style="font-size:10px;color:#8e8e93;">句号</div></div>
-        <div class="nc" id="ns-ellip" onclick="selN('ellip','…')"><div style="font-size:22px;margin-bottom:2px;">…</div><div style="font-size:10px;color:#8e8e93;">省略号</div></div>
-        <div class="nc" id="ns-mid" onclick="selN('mid','·')"><div style="font-size:22px;margin-bottom:2px;">·</div><div style="font-size:10px;color:#8e8e93;">间隔号</div></div>
-        <div class="nc" id="ns-space" onclick="selN('space',' ')"><div style="font-size:22px;margin-bottom:2px;color:#ccc">_</div><div style="font-size:10px;color:#8e8e93;">空格</div></div>
-        <div class="nc" id="ns-star" onclick="selN('star','✦')"><div style="font-size:22px;margin-bottom:2px;">✦</div><div style="font-size:10px;color:#8e8e93;">星形</div></div>
-        <div class="nc" id="ns-wave" onclick="selN('wave','～')"><div style="font-size:22px;margin-bottom:2px;">～</div><div style="font-size:10px;color:#8e8e93;">波浪</div></div>
-        <div class="nc" id="ns-none" onclick="selN('none','')"><div style="font-size:14px;margin-bottom:2px;color:#ccc;padding-top:4px;">无</div><div style="font-size:10px;color:#8e8e93;">不显示</div></div>
+        <div class="nc on" id="ns-dot" onclick="selN('dot','，')"><div style="font-size:22px;margin-bottom:2px;">，</div><div style="font-size:10px;color:#8e8e93;" data-i18n="symComma">逗号</div></div>
+        <div class="nc" id="ns-period" onclick="selN('period','。')"><div style="font-size:22px;margin-bottom:2px;">。</div><div style="font-size:10px;color:#8e8e93;" data-i18n="symPeriod">句号</div></div>
+        <div class="nc" id="ns-ellip" onclick="selN('ellip','…')"><div style="font-size:22px;margin-bottom:2px;">…</div><div style="font-size:10px;color:#8e8e93;" data-i18n="symEllip">省略号</div></div>
+        <div class="nc" id="ns-mid" onclick="selN('mid','·')"><div style="font-size:22px;margin-bottom:2px;">·</div><div style="font-size:10px;color:#8e8e93;" data-i18n="symMid">间隔号</div></div>
+        <div class="nc" id="ns-space" onclick="selN('space',' ')"><div style="font-size:22px;margin-bottom:2px;color:#ccc">_</div><div style="font-size:10px;color:#8e8e93;" data-i18n="symSpace">空格</div></div>
+        <div class="nc" id="ns-star" onclick="selN('star','✦')"><div style="font-size:22px;margin-bottom:2px;">✦</div><div style="font-size:10px;color:#8e8e93;" data-i18n="symStar">星形</div></div>
+        <div class="nc" id="ns-wave" onclick="selN('wave','～')"><div style="font-size:22px;margin-bottom:2px;">～</div><div style="font-size:10px;color:#8e8e93;" data-i18n="symWave">波浪</div></div>
+        <div class="nc" id="ns-none" onclick="selN('none','')"><div style="font-size:14px;margin-bottom:2px;color:#ccc;padding-top:4px;" data-i18n="symNoneIcon">无</div><div style="font-size:10px;color:#8e8e93;" data-i18n="symNone">不显示</div></div>
       </div>
     </div>
-    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;">Notification Text (what others see)</div>
-    <div class="tr2 on" id="nt-sys" onclick="selNT('sys')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">System notification</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">"System update complete"</div></div></div>
-    <div class="tr2" id="nt-sync" onclick="selNT('sync')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Sync notification</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">"Data syncing"</div></div></div>
-    <div class="tr2" id="nt-cal" onclick="selNT('cal')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Calendar reminder</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">"Reminder"</div></div></div>
-    <div class="tr2" id="nt-none" onclick="selNT('none')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;">Symbol only</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">No text shown</div></div></div>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:.3px;" data-i18n="notifTextLabel">通知文字（他人可见）</div>
+    <div class="tr2 on" id="nt-sys" onclick="selNT('sys')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;" data-i18n="sysNotif">系统通知</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="sysNotifEx">"系统更新完成"</div></div></div>
+    <div class="tr2" id="nt-sync" onclick="selNT('sync')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;" data-i18n="syncNotif">同步通知</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="syncNotifEx">"数据同步中"</div></div></div>
+    <div class="tr2" id="nt-cal" onclick="selNT('cal')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;" data-i18n="calNotif">日历提醒</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="calNotifEx">"提醒事项"</div></div></div>
+    <div class="tr2" id="nt-none" onclick="selNT('none')"><div style="flex:1;"><div style="font-size:15px;font-weight:500;" data-i18n="symbolOnly">仅符号</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="noTextShown">不显示文字</div></div></div>
     <div style="height:12px;"></div>
-    <button class="btn-blue" onclick="saveNotif()">Save</button>
+    <button class="btn-blue" onclick="saveNotif()" data-i18n="saveBtn">保存</button>
     <div style="height:30px;"></div>
   </div>
 </div>
 
 <!-- 销毁设置 -->
 <div id="dest-set" class="screen">
-  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')">‹ Settings</span><span class="t">Destroy Method</span><span></span></div>
+  <div class="nav-bar nav-sm"><span class="nav-btn" onclick="show('settings')" data-i18n="backToSettings">‹ 设置</span><span class="t" data-i18n="destroyMethodTitle">销毁方式</span><span></span></div>
   <div class="scroll" style="padding:16px;">
-    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;">When triggered, all records are immediately cleared and app switches to disguise mode.</p>
-    <div class="dr on" id="dt-wrong" onclick="selDest('wrong')"><div style="font-size:22px;width:36px;text-align:center;">❌</div><div><div style="font-size:15px;font-weight:500;">3 wrong passwords</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Looks like a normal security lockout</div></div></div>
-    <div class="dr" id="dt-dpin" onclick="selDest('dpin')"><div style="font-size:22px;width:36px;text-align:center;">🔑</div><div><div style="font-size:15px;font-weight:500;">Special destroy PIN</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Enter a different PIN to trigger destroy</div></div></div>
-    <div class="dr" id="dt-shake" onclick="selDest('shake')"><div style="font-size:22px;width:36px;text-align:center;">📳</div><div><div style="font-size:15px;font-weight:500;">Shake 10 times</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;">Rapidly shake phone to trigger</div></div></div>
+    <p style="font-size:14px;color:#8e8e93;margin-bottom:20px;line-height:1.6;" data-i18n="destroyDesc">触发后，所有记录立即清除，应用切换为伪装模式。</p>
+    <div class="dr on" id="dt-wrong" onclick="selDest('wrong')"><div style="font-size:22px;width:36px;text-align:center;">❌</div><div><div style="font-size:15px;font-weight:500;" data-i18n="wrongPwd3">连续输错3次密码</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="wrongPwd3Desc">看起来像普通的安全锁定</div></div></div>
+    <div class="dr" id="dt-dpin" onclick="selDest('dpin')"><div style="font-size:22px;width:36px;text-align:center;">🔑</div><div><div style="font-size:15px;font-weight:500;" data-i18n="specialDestroyPin">特殊销毁密码</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="specialDestroyPinDesc">输入不同的密码来触发销毁</div></div></div>
+    <div class="dr" id="dt-shake" onclick="selDest('shake')"><div style="font-size:22px;width:36px;text-align:center;">📳</div><div><div style="font-size:15px;font-weight:500;" data-i18n="shake10">摇晃10次</div><div style="font-size:12px;color:#8e8e93;margin-top:2px;" data-i18n="shake10Desc">快速摇晃手机触发</div></div></div>
     <div id="dpin-area" style="display:none;margin-top:12px;">
-      <input id="dpinIn" type="password" class="field" placeholder="Destroy PIN (different from entry PIN)" maxlength="8" style="letter-spacing:4px;text-align:center;">
+      <input id="dpinIn" type="password" class="field" placeholder="销毁密码（与进入密码不同）" data-i18n-ph="destroyPinPh" maxlength="8" style="letter-spacing:4px;text-align:center;">
     </div>
     <div style="height:12px;"></div>
-    <button class="btn-blue" onclick="saveDestruct()">Save</button>
+    <button class="btn-blue" onclick="saveDestruct()" data-i18n="saveBtn">保存</button>
     <div style="height:30px;"></div>
   </div>
 </div>
@@ -1517,6 +1625,7 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
   }
 
   // ═══ 全屏/沉浸模式 ═══
+  // 1. iOS: 已通过 meta apple-mobile-web-app-capable 实现（添加到主屏幕后）
   // 2. Android Chrome: 用 Navigation Bar 隐藏
   function tryFullscreen(){
     var el = document.documentElement;
@@ -1558,7 +1667,9 @@ html,body{height:100%;height:100dvh;margin:0;padding:0;}
 })();
 
 // ═══ 推送通知 ═══
-// ═══ 推送系统 ═══
+// ═══ OneSignal 推送系统 ═══
+var ONESIGNAL_APP_ID = 'ff584e0a-51e5-44a7-9d2c-488262c4faa9';
+var ONESIGNAL_API_KEY = 'os_v2_app_75me4csr4vckphjmjcbgfrh2vhe7itzdumbuvq5tnn5gi4gw6buyz5ng5olfdzdsf6olaljkyu7gyng3o3eqdrkjhvjkix53l6gdwty';
 var PUSH_SERVER = 'https://mztoenhgfuomzrashrqk.supabase.co/functions/v1/push-notify';
 var VAPID_PUBLIC = 'BFpu-sLy7Z2tINXG041adiyxtKAnJEl0lUlm_RVJjSguhXpgkWu5SMondqhmhFbTeSv9AQs4Z5-WFK0ER9Qrdws';
 
@@ -1571,7 +1682,25 @@ function urlBase64ToUint8Array(base64String){
   return output;
 }
 
-
+async function initOneSignal(){
+  if(!myId)return;
+  try{
+    var waitOS=function(){return new Promise(function(res){
+      var t=0;
+      var iv=setInterval(function(){
+        if(window.OneSignal&&window.OneSignal.Notifications){clearInterval(iv);res(window.OneSignal);}
+        if(++t>20){clearInterval(iv);res(null);}
+      },300);
+    });};
+    var os=await waitOS();
+    if(!os){console.log('[OneSignal] SDK not ready');return;}
+    var perm=os.Notifications.permission;
+    if(!perm)await os.Notifications.requestPermission();
+    await os.login(String(myId));
+    console.log('[OneSignal] ✅ logged in as',myId);
+    ls('osRegistered','1');
+  }catch(e){console.log('[OneSignal] error',e);}
+}
 
 
 // ═══ Web Push推送（主通道）═══
@@ -1595,7 +1724,30 @@ async function _sendWebPushToUser(toUserId, title, body){
   }
 }
 
-
+async function sendOneSignalPush(toUserId, title, body){
+  try{
+    var r=await fetch('https://api.onesignal.com/notifications',{
+      method:'POST',
+      headers:{'Authorization':'Key '+ONESIGNAL_API_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        app_id:ONESIGNAL_APP_ID,
+        filters:[{field:'external_user_id',value:String(toUserId)}],
+        headings:{en:title||'💬 新消息',zh:title||'💬 新消息'},
+        contents:{en:body||'你有一条新消息',zh:body||'你有一条新消息'},
+        // ★ url必须完全等于manifest.start_url，iOS才会在PWA里打开（不跳Safari）
+        url:'https://chunhua1780.github.io/ghostchat/',
+        web_url:'https://chunhua1780.github.io/ghostchat/',
+        // from信息通过additionalData传递，SW从这里读取然后postMessage给PWA
+        data:{from:String(myId),type:'chat_message'},
+        chrome_web_icon:'https://chunhua1780.github.io/ghostchat/icon192.png',
+        small_icon:'https://chunhua1780.github.io/ghostchat/icon192.png',
+        priority:10,ttl:86400
+      })
+    });
+    var d=await r.json();
+    console.log('[OneSignal] sent:',d.id,'errors:',d.errors);
+  }catch(e){console.log('[OneSignal] push err',e);}
+}
 
 function getNtfyTopic(){return '';}
 async function registerNtfyTopic(){}
@@ -1610,8 +1762,67 @@ function urlBase64ToUint8Array(b64){
   return arr;
 }
 
+// 统一检查推送是否已开启（兼容Cordova原生通知 / 浏览器通知 / PWA）
+function pushEnabled_check(){
+  if(localStorage.getItem('pushEnabled')!=='1')return false;
+  if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification)return true;
+  if(typeof Notification!=='undefined')return Notification.permission==='granted';
+  return true; // 没有Notification API但pushEnabled标记为开，仍尝试
+}
+
+// 更新设置页推送开关的视觉状态（圆形滑块开/关 + 状态文字）
+function updatePushToggleUI(on){
+  var tog=document.getElementById('pushDirectToggle');
+  if(tog){
+    if(on)tog.classList.add('on');else tog.classList.remove('on');
+  }
+  var st=document.getElementById('pwaBindStatus');
+  if(st){
+    if(on){st.textContent='✅ 已开启 · 消息来了会通知你';st.style.color='#34c759';}
+    else{st.textContent='未开启 · 点击开启消息推送通知';st.style.color='';}
+  }
+}
+
+// 推送开关点击：开 → 调用subscribePush申请权限；关 → 直接关闭
+function togglePushDirect(){
+  var isOn=localStorage.getItem('pushEnabled')==='1';
+  if(isOn){
+    localStorage.setItem('pushEnabled','0');
+    updatePushToggleUI(false);
+    if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
+      try{cordova.plugins.notification.local.cancelAll();}catch(e){}
+    }
+  } else {
+    subscribePush();
+  }
+}
+
 async function subscribePush(){
   try{
+    // ═══ Cordova 原生 App 环境：用本地通知插件 ═══
+    if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
+      try{
+        cordova.plugins.notification.local.requestPermission(function(granted){
+          if(granted){
+            localStorage.setItem('pushEnabled','1');
+            updatePushToggleUI(true);
+            var st=document.getElementById('pwaBindStatus');
+            if(st){st.textContent='✅ 已开启 · 消息来了会通知你';st.style.color='#34c759';}
+            cordova.plugins.notification.local.schedule({
+              id: 1,
+              title: '✅ GhostChat通知已开启',
+              text: '以后有新消息会第一时间通知你',
+              foreground: true
+            });
+          } else {
+            alert('未获得通知权限\n请到手机设置 → 应用 → GhostChat → 通知 → 开启');
+          }
+        });
+      }catch(e){console.log('[CordovaNotif] error:',e&&e.message);alert('开启通知失败: '+(e&&e.message));}
+      return;
+    }
+
+    // ═══ 浏览器 / PWA 环境（原有逻辑保留）═══
     if(typeof Notification==='undefined'){alert('此浏览器不支持推送通知');return;}
     var perm=Notification.permission;
     if(perm==='denied'){
@@ -1655,6 +1866,16 @@ async function subscribePush(){
       }catch(e){console.log('[WebPush sub failed]',e&&e.message);}
     }
 
+    // 降级：OneSignal
+    window.OneSignalDeferred=window.OneSignalDeferred||[];
+    window.OneSignalDeferred.push(async function(OS){
+      try{
+        await OS.Notifications.requestPermission();
+        if(myId)await OS.login(String(myId));
+        localStorage.setItem('pushEnabled','1');
+        updatePushToggleUI(true);
+      }catch(e){console.log('[OS]',e);}
+    });
   }catch(e){console.log('[Push]',e);}
 }
 
@@ -1683,7 +1904,29 @@ async function _getPushContent(){
     return p.push(t,mx,mn,desc,icon,ci.name);
   }catch(e){return{title:'🌡 天气更新',body:''};}
 }
-
+function installAs(type){
+  var names={weather:'天气',calc:'计算器',note:'记事本',clock:'时钟'};
+  var name=names[type]||'天气';
+  localStorage.setItem('iconType',type);
+  var m=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(m)m.setAttribute('content',name);
+  var t=document.querySelector('title');if(t)t.textContent=name;
+  try{
+  var pwaName=lg('pwaAppName')||name;
+  var mf={
+    name:pwaName,short_name:pwaName,
+    start_url:'https://chunhua1780.github.io/ghostchat/',
+    scope:'https://chunhua1780.github.io/ghostchat/',
+    display:'standalone',orientation:'portrait',
+    background_color:'#fdf2f8',theme_color:'#a18cd1',
+    icons:[{src:'./icon192.png',sizes:'192x192',type:'image/png'}]
+  };
+  var blob=new Blob([JSON.stringify(mf)],{type:'application/manifest+json'});
+  var link=document.querySelector('link[rel="manifest"]');
+  if(link)link.href=URL.createObjectURL(blob);
+}catch(e){}
+  if(_deferredInstall){_deferredInstall.prompt();_deferredInstall.userChoice.then(function(){_deferredInstall=null;});}
+  else{alert('请点分享按钮→添加到主屏幕，图标名：'+name);}
+}
 async function sendToSelf(){
   if(!myId){alert('请先登录');return;}
   if(!localStorage.getItem('pushEnabled')){alert('请先开启推送通知');return;}
@@ -1693,199 +1936,8 @@ async function sendToSelf(){
     alert('已发！切到后台等几秒，看是否收到系统通知。');
   }catch(e){alert('失败：'+(e&&e.message||e));}
 }
-// ═══ 长连接保活推送方案（不依赖FCM，国内可用）═══
-// 原理：
-// 1. cordova-plugin-background-mode 让APP切到后台后进程不被杀死
-// 2. Supabase WebSocket长连接（listenForAllMessages里已有）持续保持，前台/后台都能收到INSERT事件
-// 3. 收到新消息时，用 cordova-plugin-local-notification 弹系统通知（纯本地触发，不经过任何远程推送服务器）
-// 4. 兼容鸿蒙：鸿蒙基于安卓内核，Cordova插件原生API在鸿蒙上同样可用
-
-var _bgModeReady = false;
-var _localNotifReady = false;
-
-function initBackgroundKeepAlive() {
-  if (!window.cordova) {
-    console.log('[KeepAlive] 非Cordova环境，跳过保活初始化（浏览器/PWA走Web Push）');
-    return;
-  }
-  if (!cordova.plugins || !cordova.plugins.backgroundMode) {
-    console.log('[KeepAlive] background-mode插件未加载');
-    return;
-  }
-
-  try {
-    cordova.plugins.backgroundMode.setDefaults({
-      title: '消息同步中',
-      text: '正在保持连接以接收新消息',
-      icon: 'icon',
-      color: '000000',
-      resume: true,
-      hidden: false,
-      bigText: false,
-      silent: true // 保活通知本身不发声音/震动，只是系统要求的常驻提示
-    });
-
-    cordova.plugins.backgroundMode.enable();
-    _bgModeReady = true;
-
-    cordova.plugins.backgroundMode.on('activate', function () {
-      console.log('[KeepAlive] 进入后台保活模式');
-      // 后台模式下禁用WebView节流，保证JS定时器/WebSocket正常工作
-      cordova.plugins.backgroundMode.disableWebViewOptimizations();
-    });
-
-    cordova.plugins.backgroundMode.on('deactivate', function () {
-      console.log('[KeepAlive] 回到前台');
-    });
-
-    console.log('[KeepAlive] ✅ 后台保活已启用');
-  } catch (e) {
-    console.log('[KeepAlive] 初始化失败:', e.message);
-  }
-}
-
-function initLocalNotifications() {
-  if (!window.cordova) return;
-  if (!cordova.plugins || !cordova.plugins.notification || !cordova.plugins.notification.local) {
-    console.log('[LocalNotif] local-notification插件未加载');
-    return;
-  }
-
-  cordova.plugins.notification.local.requestPermission(function (granted) {
-    if (granted) {
-      _localNotifReady = true;
-      localStorage.setItem('pushEnabled', '1');
-      if (typeof updatePushToggleUI === 'function') updatePushToggleUI(true);
-      var pst = document.getElementById('pwaBindStatus');
-      if (pst) { pst.textContent = '✅ 已开启 · 收到消息直接弹通知'; pst.style.color = '#34c759'; }
-      console.log('[LocalNotif] ✅ 通知权限已授权');
-    } else {
-      console.log('[LocalNotif] 用户拒绝通知权限');
-      localStorage.setItem('pushEnabled', '0');
-      if (typeof updatePushToggleUI === 'function') updatePushToggleUI(false);
-    }
-  });
-
-  // 点击通知 → 跳转到对应聊天
-  cordova.plugins.notification.local.on('click', function (notification) {
-    try {
-      var data = JSON.parse(notification.data || '{}');
-      if (data.fromId && typeof _openChatFromId === 'function') {
-        // 确保先回到主界面再跳转聊天
-        var mainEl = document.getElementById('main');
-        if (!mainEl || !mainEl.classList.contains('active')) {
-          if (typeof show === 'function') show('main');
-        }
-        setTimeout(function () { _openChatFromId(data.fromId); }, 300);
-      }
-    } catch (e) {
-      console.log('[LocalNotif] click handler error:', e);
-    }
-  });
-}
-
-// 收到消息时弹本地通知（由 listenForAllMessages 的WebSocket回调里调用）
-function showLocalNotification(title, body, fromId) {
-  if (window.cordova && _localNotifReady && cordova.plugins && cordova.plugins.notification && cordova.plugins.notification.local) {
-    cordova.plugins.notification.local.schedule({
-      id: Math.floor(Math.random() * 2147483647),
-      title: title || '💬 新消息',
-      text: body || '你收到了一条新消息',
-      smallIcon: 'res://icon',
-      icon: 'res://icon',
-      data: JSON.stringify({ fromId: fromId || '' }),
-      foreground: true
-    });
-    return true;
-  }
-
-  // 非Cordova环境（浏览器/PWA测试用）：降级到Web Notification API
-  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-    try {
-      new Notification(title || '💬 新消息', { body: body || '你收到了一条新消息', icon: './icon192.png' });
-      return true;
-    } catch (e) { /* ignore */ }
-  }
-  return false;
-}
-
-// 入口函数：替代原先的 registerWebPushAndroid，统一推送开关入口
-async function registerWebPushAndroid() {
-  if (window.cordova) {
-    // Cordova APK环境：走保活 + 本地通知方案
-    initBackgroundKeepAlive();
-    initLocalNotifications();
-    return;
-  }
-
-  // 非Cordova环境（普通浏览器/PWA）：保留原有Web Push逻辑作为降级
-  if (!myId) return;
-  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
-    console.log('[Push] 该浏览器不支持Web Push');
-    return;
-  }
-  try {
-    var perm = Notification.permission;
-    if (perm === 'default') perm = await Notification.requestPermission();
-    if (perm !== 'granted') return;
-    var reg = await navigator.serviceWorker.ready;
-    var sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
-      });
-    }
-    await fetch(PUSH_SERVER + '?action=subscribe', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: String(myId), subscription: sub.toJSON() })
-    });
-    localStorage.setItem('pushEnabled', '1');
-    if (typeof updatePushToggleUI === 'function') updatePushToggleUI(true);
-  } catch (e) {
-    console.log('[Push] browser fallback error:', e.message);
-  }
-}
-
-function togglePushDirect() {
-  var enabled = localStorage.getItem('pushEnabled') === '1';
-  if (window.cordova) {
-    // Cordova环境：保活模式无法"关闭"通知权限（系统级），只能切换本地标记
-    if (enabled) {
-      localStorage.setItem('pushEnabled', '0');
-      if (typeof updatePushToggleUI === 'function') updatePushToggleUI(false);
-      var pst = document.getElementById('pwaBindStatus');
-      if (pst) { pst.textContent = '未开启 · 点击授权通知'; pst.style.color = '#8e8e93'; }
-    } else {
-      registerWebPushAndroid();
-    }
-    return;
-  }
-  // 浏览器环境：原有逻辑
-  if (enabled) {
-    if (navigator.serviceWorker) {
-      navigator.serviceWorker.ready.then(function (r) {
-        r.pushManager.getSubscription().then(function (s) { if (s) s.unsubscribe(); });
-      });
-    }
-    localStorage.setItem('pushEnabled', '0');
-    if (typeof updatePushToggleUI === 'function') updatePushToggleUI(false);
-  } else {
-    registerWebPushAndroid();
-  }
-}
-
-// deviceready 事件：Cordova插件必须等这个事件触发后才能用
-document.addEventListener('deviceready', function () {
-  console.log('[Cordova] deviceready fired');
-  initBackgroundKeepAlive();
-  if (lg('registered') && lg('pushEnabled') === '1') {
-    initLocalNotifications();
-  }
-}, false);
-
-// ═══ 推送辅助 ═══
-
+// ═══ Bark 推送 ═══
+function getBarkUrl(){return (localStorage.getItem('barkUrl')||'').trim();}
 
 // ═══ 专注模式轮盘 ═══
 var FOCUS_MODES = {
@@ -1897,7 +1949,7 @@ var FOCUS_MODES = {
   work:  {label:'工作模式', emoji:'💼',
           desc:'有锁屏 · 通知内容隐藏 · 只有角标不震动',
           bark:true,  dnd:true,  hide:false, lock:true,  disguise:false},
-  // 🏠 回家模式：锁屏 + 隐身(天气) + 伪装成天气通知
+  // 🏠 回家模式：锁屏 + 隐身(天气) + Bark伪装成天气通知
   home:  {label:'回家模式', emoji:'🏠',
           desc:'有锁屏 · 伪装天气APP · 通知显示为天气提醒',
           bark:true,  dnd:false, hide:true,  lock:true,  disguise:true},
@@ -1931,12 +1983,12 @@ function setFocusMode(mode){
   ls('doNotDisturb',cfg.dnd?'true':'false');
   ls('autoLockLeave',cfg.lock?'true':'false');
 
-  // 隐身模式：强制用weather伪装（回家/隐身模式）
+  // 隐身模式：强制用calculator伪装（回家/隐身模式）
   if(cfg.hide){
     G.hide=true;
-    G.dis='weather';
+    G.dis='calculator';
     ls('hide','true');
-    ls('dis','weather');
+    ls('dis','calculator');
     updHide();
     if(typeof pushSettings==='function')pushSettings();
   } else if(G.hide){
@@ -1966,8 +2018,9 @@ function updateFocusWheelUI(){
 }
 
 
-// ═══ 快速开关：免打扰 / 隐藏模式 / 锁屏 ═══
+// ═══ 快速开关：Bark / 免打扰 / 隐藏模式 / 锁屏 ═══
 function initQuickToggles(){updateFocusWheelUI();
+  // Bark开关：默认开（没设过就是开）
   var barkOn = lg('barkEnabled')!=='false';
   var bt=document.getElementById('barkEnabledToggle');
   if(bt){bt.className='tog'+(barkOn?' on':'');}
@@ -1990,9 +2043,32 @@ function initQuickToggles(){updateFocusWheelUI();
   if(lt){lt.className='tog'+(lockOn?' on':'');}
 }
 
+function toggleBarkEnabled(){
+  var cur=lg('barkEnabled')!=='false';
+  var nv=!cur;
+  ls('barkEnabled',nv?'true':'false');
+  var bt=document.getElementById('barkEnabledToggle');
+  if(bt){bt.className='tog'+(nv?' on':'');}
+  // 如果关闭，同时关免打扰
+  if(!nv){ls('doNotDisturb','false');var dt=document.getElementById('doNotDisturbToggle');if(dt)dt.className='tog';}
+  var st=document.getElementById('barkStatus');
+  if(st){st.textContent=nv?'✅ Bark推送已开启':'⚠️ Bark推送已关闭';setTimeout(function(){if(st)st.textContent='';},2000);}
+}
 
-
-
+function toggleDoNotDisturb(){
+  // 必须有Bark URL才有意义
+  var burl=(lg('barkUrl')||'').trim();
+  if(!burl){alert('请先设置Bark URL再开启免打扰');return;}
+  var cur=lg('doNotDisturb')==='true';
+  var nv=!cur;
+  ls('doNotDisturb',nv?'true':'false');
+  var dt=document.getElementById('doNotDisturbToggle');
+  if(dt){dt.className='tog'+(nv?' on':'');}
+  // 开启免打扰时确保Bark是开的
+  if(nv){ls('barkEnabled','true');var bt=document.getElementById('barkEnabledToggle');if(bt)bt.className='tog on';}
+  var st=document.getElementById('barkStatus');
+  if(st){st.textContent=nv?'🔕 免打扰：只发角标，无声无震动':'🔔 已恢复正常通知';setTimeout(function(){if(st)st.textContent='';},2000);}
+}
 
 function toggleHideMode(){
   var cur=G.hide===true||lg('hide')==='true';
@@ -2023,43 +2099,293 @@ function toggleLockScreen(){
 }
 
 
+var BARK_PRESET_ICONS = [
+  {name:"👻 幽灵宝宝",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZzEiIGN4PSI1MCUiIGN5PSI0MCUiIHI9IjU1JSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNjNzdkZmYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjN2IyZmZmIi8+CiAgICA8L3JhZGlhbEdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHJ4PSIyMiIgZmlsbD0idXJsKCNnMSkiLz4KICA8cGF0aCBkPSJNMjggNTggQzI4IDQwIDM4IDI4IDQ4IDI4IEM1OCAyOCA2OCA0MCA2OCA1OCBMNjggNzIgTDYyIDY2IEw1NiA3MiBMNTAgNjYgTDQ0IDcyIEwzOCA2NiBMMzIgNzIgWiIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOTUiLz4KICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjUwIiByPSI0IiBmaWxsPSIjN2IyZmZmIi8+CiAgPGNpcmNsZSBjeD0iNTQiIGN5PSI1MCIgcj0iNCIgZmlsbD0iIzdiMmZmZiIvPgogIDxjaXJjbGUgY3g9IjQzLjUiIGN5PSI0OC41IiByPSIxLjUiIGZpbGw9IndoaXRlIi8+CiAgPGNpcmNsZSBjeD0iNTUuNSIgY3k9IjQ4LjUiIHI9IjEuNSIgZmlsbD0id2hpdGUiLz4KPC9zdmc+"},
+  {name:"🌸 樱花信封",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZzIiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY5YTllIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2Y0OGZiMSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9InVybCgjZzIpIi8+CiAgPHJlY3QgeD0iMTgiIHk9IjMwIiB3aWR0aD0iNjAiIGhlaWdodD0iNDAiIHJ4PSI2IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45NSIvPgogIDxwYXRoIGQ9Ik0xOCAzNiBMNDggNTYgTDc4IDM2IiBzdHJva2U9IiNmNDhmYjEiIHN0cm9rZS13aWR0aD0iMi41IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSI3MiIgY3k9IjI4IiByPSIxMCIgZmlsbD0iI2ZmNmI5ZCIvPgogIDx0ZXh0IHg9IjcyIiB5PSIzMiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIxMyI+8J+MuDwvdGV4dD4KPC9zdmc+"},
+  {name:"🌙 月亮猫咪",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZzMiIGN4PSIzMCUiIGN5PSIzMCUiIHI9IjcwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTFhMmUiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMTYyMTNlIi8+CiAgICA8L3JhZGlhbEdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHJ4PSIyMiIgZmlsbD0idXJsKCNnMykiLz4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjQ2IiByPSIyMiIgZmlsbD0iI2ZmZDYwYSIgb3BhY2l0eT0iMC4xNSIvPgogIDxwYXRoIGQ9Ik01MCAyNCBDNjIgMjQgNzIgMzQgNzIgNDYgQzcyIDU4IDYyIDY4IDUwIDY4IEM0NCA2OCAzOSA2NSAzNiA2MSBDNDAgNjIgNDYgNjEgNTAgNTggQzU4IDU4IDY0IDUyIDY0IDQ0IEM2NCAzNiA1OCAzMCA1MCAzMCBDNDYgMzAgNDMgMzEgNDAgMzMgQzQzIDI5IDQ2IDI0IDUwIDI0WiIgZmlsbD0iI2ZmZDYwYSIvPgogIDxlbGxpcHNlIGN4PSIzNiIgY3k9IjMwIiByeD0iNSIgcnk9IjgiIGZpbGw9IiNmZmQ2MGEiIHRyYW5zZm9ybT0icm90YXRlKC0yMCAzNiAzMCkiLz4KICA8ZWxsaXBzZSBjeD0iNjQiIGN5PSIzMCIgcng9IjUiIHJ5PSI4IiBmaWxsPSIjZmZkNjBhIiB0cmFuc2Zvcm09InJvdGF0ZSgyMCA2NCAzMCkiLz4KICA8Y2lyY2xlIGN4PSI0NCIgY3k9IjQ2IiByPSIyLjUiIGZpbGw9IiMxYTFhMmUiLz4KICA8Y2lyY2xlIGN4PSI1NiIgY3k9IjQ2IiByPSIyLjUiIGZpbGw9IiMxYTFhMmUiLz4KICA8cGF0aCBkPSJNNDQgNTMgUTQ4IDU2IDUyIDUzIiBzdHJva2U9IiMxYTFhMmUiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjIyIiByPSIyIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC42Ii8+CiAgPGNpcmNsZSBjeD0iNzYiIGN5PSIxOCIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMTgiIGN5PSI2MCIgcj0iMSIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNCIvPgo8L3N2Zz4="},
+  {name:"🫧 极光泡泡",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZzQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDBkNGFhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjN2IyZmZmIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwYThlOCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9InVybCgjZzQpIi8+CiAgPGNpcmNsZSBjeD0iMzYiIGN5PSI0MiIgcj0iMTgiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjE4Ii8+CiAgPGNpcmNsZSBjeD0iNjAiIGN5PSIzOCIgcj0iMTIiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjEyIi8+CiAgPHBhdGggZD0iTTI0IDQ0IFEyNCAyNiA0MCAyNCBRNTYgMjIgNjAgMzQgUTY4IDMwIDcyIDQwIFE3NiA1MiA2NCA1OCBRNjAgNjggNDggNjYgTDQwIDc0IEw0MiA2MCBRMjggNjIgMjQgNDRaIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45MiIvPgogIDxjaXJjbGUgY3g9IjQwIiBjeT0iNDQiIHI9IjMiIGZpbGw9IiM3YjJmZmYiLz4KICA8Y2lyY2xlIGN4PSI1NCIgY3k9IjQ0IiByPSIzIiBmaWxsPSIjN2IyZmZmIi8+CiAgPHBhdGggZD0iTTQyIDUyIFE0OCA1NiA1NCA1MiIgc3Ryb2tlPSIjN2IyZmZmIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4="},
+  {name:"🌹 玫瑰密锁",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZzUiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWEwYTBhIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzNkMDAwMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9InVybCgjZzUpIi8+CiAgPHBhdGggZD0iTTQ4IDIwIEM0OCAyMCAzOCAyOCAzOCAzOCBDMzggNDQgNDIgNDggNDggNDggQzU0IDQ4IDU4IDQ0IDU4IDM4IEM1OCAyOCA0OCAyMCA0OCAyMFoiIGZpbGw9IiNjMDM5MmIiLz4KICA8cGF0aCBkPSJNNDggMjAgQzQ4IDIwIDQwIDMwIDQ0IDM4IEM0NiA0MyA0OCA0NSA0OCA0OCIgZmlsbD0iI2U3NGMzYyIvPgogIDxwYXRoIGQ9Ik00OCAyMiBDNTAgMjYgNTQgMzAgNTQgMzggQzU0IDQzIDUxIDQ3IDQ4IDQ4IiBmaWxsPSIjYzAzOTJiIiBvcGFjaXR5PSIwLjYiLz4KICA8cmVjdCB4PSIzMiIgeT0iNTIiIHdpZHRoPSIzMiIgaGVpZ2h0PSIyNiIgcng9IjYiIGZpbGw9IiNmMGMwNDAiLz4KICA8cGF0aCBkPSJNMzggNTIgTDM4IDQ0IEMzOCAzOCA0NCAzNCA1MCAzNiBDNTQgMzggNTggNDIgNTggNDggTDU4IDUyIiBzdHJva2U9IiNmMGMwNDAiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI2MyIgcj0iNSIgZmlsbD0iI2M5YTAwMCIvPgogIDxyZWN0IHg9IjQ2IiB5PSI2MyIgd2lkdGg9IjQiIGhlaWdodD0iNyIgcng9IjIiIGZpbGw9IiNjOWEwMDAiLz4KPC9zdmc+"},
+  {name:"⭐ 星空信使",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZzYiIGN4PSI1MCUiIGN5PSI1MCUiIHI9IjcwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwZjM0NjAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMGEwYTFhIi8+CiAgICA8L3JhZGlhbEdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHJ4PSIyMiIgZmlsbD0idXJsKCNnNikiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ4LDE0IDUwLjUsMjEgNTgsMjEgNTIsMjUuNSA1NC41LDMzIDQ4LDI4LjUgNDEuNSwzMyA0NCwyNS41IDM4LDIxIDQ1LjUsMjEiIGZpbGw9IiNmZmQ3MDAiLz4KICA8cG9seWdvbiBwb2ludHM9IjIyLDM4IDIzLjIsNDEuNiAyNyw0MS42IDI0LDQzLjggMjUuMiw0Ny40IDIyLDQ1LjIgMTguOCw0Ny40IDIwLDQzLjggMTcsNDEuNiAyMC44LDQxLjYiIGZpbGw9IiNmZmQ3MDAiIG9wYWNpdHk9IjAuNyIvPgogIDxwb2x5Z29uIHBvaW50cz0iNzQsMjggNzUsMzEgNzgsMzEgNzUuNSwzMi44IDc2LjUsMzUuOCA3NCwzNCA3MS41LDM1LjggNzIuNSwzMi44IDcwLDMxIDczLDMxIiBmaWxsPSIjZmZkNzAwIiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIyMCIgeT0iNTAiIHdpZHRoPSI1NiIgaGVpZ2h0PSIzNiIgcng9IjYiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjk1Ii8+CiAgPHBhdGggZD0iTTIwIDU2IEw0OCA3MiBMNzYgNTYiIHN0cm9rZT0iI2UwZTBmMCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI0NCIgcj0iMyIgZmlsbD0iI2ZmZDcwMCIgb3BhY2l0eT0iMC44Ii8+Cjwvc3ZnPg=="},
+  {name:"🦋 薰衣草蝶",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZzciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjOWU4Y2ZjIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2M3N2RmZiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9InVybCgjZzcpIi8+CiAgPGVsbGlwc2UgY3g9IjM1IiBjeT0iNDAiIHJ4PSIxNiIgcnk9IjIwIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoLTI1IDM1IDQwKSIvPgogIDxlbGxpcHNlIGN4PSI2MSIgY3k9IjQwIiByeD0iMTYiIHJ5PSIyMCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDI1IDYxIDQwKSIvPgogIDxlbGxpcHNlIGN4PSIzOCIgY3k9IjYyIiByeD0iMTAiIHJ5PSIxMyIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoMTUgMzggNjIpIi8+CiAgPGVsbGlwc2UgY3g9IjU4IiBjeT0iNjIiIHJ4PSIxMCIgcnk9IjEzIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSgtMTUgNTggNjIpIi8+CiAgPGVsbGlwc2UgY3g9IjM1IiBjeT0iNDAiIHJ4PSI4IiByeT0iMTEiIGZpbGw9IiNjNzdkZmYiIG9wYWNpdHk9IjAuNCIgdHJhbnNmb3JtPSJyb3RhdGUoLTI1IDM1IDQwKSIvPgogIDxlbGxpcHNlIGN4PSI2MSIgY3k9IjQwIiByeD0iOCIgcnk9IjExIiBmaWxsPSIjYzc3ZGZmIiBvcGFjaXR5PSIwLjQiIHRyYW5zZm9ybT0icm90YXRlKDI1IDYxIDQwKSIvPgogIDxwYXRoIGQ9Ik00OCAyNiBRNDYgNDAgNDYgNTIgUTQ2IDYyIDQ4IDcwIFE1MCA2MiA1MCA1MiBRNTAgNDAgNDggMjZaIiBmaWxsPSIjNWExODlhIiBzdHJva2U9IiM1YTE4OWEiIHN0cm9rZS13aWR0aD0iMSIvPgogIDxwYXRoIGQ9Ik00NCAzMCBRNDggMjggNTIgMzAiIHN0cm9rZT0iIzVhMTg5YSIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik00NSAyNyBRNDYgMjIgNDggMjAgUTUwIDIyIDUxIDI3IiBzdHJva2U9IiM1YTE4OWEiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIi8+Cjwvc3ZnPg=="},
+  {name:"💗 霓虹心跳",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHJ4PSIyMiIgZmlsbD0iIzBhMGEwYSIvPgogIDxkZWZzPgogICAgPGZpbHRlciBpZD0iZ2xvdzgiPgogICAgICA8ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIyLjUiIHJlc3VsdD0iYmx1ciIvPgogICAgICA8ZmVNZXJnZT48ZmVNZXJnZU5vZGUgaW49ImJsdXIiLz48ZmVNZXJnZU5vZGUgaW49IlNvdXJjZUdyYXBoaWMiLz48L2ZlTWVyZ2U+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CiAgPHBhdGggZD0iTTQ4IDYyIEMzMCA1MCAxOCA0MCAxOCAzMCBDMTggMjIgMjQgMTYgMzIgMTYgQzM4IDE2IDQ0IDIwIDQ4IDI2IEM1MiAyMCA1OCAxNiA2NCAxNiBDNzIgMTYgNzggMjIgNzggMzAgQzc4IDQwIDY2IDUwIDQ4IDYyWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmYyZDc4IiBzdHJva2Utd2lkdGg9IjMiIGZpbHRlcj0idXJsKCNnbG93OCkiLz4KICA8cGF0aCBkPSJNNDggNjIgQzMwIDUwIDE4IDQwIDE4IDMwIEMxOCAyMiAyNCAxNiAzMiAxNiBDMzggMTYgNDQgMjAgNDggMjYgQzUyIDIwIDU4IDE2IDY0IDE2IEM3MiAxNiA3OCAyMiA3OCAzMCBDNzggNDAgNjYgNTAgNDggNjJaIiBmaWxsPSIjZmYyZDc4IiBvcGFjaXR5PSIwLjE1Ii8+CiAgPHBhdGggZD0iTTE2IDcwIEwyOCA3MCBMMzMgNjAgTDM4IDc4IEw0MyA1OCBMNDggNzIgTDUzIDY2IEw1OCA3MCBMODAgNzAiIHN0cm9rZT0iI2ZmMmQ3OCIgc3Ryb2tlLXdpZHRoPSIyLjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZmlsdGVyPSJ1cmwoI2dsb3c4KSIvPgo8L3N2Zz4="},
+  {name:"🐚 珊瑚贝壳",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZzkiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjZmY2YjZiIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iI2ZmYTA3YSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9InVybCgjZzkpIi8+CiAgPHBhdGggZD0iTTQ4IDIwIEMyOCAyMCAxNCAzNCAxNiA1MiBDMTggNjYgMzAgNzQgNDggNzYgQzY2IDc0IDc4IDY2IDgwIDUyIEM4MiAzNCA2OCAyMCA0OCAyMFoiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjkiLz4KICA8cGF0aCBkPSJNNDggMjAgTDQ4IDc2IiBzdHJva2U9IiNmZjZiNmIiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjMiLz4KICA8cGF0aCBkPSJNMzIgMjggUTQ4IDIwIDY0IDI4IiBzdHJva2U9IiNmZjZiNmIiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8cGF0aCBkPSJNMjYgNDAgUTQ4IDMwIDcwIDQwIiBzdHJva2U9IiNmZjZiNmIiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8cGF0aCBkPSJNMjIgNTQgUTQ4IDQyIDc0IDU0IiBzdHJva2U9IiNmZjZiNmIiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8cGF0aCBkPSJNMjYgNjYgUTQ4IDU2IDcwIDY2IiBzdHJva2U9IiNmZjZiNmIiIHN0cm9rZS13aWR0aD0iMS41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8ZWxsaXBzZSBjeD0iNDgiIGN5PSI4MCIgcng9IjE0IiByeT0iNSIgZmlsbD0iI2ZmNmI2YiIgb3BhY2l0eT0iMC40Ii8+CiAgPHJlY3QgeD0iNDQiIHk9Ijc0IiB3aWR0aD0iOCIgaGVpZ2h0PSI4IiByeD0iMyIgZmlsbD0iI2ZmOGM2OSIvPgo8L3N2Zz4="},
+  {name:"🐟 深海灯笼",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZzEwIiBjeD0iNTAlIiBjeT0iNjAlIiByPSI2MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMGExNjI4Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAyMGIxYSIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9Imdsb3cxMCI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjMiIHJlc3VsdD0iYmx1ciIvPgogICAgICA8ZmVNZXJnZT48ZmVNZXJnZU5vZGUgaW49ImJsdXIiLz48ZmVNZXJnZU5vZGUgaW49IlNvdXJjZUdyYXBoaWMiLz48L2ZlTWVyZ2U+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9InVybCgjZzEwKSIvPgogIDxwYXRoIGQ9Ik00OCAxMCBRNTAgMjAgNTAgMjYiIHN0cm9rZT0iIzAwZTVmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjUwIiBjeT0iMzAiIHI9IjgiIGZpbGw9IiMwMGU1ZmYiIGZpbHRlcj0idXJsKCNnbG93MTApIiBvcGFjaXR5PSIwLjkiLz4KICA8Y2lyY2xlIGN4PSI1MCIgY3k9IjMwIiByPSI0IiBmaWxsPSJ3aGl0ZSIvPgogIDxwYXRoIGQ9Ik0yNCA1NSBDMjQgNDIgMzQgMzIgNDggMzIgQzYyIDMyIDcyIDQyIDcyIDU1IEM3MiA2NiA2NCA3NCA1MiA3NiBMNTIgODIgTDQ4IDg0IEw0NCA4MiBMNDQgNzYgQzMyIDc0IDI0IDY2IDI0IDU1WiIgZmlsbD0iIzFhM2E2ZSIgb3BhY2l0eT0iMC45Ii8+CiAgPHBhdGggZD0iTTI0IDU1IEMyNCA0MiAzNCAzMiA0OCAzMiBDNjIgMzIgNzIgNDIgNzIgNTUgQzcyIDY2IDY0IDc0IDUyIDc2IiBmaWxsPSJub25lIiBzdHJva2U9IiMwMGU1ZmYiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjUiLz4KICA8ZWxsaXBzZSBjeD0iNDIiIGN5PSI1MiIgcj0iNSIgcnk9IjciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZTVmZiIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8ZWxsaXBzZSBjeD0iNTYiIGN5PSI1MiIgcj0iNSIgcnk9IjciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZTVmZiIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjUwIiByPSIzIiBmaWxsPSIjMDBlNWZmIiBvcGFjaXR5PSIwLjgiIGZpbHRlcj0idXJsKCNnbG93MTApIi8+CiAgPGNpcmNsZSBjeD0iNTYiIGN5PSI1MCIgcj0iMyIgZmlsbD0iIzAwZTVmZiIgb3BhY2l0eT0iMC44IiBmaWx0ZXI9InVybCgjZ2xvdzEwKSIvPgogIDxwYXRoIGQ9Ik00MiA2MSBRNDggNjUgNTQgNjEiIHN0cm9rZT0iIzAwZTVmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC43Ii8+Cjwvc3ZnPg=="},
+  {name:"👁 赛博之眼",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0iZzExIiBjeD0iNTAlIiBjeT0iNTAlIiByPSI1MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWEwMDMzIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBkMGQwZCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxmaWx0ZXIgaWQ9Imdsb3cxMSI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjIiIHJlc3VsdD0iYmx1ciIvPgogICAgICA8ZmVNZXJnZT48ZmVNZXJnZU5vZGUgaW49ImJsdXIiLz48ZmVNZXJnZU5vZGUgaW49IlNvdXJjZUdyYXBoaWMiLz48L2ZlTWVyZ2U+CiAgICA8L2ZpbHRlcj4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjIiIGZpbGw9InVybCgjZzExKSIvPgogIDxwYXRoIGQ9Ik0xMCA0OCBDMTAgNDggMjQgMjQgNDggMjQgQzcyIDI0IDg2IDQ4IDg2IDQ4IEM4NiA0OCA3MiA3MiA0OCA3MiBDMjQgNzIgMTAgNDggMTAgNDhaIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZjAwZmYiIHN0cm9rZS13aWR0aD0iMiIgZmlsdGVyPSJ1cmwoI2dsb3cxMSkiLz4KICA8Y2lyY2xlIGN4PSI0OCIgY3k9IjQ4IiByPSIxNiIgZmlsbD0iIzBkMGQwZCIgc3Ryb2tlPSIjMDBmZmZmIiBzdHJva2Utd2lkdGg9IjIiIGZpbHRlcj0idXJsKCNnbG93MTEpIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iMTAiIGZpbGw9IiNmZjAwZmYiIG9wYWNpdHk9IjAuOCIgZmlsdGVyPSJ1cmwoI2dsb3cxMSkiLz4KICA8Y2lyY2xlIGN4PSI0OCIgY3k9IjQ4IiByPSI1IiBmaWxsPSIjMGQwZDBkIi8+CiAgPGNpcmNsZSBjeD0iNDgiIGN5PSI0OCIgcj0iMiIgZmlsbD0iI2ZmMDBmZiIgZmlsdGVyPSJ1cmwoI2dsb3cxMSkiLz4KICA8bGluZSB4MT0iMTAiIHkxPSI0OCIgeDI9IjMyIiB5Mj0iNDgiIHN0cm9rZT0iIzAwZmZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iNjQiIHkxPSI0OCIgeDI9Ijg2IiB5Mj0iNDgiIHN0cm9rZT0iIzAwZmZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjUiLz4KICA8Y2lyY2xlIGN4PSI0NCIgY3k9IjQ0IiByPSIyIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC42Ii8+Cjwvc3ZnPg=="},
+  {name:"💎 流星钻石",url:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5NiA5NiIgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZzEyIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzBmMGMyOSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzMwMmI2MyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyNDI0M2UiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgcng9IjIyIiBmaWxsPSJ1cmwoI2cxMikiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ4LDE2IDYyLDMyIDc0LDMyIDgwLDQ4IDc0LDY0IDQ4LDgwIDIyLDY0IDE2LDQ4IDIyLDMyIDM0LDMyIiBmaWxsPSJub25lIiBzdHJva2U9IiNhMGM0ZmYiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjMiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ4LDI0IDU4LDM0IDY4LDM0IDcyLDQ4IDY4LDYyIDQ4LDcyIDI4LDYyIDI0LDQ4IDI4LDM0IDM4LDM0IiBmaWxsPSIjMWUzYTVmIiBvcGFjaXR5PSIwLjYiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ4LDI0IDU4LDM0IDQ4LDM4IDM4LDM0IiBmaWxsPSIjNWI5YmQ1IiBvcGFjaXR5PSIwLjgiLz4KICA8cG9seWdvbiBwb2ludHM9IjU4LDM0IDY4LDM0IDcyLDQ4IDU4LDQ0IiBmaWxsPSIjMmU2ZGI0IiBvcGFjaXR5PSIwLjkiLz4KICA8cG9seWdvbiBwb2ludHM9IjI4LDM0IDM4LDM0IDM4LDQ0IDI0LDQ4IiBmaWxsPSIjM2Q3ZmMxIiBvcGFjaXR5PSIwLjkiLz4KICA8cG9seWdvbiBwb2ludHM9IjQ4LDM4IDU4LDQ0IDQ4LDcyIDM4LDQ0IiBmaWxsPSIjMWE0ZjhhIiBvcGFjaXR5PSIwLjk1Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSI0OCwzOCAzOCw0NCAyNCw0OCAyOCw2MiA0OCw3MiIgZmlsbD0iIzI0NjBhNyIgb3BhY2l0eT0iMC44NSIvPgogIDxwb2x5Z29uIHBvaW50cz0iNDgsMzggNTgsNDQgNzIsNDggNjgsNjIgNDgsNzIiIGZpbGw9IiMxYTUyOTYiIG9wYWNpdHk9IjAuODUiLz4KICA8Y2lyY2xlIGN4PSIyMiIgY3k9IjIwIiByPSIxLjUiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjgiLz4KICA8Y2lyY2xlIGN4PSI3NiIgY3k9IjE2IiByPSIxIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC42Ii8+CiAgPGNpcmNsZSBjeD0iODAiIGN5PSI3MiIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMTYiIGN5PSI2OCIgcj0iMSIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNyIvPgo8L3N2Zz4="},
+];
+
 // 当前临时选中的图标URL（还未保存）
+var _selectedBarkIcon = null;
+
+function _refreshBarkIconPreview(url, name){
+  var img=document.getElementById('barkIconPreview');
+  var fallback=document.getElementById('barkIconFallback');
+  var selName=document.getElementById('barkIconSelName');
+  if(!img)return;
+  if(url){
+    img.src=url;
+    img.style.display='block';
+    if(fallback)fallback.style.display='none';
+  } else {
+    img.src='';img.style.display='none';
+    if(fallback)fallback.style.display='flex';
+  }
+  if(selName)selName.textContent=name||(url?'自定义':'未选择');
+}
+
+function _renderBarkIconGrid(){
+  var grid=document.getElementById('barkIconGrid');
+  if(!grid)return;
+  var cur=_selectedBarkIcon||(lg('barkIconUrl')||'');
+  grid.innerHTML='';
+  BARK_PRESET_ICONS.forEach(function(ic, idx){
+    var sel=(ic.url===cur);
+    var cell=document.createElement('div');
+    cell.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px;border-radius:10px;border:2px solid '+(sel?'var(--theme-accent1)':'transparent')+';background:'+(sel?'var(--theme-ep-active)':'transparent')+';transition:all .15s;-webkit-tap-highlight-color:transparent;';
+    cell.innerHTML='<img src="'+ic.url+'" style="width:48px;height:48px;border-radius:10px;object-fit:cover;" loading="lazy"><span style="font-size:9.5px;color:var(--theme-text);text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;max-width:54px;text-overflow:ellipsis;">'+ic.name+'</span>';
+    cell.onclick=function(){
+      _selectedBarkIcon=ic.url;
+      _refreshBarkIconPreview(ic.url, ic.name);
+      _renderBarkIconGrid();
+    };
+    grid.appendChild(cell);
+  });
+  // 最后加一个"无图标"格
+  var none=document.createElement('div');
+  var nsel=(cur==='');
+  none.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px;border-radius:10px;border:2px solid '+(nsel?'var(--theme-accent1)':'var(--theme-field-border)')+';background:'+(nsel?'var(--theme-ep-active)':'transparent')+';-webkit-tap-highlight-color:transparent;';
+  none.innerHTML='<div style="width:48px;height:48px;border-radius:10px;background:var(--theme-field-bg);display:flex;align-items:center;justify-content:center;font-size:22px;">🌿</div><span style="font-size:9.5px;color:#8e8e93;text-align:center;">默认</span>';
+  none.onclick=function(){_selectedBarkIcon='';_refreshBarkIconPreview('','默认');_renderBarkIconGrid();};
+  grid.appendChild(none);
+}
+
+function toggleCustomIconInput(){
+  var w=document.getElementById('customIconInputWrap');
+  if(w)w.style.display=w.style.display==='none'?'block':'none';
+}
+
+function pickBarkIcon(url){
+  _selectedBarkIcon=url;
+  _refreshBarkIconPreview(url);
+  _renderBarkIconGrid();
+}
+
+function saveBarkIcon(){
+  // 优先自定义URL输入框，其次网格选中
+  var inp=document.getElementById('barkIconInput');
+  var customUrl=(inp?inp.value:'').trim();
+  var url=customUrl||(_selectedBarkIcon!==null?_selectedBarkIcon:(lg('barkIconUrl')||''));
+  ls('barkIconUrl',url);
+  _selectedBarkIcon=url;
+  _refreshBarkIconPreview(url);
+  if(typeof pushSettings==='function')pushSettings();
+  var st=document.getElementById('barkStatus');
+  if(st){
+    st.style.color='#34c759';
+    st.textContent=url?'✅ 图标已保存':'✅ 已设为默认图标';
+    setTimeout(function(){if(st){st.textContent='';st.style.color='#8e8e93';}},2000);
+  }
+}
+
+function initBarkIconUI(){
+  var url=(lg('barkIconUrl')||'').trim();
+  _selectedBarkIcon=url;
+  // 找到名字
+  var name='默认';
+  BARK_PRESET_ICONS.forEach(function(ic){if(ic.url===url)name=ic.name;});
+  if(url&&name==='默认')name='自定义';
+  _refreshBarkIconPreview(url,name);
+  _renderBarkIconGrid();
+  // 自定义输入框
+  var inp=document.getElementById('barkIconInput');
+  if(inp){
+    if(!inp._iconPreviewBound){
+      inp._iconPreviewBound=true;
+      inp.addEventListener('input',function(){_refreshBarkIconPreview(inp.value.trim(),'自定义');});
+    }
+  }
+}
 
 
+// ═══ Bark 通知直达绑定 ═══
+function _getBarkDirectUrl(){
+  // 专属跳转URL：用hash传参，不影响iOS识别PWA scope
+  // iOS只匹配 ? 前的路径，hash不影响
+  var base='https://chunhua1780.github.io/ghostchat/';
+  var uid=myId||lg('myId')||'me';
+  return base+'#pwa=1&to='+encodeURIComponent(String(uid));
+}
 
+function copyBarkDirectLink(){
+  var url=_getBarkDirectUrl();
+  // 复制到剪贴板
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){
+      var st=document.getElementById('barkStatus');
+      if(st){st.style.color='#34c759';st.textContent='✅ 已复制！粘贴到 Bark 设置→跳转链接';}
+      setTimeout(function(){if(st){st.textContent='';st.style.color='#8e8e93';}},4000);
+    }).catch(function(){_fallbackCopyBark(url);});
+  } else {
+    _fallbackCopyBark(url);
+  }
+}
 
+function _fallbackCopyBark(url){
+  // 降级方案：弹出可手动复制的文本框
+  var ta=document.createElement('textarea');
+  ta.value=url;
+  ta.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;width:80vw;padding:12px;font-size:13px;border-radius:8px;border:1px solid #ccc;';
+  document.body.appendChild(ta);
+  ta.select();
+  try{document.execCommand('copy');}catch(e){}
+  setTimeout(function(){ta.remove();},3000);
+  var st=document.getElementById('barkStatus');
+  if(st){st.style.color='#34c759';st.textContent='✅ 长按上方文本框复制链接';}
+}
 
+function showBarkDirectGuide(){
+  var url=_getBarkDirectUrl();
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-end;';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--theme-bg);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;box-sizing:border-box;';
+  box.innerHTML='<div style="font-size:18px;font-weight:700;margin-bottom:4px;color:var(--theme-text);">📎 通知直达设置步骤</div>'
+    +'<div style="font-size:12px;color:#8e8e93;margin-bottom:16px;">让Bark通知点击后直接打开GhostChat</div>'
+    +'<div style="background:var(--theme-field-bg);border-radius:12px;padding:14px;margin-bottom:12px;">'
+    +'<div style="font-size:14px;color:var(--theme-text);line-height:2.2;">'
+    +'<div><b>方法一（推荐）：</b></div>'
+    +'<div>① 先把GhostChat添加到主屏幕</div>'
+    +'<div>② 点「复制专属链接」按钮</div>'
+    +'<div>③ 打开 <b>Bark App</b> → 右上角设置 ⚙️</div>'
+    +'<div>④ 找到「跳转URL」或「自定义跳转」</div>'
+    +'<div>⑤ 粘贴刚才复制的链接 → 保存</div>'
+    +'</div></div>'
+    +'<div style="background:var(--theme-field-bg);border-radius:12px;padding:14px;margin-bottom:16px;">'
+    +'<div style="font-size:14px;color:var(--theme-text);line-height:2.2;">'
+    +'<div><b>方法二（iOS捷径）：</b></div>'
+    +'<div>① 打开iPhone「捷径」App</div>'
+    +'<div>② 新建捷径 → 添加动作「打开URL」</div>'
+    +'<div>③ URL填写：<span style="font-family:monospace;font-size:11px;color:var(--theme-link);">'+url+'</span></div>'
+    +'<div>④ 在Bark设置里把通知跳转改为执行此捷径</div>'
+    +'</div></div>';
+  var btn=document.createElement('button');
+  btn.textContent='关闭';
+  btn.style.cssText='width:100%;padding:14px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;';
+  btn.onclick=function(){overlay.remove();};
+  box.appendChild(btn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
 
+// 在 initBarkUI 显示 barkDirectRow
+function _updateBarkDirectRow(){
+  var url=(lg('barkUrl')||'').trim();
+  var row=document.getElementById('barkDirectRow');
+  if(row)row.style.display=url?'block':'none';
+}
 
+function toggleBarkDrawer(){
+  var d=document.getElementById('barkDrawer');
+  var a=document.getElementById('barkDrawerArrow');
+  if(!d)return;
+  var open=d.style.display==='none';
+  d.style.display=open?'block':'none';
+  if(a)a.style.transform=open?'rotate(90deg)':'';
+}
 
+function _updateBarkPreview(){
+  var url=(lg('barkUrl')||'').trim();
+  var el=document.getElementById('barkUrlPreview');
+  if(!el)return;
+  if(url){
+    // 只显示 Key 部分，不显示完整URL
+    var key=url.replace(/https?:\/\/[^/]+\//,'').replace(/\/$/,'');
+    el.textContent='✅ 已设置 · Key: '+(key.length>16?key.slice(0,16)+'…':key);
+    el.style.color='#34c759';
+  } else {
+    el.textContent='点击设置';
+    el.style.color='#8e8e93';
+  }
+}
 
+function initBarkUI(){
+  var url=getBarkUrl();
+  _updateBarkPreview();
+  initBarkIconUI();
+  _updateBarkDirectRow();
+  var inp=document.getElementById('barkUrlInput');
+  var row=document.getElementById('barkActionRow');
+  var status=document.getElementById('barkStatus');
+  if(inp){inp.value=url;}
+  if(row){row.style.display=url?'flex':'none';}
+  if(status){status.textContent=url?'✅ 已保存，App关闭时也能收到通知':'';}
+  _updateBarkPreview();
+  _updateBarkDirectRow();
+}
 
+function saveBarkUrl(){
+  var inp=document.getElementById('barkUrlInput');
+  var val=(inp?inp.value:'').trim();
+  var status=document.getElementById('barkStatus');
+  var row=document.getElementById('barkActionRow');
+  if(!val){
+    localStorage.removeItem('barkUrl');
+    if(row)row.style.display='none';
+    if(status){status.style.color='#8e8e93';status.textContent='已清除 Bark 设置';}
+    pushSettings();
+    return;
+  }
+  // 自动补全格式
+  if(!val.startsWith('http'))val='https://'+val;
+  if(!val.endsWith('/'))val=val+'/';
+  localStorage.setItem('barkUrl',val);
+  if(inp)inp.value=val;
+  if(row)row.style.display='flex';
+  if(status){status.style.color='#34c759';status.textContent='✅ 保存成功！点击"发送测试通知"验证';}
+  pushSettings(); // 同步到Supabase，让发消息方能读到
+}
 
+function clearBarkUrl(){
+  localStorage.removeItem('barkUrl');
+  var inp=document.getElementById('barkUrlInput');
+  var row=document.getElementById('barkActionRow');
+  var status=document.getElementById('barkStatus');
+  if(inp)inp.value='';
+  if(row)row.style.display='none';
+  if(status){status.style.color='#8e8e93';status.textContent='已删除 Bark 设置';}
+}
 
+async function sendBarkPush(title, body, opts){
+  var base=getBarkUrl();
+  if(!base)return false;
+  try{
+    // Bark URL格式: base/title/body?sound=xxx&group=xxx
+    var t=encodeURIComponent(title||'新消息');
+    var b=encodeURIComponent(body||'你收到了一条新消息');
+    var url=base+t+'/'+b;
+    var params=['sound=bell','level=active','group=GhostChat'];
+    if(opts&&opts.url)params.push('url='+encodeURIComponent(opts.url));
+    url=url+'?'+params.join('&');
+    var r=await fetch(url,{method:'GET'});
+    var d=await r.json().catch(function(){return {};});
+    console.log('[Bark]',d.code===200||d.message==='success'?'✅ 推送成功':'⚠️',d);
+    return d.code===200||d.message==='success';
+  }catch(e){
+    console.log('[Bark] error:',e);
+    return false;
+  }
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+async function testBarkPush(){
+  var status=document.getElementById('barkStatus');
+  if(status){status.style.color='#8e8e93';status.textContent='发送中...';}
+  var ok=await sendBarkPush('🌿 GhostChat 测试','Bark 推送配置成功！App关闭时也能收到消息通知 ✨');
+  if(status){
+    if(ok){status.style.color='#34c759';status.textContent='✅ 测试通知发送成功！检查你的 Bark App';}
+    else{status.style.color='#ff3b30';status.textContent='❌ 发送失败，请检查 Bark URL 是否正确';}
+  }
+}
 
 async function triggerPushToUser(toUserId, msgText){
   var senderName=lg('myName')||('用户'+myId);
@@ -2067,8 +2393,11 @@ async function triggerPushToUser(toUserId, msgText){
   // 有消息文本就显示，没有就用默认（图片/语音等）
   var body=msgText?String(msgText).slice(0,60):'发来了一条新消息';
 
-  // Android: 原生Web Push推送
+  // 三通道推送：Web Push（主通道，点通知直接开App）+ Bark（备用）+ OneSignal（备用）
+  // Web Push：iOS 16.4+ 点通知直接打开PWA，不经过Safari
   _sendWebPushToUser(String(toUserId), title, body);
+  // Bark备用（仍然保留，iOS 16以下的兜底）
+  _sendBarkToUser(String(toUserId), title, body);
 
   // 以下是原有推送通道，依赖pushEnabled开关
   if(!localStorage.getItem('pushEnabled')||localStorage.getItem('pushEnabled')==='0')return;
@@ -2090,41 +2419,507 @@ async function triggerPushToUser(toUserId, msgText){
       console.log('[WebPush]',res.ok?'✅':'❌',res.status);
     }).catch(function(e){console.log('[WebPush] error:',e);});
 
+    // OneSignal
+    sendOneSignalPush(String(toUserId),title,body);
+
   }catch(e){console.log('[Push] error:',e);}
 }
 
-// (已废弃)
+// 从Supabase读取对方的Bark URL并推送（发送方执行，完全不依赖接收方浏览器）
+async function _sendBarkToUser(toUserId, title, body){
+  if(lg('barkEnabled')==='false'){console.log('[Bark] 已关闭');return;}
+  try{
+    var r=await _sb.from('users').select('settings').eq('id',parseInt(toUserId)||toUserId).maybeSingle();
+    if(!r.data||!r.data.settings)return;
+    var barkUrl=(r.data.settings.barkUrl||'').trim();
+    if(!barkUrl){console.log('[Bark] 对方未设置Bark URL');return;}
+    if(!barkUrl.endsWith('/'))barkUrl=barkUrl+'/';
+    // 读取对方的隐身模式设置，决定通知内容
+    var s=r.data.settings;
+    var theirMode=s.focusMode||'free';
+    var theirCfg=FOCUS_MODES[theirMode]||FOCUS_MODES.free;
+
+    // 对方关了Bark就不发
+    if(s.barkEnabled==='false'){console.log('[Bark] 对方已关闭Bark');return;}
+
+    var notifTitle=title||'💬 新消息';
+    var notifBody=body||'你收到了一条新消息';
+
+    // 需要伪装通知内容（回家/隐身模式）
+    if(theirCfg.disguise){
+      notifTitle='🌤 天气提醒';
+      notifBody='点击查看今日天气';
+    }
+
+    var t=encodeURIComponent(notifTitle);
+    var b=encodeURIComponent(notifBody);
+    // 回家②/工作模式：passive = 只角标，不弹窗不震动
+    var isPassive=(theirCfg.dnd===true)||(s.doNotDisturb==='true');
+    var barkLevel=isPassive?'passive':'active';
+    var barkSound=isPassive?'':'sound=bell&';
+    // 读取对方存的自定义图标，没有就用默认
+    var rawIcon=(s.barkIconUrl||'').trim()||'https://chunhua1780.github.io/ghostchat/icon192.png';
+    var barkIcon=encodeURIComponent(rawIcon);
+    // 点击通知跳转到GhostChat并自动打开与发送者的聊天
+    // 隐身模式下不带from参数（避免泄露），直接打开首页
+    var gcBaseUrl='https://chunhua1780.github.io/ghostchat/';
+    var fromParam='#pwa=1&from='+encodeURIComponent(String(myId));
+    var gcDeepUrl=gcBaseUrl+fromParam; // 带发送者ID的hash链接
+
+    // ★ 关键：url= 用 https://域名/路径/#hash 格式
+    // iOS匹配PWA scope只看 # 之前的路径，hash不影响scope判断
+    // 所以 https://xxx/ghostchat/#from=123 依然在scope内
+    // iOS会识别这是已安装的PWA → 直接在PWA里打开 ✅
+    // 不需要捷径，不需要任何额外配置
+    var theirShortcut=(s.shortcutName||'').trim();
+    var deeplink;
+    // 捷径名"GC"（隐蔽），静默后台执行，用户只看到桌面App打开
+    // 捷径里带input=发送者ID，打开App后自动跳转到对应聊天
+    var shortcutName=(s.shortcutName||'GC').trim();
+    if(theirCfg.disguise){
+      // 隐身模式：只唤起App，不传from
+      deeplink='shortcuts://run-shortcut?name='+encodeURIComponent(shortcutName);
+    } else {
+      // 通过捷径input传发送者ID
+      deeplink='shortcuts://run-shortcut?name='+encodeURIComponent(shortcutName)
+               +'&input='+encodeURIComponent(String(myId));
+    }
+    var url=barkUrl+t+'/'+b+'?'+barkSound+'level='+barkLevel+'&group=GhostChat&icon='+barkIcon+'&url='+encodeURIComponent(deeplink);
+    var res=await fetch(url,{method:'GET'});
+    var d=await res.json().catch(function(){return {};});
+    console.log('[Bark→对方]',d.code===200||d.message==='success'?'✅ 推送成功':'⚠️ 推送失败',d);
+  }catch(e){console.log('[Bark→对方] error:',e);}
+}
 
 
+// ═══ PWA绑定引导 ═══
 
 
+// ═══ 一键安装iOS捷径 ═══
+var _SHORTCUT_B64 = 'YnBsaXN0MDDcAQIDBAUGBwgJCgsMDRUWFhccHR4fICEmXxARV0ZXb3JrZmxvd0FjdGlvbnNfEBdXRldvcmtmbG93Q2xpZW50VmVyc2lvbl8QG1dGV29ya2Zsb3dIYXNPdXRwdXRGYWxsYmFja18QI1dGV29ya2Zsb3dIYXNTaG9ydGN1dElucHV0VmFyaWFibGVzXldGV29ya2Zsb3dJY29uXxAZV0ZXb3JrZmxvd0ltcG9ydFF1ZXN0aW9uc18QIVdGV29ya2Zsb3dJbnB1dENvbnRlbnRJdGVtQ2xhc3Nlc18QHldGV29ya2Zsb3dNaW5pbXVtQ2xpZW50VmVyc2lvbl8QJFdGV29ya2Zsb3dNaW5pbXVtQ2xpZW50VmVyc2lvblN0cmluZ15XRldvcmtmbG93TmFtZV8QGVdGV29ya2Zsb3dOb0lucHV0QmVoYXZpb3JfEA9XRldvcmtmbG93VHlwZXOhDtIPEBESXxAaV0ZXb3JrZmxvd0FjdGlvbklkZW50aWZpZXJfEBpXRldvcmtmbG93QWN0aW9uUGFyYW1ldGVyc18QG2lzLndvcmtmbG93LmFjdGlvbnMub3BlbnVybNETFF5XRlVSTEFjdGlvblVSTF8QKGh0dHBzOi8vY2h1bmh1YTE3ODAuZ2l0aHViLmlvL2dob3N0Y2hhdC9YMTI0MC4wLjAI0hgZGhtfEBlXRldvcmtmbG93SWNvbkdseXBoTnVtYmVyXxAYV0ZXb3JrZmxvd0ljb25TdGFydENvbG9yEekAEv7EGP+goBEDhFM5MDBSR0PSIiMkJVROYW1lWlBhcmFtZXRlcnNcUHJvdmlkZUlucHV00KAACAAhADUATwBtAJMAogC+AOIBAwEqATkBVQFnAWkBbgGLAagBxgHJAdgCAwIMAg0CEgIuAkkCTAJRAlICUwJWAloCXQJiAmcCcgJ/AoAAAAAAAAACAQAAAAAAAAAnAAAAAAAAAAAAAAAAAAACgQ==';
 
+function installShortcutOneClick(){
+  // 直接下载 .shortcut 文件
+  // iOS会自动识别并用「捷径」App打开安装
+  try{
+    var bin=atob(_SHORTCUT_B64);
+    var bytes=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    var blob=new Blob([bytes],{type:'application/octet-stream'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url;
+    a.download='打开GhostChat.shortcut';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    // 显示下一步提示
+    setTimeout(function(){
+      showAfterDownloadGuide();
+    },800);
+  }catch(e){
+    // 降级到手动引导
+    showShortcutManualGuide();
+  }
+}
 
+function showAfterDownloadGuide(){
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--theme-bg,#fff);border-radius:20px;padding:24px 20px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.4);';
+  box.innerHTML='<div style="font-size:20px;text-align:center;margin-bottom:8px;">📥</div>'
+    +'<div style="font-size:17px;font-weight:700;text-align:center;margin-bottom:4px;color:var(--theme-text,#000);">捷径文件已下载</div>'
+    +'<div style="font-size:13px;color:#8e8e93;text-align:center;margin-bottom:16px;">按下面步骤完成安装（约10秒）</div>'
+    +'<div style="background:var(--theme-field-bg,#f5f5f7);border-radius:12px;padding:14px;margin-bottom:14px;">'
+    +'<div style="font-size:14px;color:var(--theme-text,#000);line-height:2.4;">'
+    +'<div>① 打开 iPhone <b>「文件」</b> App</div>'
+    +'<div>② 点 <b>「下载」</b> 文件夹</div>'
+    +'<div>③ 找到 <b>「打开GhostChat.shortcut」</b></div>'
+    +'<div>④ 点击它 → 捷径App自动打开</div>'
+    +'<div>⑤ 点 <b>「添加捷径」</b> 完成安装</div>'
+    +'</div></div>'
+    +'<div style="background:rgba(52,199,89,.1);border-radius:10px;padding:10px 12px;margin-bottom:14px;">'
+    +'<div style="font-size:12px;color:#34c759;line-height:1.6;">'
+    +'安装后回到GhostChat，点「已创建捷径 ✓」即绑定完成'
+    +'</div></div>';
 
+  var btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:8px;';
 
+  var btn1=document.createElement('button');
+  btn1.textContent='已安装，绑定完成 ✓';
+  btn1.style.cssText='flex:1;padding:12px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;';
+  btn1.onclick=function(){
+    ls('shortcutName','GC');
+    if(typeof pushSettings==='function')pushSettings();
+    var el=document.getElementById('shortcutInstallStatus');
+    if(el)el.textContent='✅ 已安装';
+    overlay.remove();
+  };
 
+  var btn2=document.createElement('button');
+  btn2.textContent='去文件App';
+  btn2.style.cssText='padding:12px 14px;background:rgba(0,122,255,.1);color:#007aff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;';
+  btn2.onclick=function(){
+    window.location.href='shareddocuments://';
+    overlay.remove();
+  };
 
+  btnRow.appendChild(btn1);
+  btnRow.appendChild(btn2);
+  box.appendChild(btnRow);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
 
+function showShortcutManualGuide(){
+  var gcUrl='https://chunhua1780.github.io/ghostchat/';
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--theme-bg,#fff);border-radius:20px;padding:24px 20px;width:100%;max-width:340px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);';
 
+  box.innerHTML='<div style="font-size:17px;font-weight:700;margin-bottom:4px;color:var(--theme-text,#000);">⚡ 创建捷径（约30秒）</div>'
+    +'<div style="font-size:12px;color:#8e8e93;margin-bottom:14px;">只需做一次，之后Bark通知静默直达App</div>'
 
+    +'<div style="background:var(--theme-field-bg,#f5f5f7);border-radius:12px;padding:14px;margin-bottom:10px;">'
+    +'<div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--theme-text,#000);">① 打开「捷径」App</div>'
+    +'<div style="font-size:13px;color:#8e8e93;">右上角 <b>+</b> → 新建捷径</div>'
+    +'</div>'
 
+    +'<div style="background:var(--theme-field-bg,#f5f5f7);border-radius:12px;padding:14px;margin-bottom:10px;">'
+    +'<div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--theme-text,#000);">② 添加「打开URL」动作</div>'
+    +'<div style="font-size:13px;color:#8e8e93;">搜索"打开URL" → 点击添加</div>'
+    +'<div style="background:rgba(0,122,255,.08);border-radius:8px;padding:8px 10px;margin-top:8px;display:flex;align-items:center;gap:8px;">'
+    +'<span style="font-family:monospace;font-size:12px;color:#007aff;flex:1;word-break:break-all;">'+gcUrl+'</span>'
+    +'<button onclick="_copyGcUrl()" style="background:#007aff;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;">复制</button>'
+    +'</div>'
+    +'</div>'
+
+    +'<div style="background:var(--theme-field-bg,#f5f5f7);border-radius:12px;padding:14px;margin-bottom:14px;">'
+    +'<div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--theme-text,#000);">③ 命名并保存</div>'
+    +'<div style="font-size:13px;color:#8e8e93;">顶部名字改为 <b>打开GhostChat</b> → 点「完成」</div>'
+    +'</div>'
+
+    +'<div style="background:rgba(52,199,89,.1);border-radius:10px;padding:10px 12px;margin-bottom:14px;">'
+    +'<div style="font-size:12px;color:#34c759;line-height:1.6;">'
+    +'✅ 完成后回来点「已创建捷径」按钮确认'
+    +'</div></div>';
+
+  // 按钮行
+  var btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:8px;';
+
+  var btn1=document.createElement('button');
+  btn1.textContent='已创建捷径 ✓';
+  btn1.style.cssText='flex:1;padding:12px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;';
+  btn1.onclick=function(){
+    ls('shortcutName','GC');
+    if(typeof pushSettings==='function')pushSettings();
+    var scStatus=document.getElementById('shortcutInstallStatus');
+    if(scStatus)scStatus.textContent='✅ 已安装';
+    overlay.remove();
+    alert('✅ 捷径已绑定！之后Bark通知点击会静默打开GhostChat');
+  };
+
+  var btn2=document.createElement('button');
+  btn2.textContent='取消';
+  btn2.style.cssText='padding:12px 16px;background:none;color:#8e8e93;border:1.5px solid var(--theme-field-border,#e5e5ea);border-radius:12px;font-size:14px;cursor:pointer;';
+  btn2.onclick=function(){overlay.remove();};
+
+  btnRow.appendChild(btn1);
+  btnRow.appendChild(btn2);
+  box.appendChild(btnRow);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+function _copyGcUrl(){
+  var url='https://chunhua1780.github.io/ghostchat/';
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(function(){
+      alert('✅ 已复制！粘贴到捷径的URL框里');
+    }).catch(function(){_fallbackCopy(url);});
+  } else {_fallbackCopy(url);}
+}
+
+function _fallbackCopy(text){
+  var ta=document.createElement('textarea');
+  ta.value=text;
+  ta.style.cssText='position:fixed;top:-9999px;left:-9999px;';
+  document.body.appendChild(ta);
+  ta.select();
+  try{document.execCommand('copy');alert('✅ 已复制！');}catch(e){}
+  document.body.removeChild(ta);
+}
+
+function autoSetupShortcut(){
+  showShortcutManualGuide();
+}
 
 // ═══ 桌面App名字绑定 ═══
 
+function saveShortcutName(){
+  var inp=document.getElementById('shortcutNameInput');
+  var name=(inp?inp.value:'').trim();
+  if(!name){alert('请填写捷径名字');return;}
+  ls('shortcutName',name);
+  if(typeof pushSettings==='function')pushSettings();
+  var desc=document.getElementById('pwaAppNameDesc');
+  if(desc){
+    desc.style.color='#34c759';
+    desc.textContent='✅ 捷径「'+name+'」已保存 · Bark通知将直接打开桌面App';
+  }
+}
 
+function showShortcutGuide(){
+  var gcUrl='https://chunhua1780.github.io/ghostchat/';
+  var shortcutName=lg('shortcutName')||'打开GhostChat';
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-end;';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--theme-bg);border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;box-sizing:border-box;max-height:85vh;overflow-y:auto;';
+  box.innerHTML='<div style="font-size:18px;font-weight:700;margin-bottom:4px;color:var(--theme-text);">📋 创建「打开GhostChat」捷径</div>'
+    +'<div style="font-size:12px;color:#8e8e93;margin-bottom:16px;">完成后Bark通知点击将直接打开桌面App，不影响其他App通知</div>'
+    +'<div style="background:var(--theme-field-bg);border-radius:12px;padding:14px;margin-bottom:10px;">'
+    +'<div style="font-size:14px;font-weight:600;color:var(--theme-text);margin-bottom:10px;">步骤：</div>'
+    +'<div style="font-size:14px;color:var(--theme-text);line-height:2.3;">'
+    +'<div>① 打开 iPhone「<b>捷径</b>」App</div>'
+    +'<div>② 右上角「<b>+</b>」新建捷径</div>'
+    +'<div>③ 搜索并添加动作「<b>打开URL</b>」</div>'
+    +'<div>④ URL填写：</div>'
+    +'<div style="font-family:monospace;font-size:11px;background:rgba(0,0,0,.06);border-radius:6px;padding:8px;margin:4px 0;word-break:break-all;color:var(--theme-link);">'+gcUrl+'</div>'
+    +'<div>⑤ 顶部捷径名字改为「<b>'+shortcutName+'</b>」</div>'
+    +'<div>⑥ 点右上角「<b>完成</b>」保存</div>'
+    +'<div>⑦ 回到这里填写同样的名字并保存</div>'
+    +'</div></div>'
+    +'<div style="background:rgba(52,199,89,.1);border-radius:12px;padding:12px 14px;margin-bottom:14px;">'
+    +'<div style="font-size:13px;color:#34c759;line-height:1.6;">'
+    +'<b>✅ 效果：</b>收到Bark通知 → 点击 → 执行捷径 → 直接打开桌面GhostChat App，其他App的通知完全不受影响'
+    +'</div></div>'
+    +'<div style="background:rgba(255,149,0,.08);border-radius:12px;padding:12px 14px;margin-bottom:14px;">'
+    +'<div style="font-size:13px;color:#ff9500;line-height:1.6;">'
+    +'<b>⚠️ 注意：</b>Bark通知设置里「跳转链接」<b>不要改</b>，我们已经在每条消息里单独设置了跳转，不影响你其他App的Bark通知'
+    +'</div></div>';
+  var btn=document.createElement('button');
+  btn.textContent='知道了';
+  btn.style.cssText='width:100%;padding:14px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;';
+  btn.onclick=function(){overlay.remove();};
+  box.appendChild(btn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
 
+function _initShortcutInput(){
+  var inp=document.getElementById('shortcutNameInput');
+  var saved=lg('shortcutName')||'';
+  if(inp)inp.value=saved;
+  var desc=document.getElementById('pwaAppNameDesc');
+  if(desc&&saved){
+    desc.style.color='#34c759';
+    desc.textContent='✅ 捷径「'+saved+'」已绑定 · Bark通知直接打开桌面App';
+  }
+}
 
+function savePwaAppName(){
+  var inp=document.getElementById('pwaAppNameInput');
+  var name=(inp?inp.value:'').trim();
+  if(!name){alert('请填写添加到主屏幕时用的名字');return;}
+  ls('pwaAppName',name);
+  // 同步更新manifest的name，让新安装的PWA用这个名字
+  try{
+    var saved=lg('dis')||'calculator';
+    var mf={
+      name:name,
+      short_name:name,
+      start_url:'https://chunhua1780.github.io/ghostchat/',
+      scope:'https://chunhua1780.github.io/ghostchat/',
+      display:'standalone',
+      orientation:'portrait',
+      background_color:'#fdf2f8',
+      theme_color:'#a18cd1',
+      icons:[{src:'./icon192.png',sizes:'192x192',type:'image/png'}]
+    };
+    var blob=new Blob([JSON.stringify(mf)],{type:'application/manifest+json'});
+    var link=document.querySelector('link[rel="manifest"]');
+    if(link)link.href=URL.createObjectURL(blob);
+  }catch(e){}
+  var desc=document.getElementById('pwaAppNameDesc');
+  if(desc){
+    desc.style.color='#34c759';
+    desc.textContent='✅ 已保存「'+name+'」· Bark通知将绑定到此桌面App';
+  }
+  _initPwaBindStatus();
+}
 
-
-
-
-
-
+function _initPwaAppNameInput(){
+  var inp=document.getElementById('pwaAppNameInput');
+  var saved=lg('pwaAppName')||'';
+  if(inp)inp.value=saved;
+  var desc=document.getElementById('pwaAppNameDesc');
+  if(desc&&saved){
+    desc.style.color='#34c759';
+    desc.textContent='✅ 已设置「'+saved+'」· 重新添加到主屏幕生效';
+  }
+  // 捷径安装状态
+  var scStatus=document.getElementById('shortcutInstallStatus');
+  var scName=lg('shortcutName')||'';
+  if(scStatus)scStatus.textContent=scName?'✅ 已安装':'未安装';
+}
 
 // 检测设备和浏览器类型
+function _detectEnv(){
+  var ua=navigator.userAgent;
+  var isHuaweiBrowser=/HuaweiBrowser/i.test(ua);
+  var isHuaweiDevice=/HUAWEI|Honor/i.test(ua);
+  var isFirefox=/Firefox/i.test(ua);
+  var isEdge=/EdgA?/i.test(ua);
+  var isChrome=/Chrome/i.test(ua)&&!/Chromium/i.test(ua)&&!isEdge;
+  var isSamsung=/SamsungBrowser/i.test(ua);
+  // 支持PWA的浏览器
+  var supportsPWA=isChrome||isFirefox||isEdge||isSamsung;
+  return {
+    isIOS:/iPhone|iPad|iPod/i.test(ua),
+    isAndroid:/Android/i.test(ua),
+    isHuawei:isHuaweiBrowser||(isHuaweiDevice&&!supportsPWA),
+    isHuaweiDevice:isHuaweiDevice,
+    isFirefox:isFirefox,
+    isEdge:isEdge,
+    isChrome:isChrome,
+    isSamsung:isSamsung,
+    supportsPWA:supportsPWA,
+    isStandalone:window.navigator.standalone===true
+                 ||window.matchMedia('(display-mode: standalone)').matches
+                 ||window.matchMedia('(display-mode: fullscreen)').matches
+  };
+}
 
+function showPwaGuide(){
+  var env=_detectEnv();
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:flex-end;';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--theme-bg);border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;box-sizing:border-box;max-height:88vh;overflow-y:auto;';
 
+  var content='';
 
+  if(env.isStandalone){
+    // 已是桌面App
+    content='<div style="font-size:19px;font-weight:700;margin-bottom:10px;color:var(--theme-text);">✅ 已是桌面App</div>'
+      +'<div style="font-size:14px;color:#8e8e93;line-height:1.8;">'
+      +(env.isAndroid
+        ?'GhostChat已作为独立App运行。<br>消息来时系统通知直接打开此App，无需任何跳转。'
+        :'GhostChat已作为桌面App运行。<br>收到Bark通知后点击直接打开聊天。')
+      +'</div>';
+
+  } else if(env.isHuawei&&env.isAndroid){
+    // 华为浏览器：引导用Chrome打开
+    content='<div style="font-size:19px;font-weight:700;margin-bottom:6px;color:var(--theme-text);">📲 安装为桌面App</div>'
+      +'<div style="font-size:13px;color:#ff9500;background:rgba(255,149,0,.1);border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.6;">'
+      +'<b>⚠️ 检测到华为浏览器</b><br>'
+      +'华为浏览器保存到桌面只是书签，点开还是会进浏览器。<br>'
+      +'<b>需要用Chrome浏览器</b>才能安装为真正的桌面App。'
+      +'</div>'
+      +'<div style="background:var(--theme-field-bg);border-radius:12px;padding:14px;margin-bottom:12px;">'
+      +'<div style="font-size:14px;font-weight:600;color:var(--theme-text);margin-bottom:10px;">步骤：</div>'
+      +'<div style="font-size:14px;color:var(--theme-text);line-height:2.4;">'
+      +'<div>① 安装 <b>Edge</b> 或 <b>Firefox</b>（华为应用市场有）</div>'
+      +'<div>② 用新浏览器打开此网址：</div>'
+      +'<div style="background:rgba(0,122,255,.08);border-radius:8px;padding:6px 10px;margin:4px 0;font-family:monospace;font-size:11.5px;color:#007aff;word-break:break-all;">'
+      +'https://chunhua1780.github.io/ghostchat/'
+      +'</div>'
+      +'<div>③ 浏览器菜单 <b>⋮</b> → <b>添加到主屏幕</b></div>'
+      +'<div>④ 从桌面图标打开 → 真正的独立App ✅</div>'
+      +'</div></div>'
+      +'<div style="background:rgba(0,122,255,.06);border-radius:10px;padding:10px 14px;margin-bottom:12px;">'
+      +'<div style="font-size:12px;color:#007aff;line-height:1.7;">'
+      +'<b>推荐：</b> 微软 Edge（体验最好）<br>'
+      +'<b>备选：</b> Firefox火狐（华为市场可下载）'
+      +'</div></div>'
+      +'<div style="background:rgba(52,199,89,.08);border-radius:10px;padding:10px 14px;margin-bottom:12px;">'
+      +'<div style="font-size:13px;color:#34c759;line-height:1.7;">'
+      +'✅ 用Chrome安装后：消息通知直接打开App，无任何跳转<br>'
+      +'✅ 通知权限直接在App里开启，不需要Bark'
+      +'</div></div>';
+
+  } else if(env.isAndroid){
+    // 安卓Chrome/其他：标准PWA安装
+    content='<div style="font-size:19px;font-weight:700;margin-bottom:6px;color:var(--theme-text);">📲 安装为桌面App</div>'
+      +'<div style="font-size:13px;color:#8e8e93;margin-bottom:14px;">安装后消息通知直接打开App，无需Bark，无跳转</div>'
+      +'<div style="background:var(--theme-field-bg);border-radius:12px;padding:14px;margin-bottom:12px;">'
+      +'<div style="font-size:14px;color:var(--theme-text);line-height:2.4;">'
+      +(env.isChrome||env.isSamsung
+        ?'<div>① 右上角 <b>⋮</b> 菜单</div><div>② 点 <b>添加到主屏幕</b> 或 <b>安装应用</b></div><div>③ 从桌面图标打开 ✅</div>'
+        :env.isFirefox
+        ?'<div>① 右上角 <b>⋮</b> 菜单</div><div>② 点 <b>安装</b> 或 <b>添加到主屏幕</b></div><div>③ 从桌面图标打开 ✅</div>'
+        :env.isEdge
+        ?'<div>① 右上角 <b>⋯</b> 菜单</div><div>② 点 <b>添加到手机</b></div><div>③ 从桌面图标打开 ✅</div>'
+        :'<div>① 用 <b>Edge</b> 或 <b>Firefox</b> 打开此页面</div><div>② 菜单 → <b>添加到主屏幕</b></div><div>③ 从桌面图标打开 ✅</div>')
+      +'</div></div>';
+
+  } else {
+    // iOS Safari
+    content='<div style="font-size:19px;font-weight:700;margin-bottom:6px;color:var(--theme-text);">📲 安装为桌面App</div>'
+      +'<div style="font-size:13px;color:#8e8e93;margin-bottom:14px;">安装后Bark通知点击直接打开App</div>'
+      +'<div style="background:var(--theme-field-bg);border-radius:12px;padding:14px;margin-bottom:12px;">'
+      +'<div style="font-size:14px;color:var(--theme-text);line-height:2.4;">'
+      +'<div>① Safari底部点 <b>分享</b> ⬆️</div>'
+      +'<div>② 选 <b>添加到主屏幕</b> 📱</div>'
+      +'<div>③ 从桌面图标打开 → 完成 ✅</div>'
+      +'</div></div>';
+  }
+
+  box.innerHTML=content;
+
+  // 底部按钮
+  var btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:8px;margin-top:4px;';
+
+  if(env.isHuawei&&env.isAndroid&&!env.isStandalone){
+    // 华为：复制URL按钮
+    var btn1=document.createElement('button');
+    btn1.textContent='📋 复制链接';
+    btn1.style.cssText='flex:1;padding:13px;background:rgba(0,122,255,.1);color:#007aff;border:1.5px solid rgba(0,122,255,.3);border-radius:13px;font-size:15px;font-weight:600;cursor:pointer;';
+    btn1.onclick=function(){
+      var url='https://chunhua1780.github.io/ghostchat/';
+      if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){alert('✅ 已复制！粘贴到Chrome地址栏打开');});}
+      else{
+        var ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');alert('✅ 已复制！');}catch(e){}document.body.removeChild(ta);
+      }
+    };
+    btnRow.appendChild(btn1);
+  }
+
+  var btn2=document.createElement('button');
+  btn2.textContent='知道了';
+  btn2.style.cssText='flex:1;padding:13px;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;border-radius:13px;font-size:15px;font-weight:600;cursor:pointer;';
+  btn2.onclick=function(){overlay.remove();};
+  btnRow.appendChild(btn2);
+  box.appendChild(btnRow);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  // 更新状态文字
+  var statusEl=document.getElementById('pwaInstallStatus');
+  if(statusEl){
+    if(env.isStandalone){
+      statusEl.textContent='✅ 已安装为桌面App';
+      statusEl.style.color='#34c759';
+    } else if(env.isHuawei){
+      statusEl.textContent='⚠️ 华为浏览器 · 需用Chrome安装';
+      statusEl.style.color='#ff9500';
+    } else {
+      statusEl.textContent='未安装 · 点击查看步骤';
+      statusEl.style.color='#8e8e93';
+    }
+  }
+}
 
 
 function _initPwaBindStatus(){
@@ -2154,13 +2949,56 @@ function _initPwaBindStatus(){
   }
 }
 
-
+function showPushIOSGuide(){
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--theme-bg,#fff);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;font-family:-apple-system,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.3);';
+  box.innerHTML='<div style="font-size:18px;font-weight:700;margin-bottom:12px;color:var(--theme-text,#000);">📲 开启消息推送</div>'
+    +'<div style="font-size:14px;color:#8e8e93;line-height:1.8;margin-bottom:20px;">'
+    +'iPhone请先将GhostChat添加到主屏幕：<br>'
+    +'① 点Safari底部 <b>分享</b> ⬆️<br>'
+    +'② 选"<b>添加到主屏幕</b>"<br>'
+    +'③ 从桌面图标打开后开启推送'
+    +'</div>';
+  var btn=document.createElement('button');
+  btn.textContent='知道了';
+  btn.style.cssText='width:100%;padding:14px;background:linear-gradient(135deg,#ff9a9e,#a18cd1);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;';
+  btn.onclick=function(){overlay.remove();};
+  box.appendChild(btn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
 
 // ═══ PWA 安装横幅 ═══
-// Android: beforeinstallprompt removed
-
-
-
+var _deferredInstall = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  _deferredInstall = e;
+  showInstallBanner();
+});
+function showInstallBanner(){
+  if(localStorage.getItem('installBannerDismissed')) return;
+  if(window.navigator.standalone) return;
+  var banner = document.getElementById('installBanner');
+  if(banner) banner.style.display = 'flex';
+}
+function installPWA(){
+  if(_deferredInstall){
+    _deferredInstall.prompt();
+    _deferredInstall.userChoice.then(function(r){
+      if(r.outcome === 'accepted') document.getElementById('installBanner').style.display='none';
+      _deferredInstall = null;
+    });
+  }
+  dismissInstallBanner();
+}
+function dismissInstallBanner(){
+  localStorage.setItem('installBannerDismissed','1');
+  var b = document.getElementById('installBanner');
+  if(b) b.style.display = 'none';
+}
 
 // ═══ 工具函数 ═══
 function lg(k){try{return localStorage.getItem(k);}catch(e){return null;}}
@@ -2282,8 +3120,14 @@ var LANGS={'en':{name:'English',flag:'🇺🇸'},'zh-CN':{name:'中文简体',fl
 var curLang=lg('lang')||'zh-CN';
 
 var I18N={
-  'zh-CN':{appName:'私语',appTagline:'一个温馨私密的聊天空间',welcomeBack:'欢迎回来！',loginIdPh:'你的ID',passwordPh:'密码',loginBtn:'登录',newUser:'还没有账号？',registerLink:'立即注册',forgotPw:'忘记密码？',createAccount:'创建账号',nicknamePh:'昵称',customIdPh:'自定义ID（可选）',passwordPh2:'密码（4-8位数字）',confirmPwPh:'确认密码',createBtn:'创建账号',haveAccount:'已有账号？',loginLink:'去登录',recoveryTitle:'账号找回',recoveryDesc:'请输入您的找回码。',verifyPayBtn:'验证',backToLogin:'← 返回登录'},
-  en:{appName:'SecretTalk',appTagline:'A cozy private chat space',welcomeBack:'Welcome back!',loginIdPh:'Your ID',passwordPh:'Password',loginBtn:'Log In',newUser:'New here?',registerLink:'Create account',forgotPw:'Forgot password?',createAccount:'Create your account',nicknamePh:'Nickname',customIdPh:'Custom ID (optional)',passwordPh2:'Password (4-8 digits)',confirmPwPh:'Confirm password',createBtn:'Create Account',haveAccount:'Already have an account?',loginLink:'Log in',recoveryTitle:'Account Recovery',recoveryDesc:'Enter your rescue code.',verifyPayBtn:'Verify',backToLogin:'← Back to Login'}
+  'zh-CN':{appName:'私语',appTagline:'一个温馨私密的聊天空间',welcomeBack:'欢迎回来！',loginIdPh:'你的ID',passwordPh:'密码',loginBtn:'登录',newUser:'还没有账号？',registerLink:'立即注册',forgotPw:'忘记密码？',createAccount:'创建账号',nicknamePh:'昵称',customIdPh:'自定义ID（可选）',passwordPh2:'密码（4-8位数字）',confirmPwPh:'确认密码',createBtn:'创建账号',haveAccount:'已有账号？',loginLink:'去登录',recoveryTitle:'账号找回',recoveryDesc:'请输入您的找回码。',verifyPayBtn:'验证',backToLogin:'← 返回登录',
+    backToSettings:'‹ 设置',hideModeTitle:'隐藏模式',hideModeDesc:'App将完全伪装成另一个应用，只有你知道如何解锁。',disguiseShell:'伪装外壳',calculator:'计算器',activationMethod:'激活方式',passwordActivation:'密码激活',enterPasswordToUnlock:'输入密码解锁',tapCorner5:'连续点击5次',tapCornerDesc:'快速点击右下角',longPress3s:'长按左上角3秒',longPressDesc:'按住左上角3秒钟',shakeToActivate:'摇一摇激活',shakePhoneDesc:'摇晃手机激活',entryPassword:'进入密码',hidePinNote:'解锁伪装界面使用「锁屏密码」。还没设置的话，先去 设置 → 隐私与安全 → 锁屏密码 设置一个。',enableHideModeBtn:'开启隐藏模式',disableHideModeBtn:'关闭隐藏模式',
+    secretNotifTitle:'隐秘通知',secretNotifDesc:'收到新消息时，通知栏会显示一个不起眼的符号，只有你知道它的含义。',notifSymbol:'通知符号',notifSymbolDesc:'选一个你收到消息时通知栏显示的符号，别人看不出含义',symComma:'逗号',symPeriod:'句号',symEllip:'省略号',symMid:'间隔号',symSpace:'空格',symStar:'星形',symWave:'波浪',symNoneIcon:'无',symNone:'不显示',notifTextLabel:'通知文字（他人可见）',sysNotif:'系统通知',sysNotifEx:'"系统更新完成"',syncNotif:'同步通知',syncNotifEx:'"数据同步中"',calNotif:'日历提醒',calNotifEx:'"提醒事项"',symbolOnly:'仅符号',noTextShown:'不显示文字',saveBtn:'保存',
+    destroyMethodTitle:'销毁方式',destroyDesc:'触发后，所有记录立即清除，应用切换为伪装模式。',wrongPwd3:'连续输错3次密码',wrongPwd3Desc:'看起来像普通的安全锁定',specialDestroyPin:'特殊销毁密码',specialDestroyPinDesc:'输入不同的密码来触发销毁',shake10:'摇晃10次',shake10Desc:'快速摇晃手机触发',destroyPinPh:'销毁密码（与进入密码不同）'},
+  en:{appName:'SecretTalk',appTagline:'A cozy private chat space',welcomeBack:'Welcome back!',loginIdPh:'Your ID',passwordPh:'Password',loginBtn:'Log In',newUser:'New here?',registerLink:'Create account',forgotPw:'Forgot password?',createAccount:'Create your account',nicknamePh:'Nickname',customIdPh:'Custom ID (optional)',passwordPh2:'Password (4-8 digits)',confirmPwPh:'Confirm password',createBtn:'Create Account',haveAccount:'Already have an account?',loginLink:'Log in',recoveryTitle:'Account Recovery',recoveryDesc:'Enter your rescue code.',verifyPayBtn:'Verify',backToLogin:'← Back to Login',
+    backToSettings:'‹ Settings',hideModeTitle:'Hide Mode',hideModeDesc:'App will completely disguise as another app. Only you know how to unlock it.',disguiseShell:'Disguise Shell',calculator:'Calculator',activationMethod:'Activation Method',passwordActivation:'Password activation',enterPasswordToUnlock:'Enter password to unlock',tapCorner5:'Tap corner 5 times',tapCornerDesc:'Quickly tap bottom-right corner',longPress3s:'Long press top-left 3s',longPressDesc:'Hold top-left corner for 3 seconds',shakeToActivate:'Shake to activate',shakePhoneDesc:'Shake phone to activate',entryPassword:'Entry Password',hidePinNote:'Unlocking the disguise uses your "Lock Screen Password". If not set yet, go to Settings → Privacy & Security → Lock Screen Password.',enableHideModeBtn:'Enable Hide Mode',disableHideModeBtn:'Disable Hide Mode',
+    secretNotifTitle:'Secret Notification',secretNotifDesc:'When you receive a new message, a subtle symbol appears in notifications. Only you know its meaning.',notifSymbol:'Notification Symbol',notifSymbolDesc:'Pick a symbol shown in the notification bar when you get a message, others will not know what it means',symComma:'Comma',symPeriod:'Period',symEllip:'Ellipsis',symMid:'Middle dot',symSpace:'Space',symStar:'Star',symWave:'Wave',symNoneIcon:'None',symNone:'Hidden',notifTextLabel:'Notification Text (what others see)',sysNotif:'System notification',sysNotifEx:'"System update complete"',syncNotif:'Sync notification',syncNotifEx:'"Data syncing"',calNotif:'Calendar reminder',calNotifEx:'"Reminder"',symbolOnly:'Symbol only',noTextShown:'No text shown',saveBtn:'Save',
+    destroyMethodTitle:'Destroy Method',destroyDesc:'When triggered, all records are immediately cleared and app switches to disguise mode.',wrongPwd3:'3 wrong passwords',wrongPwd3Desc:'Looks like a normal security lockout',specialDestroyPin:'Special destroy PIN',specialDestroyPinDesc:'Enter a different PIN to trigger destroy',shake10:'Shake 10 times',shake10Desc:'Rapidly shake phone to trigger',destroyPinPh:'Destroy PIN (different from entry PIN)'}
 };
 
 function applyI18n(){
@@ -2322,7 +3166,7 @@ var G={
   recOn:false,recS:0,recI:null,
   callI:null,callS:0,
   pe:'',wrongN:0,
-  selD2:'weather',selT2:'pin',selDest2:'wrong',selN2:'dot',selNT2:'sys'
+  selD2:'calculator',selT2:'pin',selDest2:'wrong',selN2:'dot',selNT2:'sys'
 };
 
 // ═══ 启动 ═══
@@ -2391,9 +3235,81 @@ window.addEventListener('pagehide',function(){
   ls('lastHiddenAt',String(Date.now()));
 });
 
-window.onload=function(){
+// ═══ Cordova 原生 App 就绪事件 ═══
+// 必须等 deviceready 触发后，cordova.plugins.notification 等原生插件才可用
+document.addEventListener('deviceready', function(){
+  console.log('[Cordova] deviceready fired');
+  window._cordovaReady = true;
+  // 如果用户之前已经开启过推送，App重新打开时静默确认权限状态（不强制弹窗）
+  if(localStorage.getItem('pushEnabled')==='1' && window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
+    try{
+      cordova.plugins.notification.local.hasPermission(function(granted){
+        if(!granted){
+          // 权限被用户手动关闭了，同步本地状态
+          localStorage.setItem('pushEnabled','0');
+          updatePushToggleUI(false);
+        } else {
+          updatePushToggleUI(true);
+        }
+      });
+    }catch(e){console.log('[Cordova] permission check failed:',e);}
+  }
+  // 点击系统通知时打开对应聊天
+  if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
+    try{
+      cordova.plugins.notification.local.on('click', function(notification){
+        var data = notification.data;
+        if(data && data.fromId && typeof openChat==='function'){
+          setTimeout(function(){
+            if(typeof show==='function')show('main');
+            openChat(String(data.fromId));
+          }, 300);
+        }
+      });
+    }catch(e){console.log('[Cordova] notif click handler failed:',e);}
+  }
+}, false);
+
+window.onload=async function(){
+  // ★★★ 第一步：如果localStorage丢失账号信息，尝试从IndexedDB恢复 ★★★
+  if(!lg('registered')||!lg('myId')){
+    var restored=await _restoreFromBackup();
+    if(restored){
+      console.log('[Startup] ✅ account restored from IndexedDB backup');
+      myId=lg('myId')||''; // 同步全局变量
+    }
+  }
   // 华为浏览器检测：顶部显示引导横幅
-  // Android: Huawei banner removed
+  (function(){
+    var ua=navigator.userAgent;
+    var isHuawei=/HuaweiBrowser|HUAWEI|Honor/i.test(ua);
+    var isAndroid=/Android/i.test(ua);
+    var isStandalone=window.matchMedia('(display-mode: standalone)').matches
+                     ||window.matchMedia('(display-mode: fullscreen)').matches;
+    if(isHuawei&&isAndroid&&!isStandalone){
+      var banner=document.createElement('div');
+      banner.id='huaweiBanner';
+      banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:8888;background:#ff9500;color:#fff;'
+        +'padding:10px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.2);';
+      banner.innerHTML='<span>📱 当前浏览器不支持App安装，建议改用 Edge 或 Firefox</span>';
+      var closeBtn=document.createElement('button');
+      closeBtn.textContent='知道了 ›';
+      closeBtn.style.cssText='background:rgba(255,255,255,.25);border:none;color:#fff;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap;margin-left:8px;';
+      closeBtn.onclick=function(){
+        banner.remove();
+        // 弹出详细引导
+        if(typeof showPwaGuide==='function')showPwaGuide();
+      };
+      banner.appendChild(closeBtn);
+      document.body.insertBefore(banner,document.body.firstChild);
+      // 自动给body加padding避免内容被遮挡
+      document.body.style.paddingTop='44px';
+      // 5秒后自动收起（不强制，不打扰）
+      setTimeout(function(){
+        if(banner.parentNode)banner.style.transition='opacity .5s';banner.style.opacity='0.7';
+      },5000);
+    }
+  })();
 
   // ★ 老用户迁移：已有账号但没有gatePassedPersist → 自动补写，不再进屏保
   // 判断条件：registered=true + myId存在 + pin存在 = 之前已正常登录过
@@ -2403,6 +3319,7 @@ window.onload=function(){
     if(lg('registered')==='true' && lg('myId')){
       ls('gatePassedPersist','1');
       sessionStorage.setItem('testGatePassed','1');
+      _backupCredentials(); // 每次打开都刷新IndexedDB备份
       // 每10秒强制刷新一次，防止被意外清除
       setInterval(function(){
         if(lg('registered')==='true'&&lg('myId')){
@@ -2461,7 +3378,9 @@ window.onload=function(){
   // 推送状态UI更新（不自动订阅，避免影响启动稳定性）
   updatePushToggleUI(lg('pushEnabled')==='1');
   // 显示安装横幅（如果不在standalone模式）
-  // Android: no install banner
+  if(!window.navigator.standalone && !localStorage.getItem('installBannerDismissed')){
+    setTimeout(showInstallBanner, 3000);
+  }
   if(!lg('registered')||!lg('myId')){
     // 没有账号 → 登录/注册页
     show('reg');
@@ -2480,7 +3399,7 @@ window.onload=function(){
     listenForCalls();
     listenForAllMessages();
     claimSession(true);
-    setTimeout(registerWebPushAndroid,2000);
+    setTimeout(initOneSignal,3000);
     _handleDeeplink();
   }
   ['click','keydown','touchstart','mousemove','scroll'].forEach(function(ev){
@@ -2489,7 +3408,7 @@ window.onload=function(){
 };
 
 
-// ═══ 推送点击 → 自动打开聊天 ═══
+// ═══ Bark 点击通知 → 自动打开聊天 ═══
 function _handleDeeplink(){
   try{
     var qParams=new URLSearchParams(window.location.search);
@@ -2538,11 +3457,9 @@ var _gateReturnScreen=null;
 var _gateIdleTimer=null;
 
 function resetGateIdleTimer(){
-  // 已登录用户永远不触发退出计时器
-  if(lg('registered')==='true'&&lg('myId'))return;
-  if(!G.hide)return;
+  if(!G.hide)return; // 没有隐身模式，不需要idle计时
   if(_gateIdleTimer){clearTimeout(_gateIdleTimer);_gateIdleTimer=null;}
-  if(lg('gatePassedPersist')==='1'||sessionStorage.getItem('testGatePassed')==='1'){
+  if(sessionStorage.getItem('testGatePassed')==='1'){
     _gateIdleTimer=setTimeout(triggerTestGate,GATE_IDLE_LIMIT);
   }
 }
@@ -2551,7 +3468,6 @@ function triggerTestGate(){
   // 已登录用户永远不触发验证门，永远不退出
   if(lg('registered')==='true'&&lg('myId')){
     ls('gatePassedPersist','1');
-    sessionStorage.setItem('testGatePassed','1');
     return;
   }
   if(!G.hide)return;
@@ -2706,7 +3622,130 @@ async function submitNewChat(){
   openChat(String(u.id),displayName[0].toUpperCase(),color,displayName);
 }
 
-function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();if(id==='dnote')initNotes();if(id==='settings'){initQuickToggles();_updateThemeHeader(lg('theme')||'');}
+
+function showDiagLog(){
+  var log=[];
+  try{log=JSON.parse(localStorage.getItem('_diagLog')||'[]');}catch(e){}
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var box=document.createElement('div');
+  box.style.cssText='background:var(--theme-bg,#fff);border-radius:16px;padding:20px;width:100%;max-width:380px;max-height:80vh;overflow-y:auto;';
+  var html='<div style="font-size:16px;font-weight:700;margin-bottom:10px;">🔍 退出诊断日志</div>';
+  if(log.length===0){
+    html+='<div style="color:#8e8e93;font-size:13px;">暂无退出记录，说明还没有触发过show(reg)</div>';
+  } else {
+    log.slice().reverse().forEach(function(item){
+      html+='<div style="background:var(--theme-field-bg,#f5f5f5);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:11px;font-family:monospace;color:var(--theme-text,#333);word-break:break-all;">'
+        +'<div style="color:#ff3b30;font-weight:600;margin-bottom:2px;">'+item.t+'</div>'
+        +item.msg
+        +'</div>';
+    });
+  }
+  box.innerHTML=html;
+  var clearBtn=document.createElement('button');
+  clearBtn.textContent='清空日志';
+  clearBtn.style.cssText='width:100%;padding:10px;margin-top:10px;background:#ff3b30;color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;';
+  clearBtn.onclick=function(){localStorage.removeItem('_diagLog');overlay.remove();};
+  box.appendChild(clearBtn);
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+
+// ═══ IndexedDB 持久化备份（防止localStorage被系统清除）═══
+var _idbName='GhostChatBackup';
+var _idbStore='credentials';
+
+function _idbOpen(){
+  return new Promise(function(resolve,reject){
+    var req=indexedDB.open(_idbName,1);
+    req.onupgradeneeded=function(e){
+      var db=e.target.result;
+      if(!db.objectStoreNames.contains(_idbStore)){
+        db.createObjectStore(_idbStore,{keyPath:'key'});
+      }
+    };
+    req.onsuccess=function(e){resolve(e.target.result);};
+    req.onerror=function(e){reject(e);};
+  });
+}
+
+async function _idbSet(key,value){
+  try{
+    var db=await _idbOpen();
+    return new Promise(function(resolve){
+      var tx=db.transaction(_idbStore,'readwrite');
+      tx.objectStore(_idbStore).put({key:key,value:value,time:Date.now()});
+      tx.oncomplete=function(){resolve(true);};
+      tx.onerror=function(){resolve(false);};
+    });
+  }catch(e){console.log('[IDB] set failed:',e);return false;}
+}
+
+async function _idbGet(key){
+  try{
+    var db=await _idbOpen();
+    return new Promise(function(resolve){
+      var tx=db.transaction(_idbStore,'readonly');
+      var req=tx.objectStore(_idbStore).get(key);
+      req.onsuccess=function(){resolve(req.result?req.result.value:null);};
+      req.onerror=function(){resolve(null);};
+    });
+  }catch(e){console.log('[IDB] get failed:',e);return null;}
+}
+
+// 备份当前登录凭据到IndexedDB（双重保险）
+async function _backupCredentials(){
+  if(lg('registered')==='true'&&lg('myId')){
+    var data={
+      registered:lg('registered'),
+      myId:lg('myId'),
+      myName:lg('myName')||'',
+      pin:lg('pin')||'',
+      rescueCode:lg('rescueCode')||'',
+      lang:lg('lang')||'',
+      backupTime:Date.now()
+    };
+    await _idbSet('account',data);
+    console.log('[Backup] credentials saved to IndexedDB');
+  }
+}
+
+// 从IndexedDB恢复凭据（localStorage丢失时的最后防线）
+async function _restoreFromBackup(){
+  try{
+    var data=await _idbGet('account');
+    if(data&&data.myId&&data.registered==='true'){
+      console.log('[Restore] found backup, restoring localStorage...');
+      ls('registered',data.registered);
+      ls('myId',data.myId);
+      ls('myName',data.myName||'');
+      ls('pin',data.pin||'');
+      ls('rescueCode',data.rescueCode||'');
+      if(data.lang)ls('lang',data.lang);
+      ls('gatePassedPersist','1');
+      return true;
+    }
+  }catch(e){console.log('[Restore] failed:',e);}
+  return false;
+}
+
+function _logDiag(msg){
+  try{
+    var log=JSON.parse(localStorage.getItem('_diagLog')||'[]');
+    log.push({t:new Date().toISOString(),msg:msg});
+    if(log.length>20)log=log.slice(-20);
+    localStorage.setItem('_diagLog',JSON.stringify(log));
+  }catch(e){}
+}
+
+function show(id){
+  if(id==='reg'){
+    var stack=new Error().stack||'no stack';
+    _logDiag('show(reg) called from: '+stack.split('\n').slice(1,4).join(' | '));
+    console.warn('[DIAG] show(reg) triggered:',stack);
+  }document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();if(id==='dnote')initNotes();if(id==='settings'){initBarkUI();initQuickToggles();_updateThemeHeader(lg('theme')||'');_initPwaBindStatus();_initPwaAppNameInput();_initShortcutInput();}
 if(id==='dcalc'){var en=document.getElementById('cNum');if(en&&!CALC.buf&&CALC.result==null)en.textContent='0';setTimeout(initCalcEvents,0);}}
 
 // ═══ 注册/登录 ═══
@@ -2842,6 +3881,7 @@ async function doRegister(){
   alert('\u2705 Registered!\n\nYour ID: '+myId+'\n\nShare this ID with friends!\n\n\U0001f510 Rescue Code: '+rc+'\nSave this!');
   // 注册即认证，永远记住，直接进主界面
   ls('gatePassedPersist','1');
+  _backupCredentials();
   sessionStorage.setItem('testGatePassed','1');
   listenForCalls();listenForAllMessages();loadContacts();
   claimSession(true);
@@ -3180,7 +4220,7 @@ async function _autoRelogin(){
 function forceLogout(){_onKicked();}
 
 // ═══ 设置同步到中央数据库：锁屏密码/隐藏模式/伪装方式/激活方式/销毁方式 ═══
-var SYNCED_SETTING_KEYS=['appLockPin','hide','dis','trig','dest','dpin','testGatePin','lockTimeout','autoLockLeave','focusMode'];
+var SYNCED_SETTING_KEYS=['appLockPin','hide','dis','trig','dest','dpin','testGatePin','lockTimeout','autoLockLeave','barkUrl','focusMode','barkEnabled','doNotDisturb','barkIconUrl','shortcutName','pwaAppName'];
 async function pushSettings(){
   if(!lg('registered')||!myId)return;
   var obj={};
@@ -3451,6 +4491,7 @@ function playVoice(el,src){
 
 async function doLogout(){
   if(!confirm('确定退出登录？\n\n退出后需要重新输入密码才能登录。'))return;
+  try{await _idbSet('account',null);}catch(e){} // 清除备份
   try{
     // 从数据库多设备列表里移除本机
     var myDid=getDeviceId();
@@ -4289,6 +5330,46 @@ function listenForAllMessages(){
         _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
         if(chatOpenNow)scheduleMarkRoomRead(senderId);
         if(G.chat===senderId){renderMsgs();}
+        // 后台本地通知（Cordova原生 / 安卓PWA直接有效，iOS降级用）
+        if(document.hidden&&pushEnabled_check()){
+          try{
+            var senderName2=senderId;
+            (G.friends||[]).forEach(function(f){
+              if(String(f.friend_id||f.id)===String(senderId))senderName2=f.nickname||f.name||senderId;
+            });
+            var notifTitle2='💬 '+senderName2;
+            var notifBody2=msg.type==='text'?(msg.text||'').slice(0,80):'['+msg.type+']';
+            // ═══ Cordova 原生 App：用本地通知插件（最可靠） ═══
+            if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
+              try{
+                cordova.plugins.notification.local.schedule({
+                  id: Math.floor(Date.now()%100000),
+                  title: notifTitle2,
+                  text: notifBody2,
+                  foreground: true,
+                  data: { fromId: senderId }
+                });
+              }catch(e0){console.log('[CordovaNotif] schedule failed:',e0);}
+            }
+            // 安卓PWA点通知直接打开App（SW处理）
+            else if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+              navigator.serviceWorker.ready.then(function(reg){
+                reg.showNotification(notifTitle2,{
+                  body:notifBody2,
+                  icon:'./icon192.png',
+                  badge:'./icon192.png',
+                  tag:'gc-msg-'+senderId,
+                  renotify:true,
+                  data:{fromId:senderId,url:'https://chunhua1780.github.io/ghostchat/'}
+                });
+              }).catch(function(){
+                if(typeof Notification!=='undefined')new Notification(notifTitle2,{body:notifBody2,icon:'./icon192.png',tag:'gc-msg-'+senderId});
+              });
+            } else if(typeof Notification!=='undefined'&&Notification.permission==='granted'){
+              new Notification(notifTitle2,{body:notifBody2,icon:'./icon192.png',tag:'gc-msg-'+senderId});
+            }
+          }catch(e){console.log('[LocalNotif]',e);}
+        }
         var lastEl=document.getElementById('last-'+senderId);
         if(lastEl){
           updateLastPreview(senderId,msg.type==='text'?msg.text:'['+msg.type+']',msg.type,false,null);
@@ -4301,19 +5382,47 @@ function listenForAllMessages(){
         }
         loadContacts();
         sendNotif();
-        // ── 系统本地通知（不在当前聊天界面时弹出）──
+        // ── 系统级弹窗通知 ──
         if(!chatOpenNow){
-          var sname=G.friends&&G.friends[senderId]?G.friends[senderId].name:('用户'+senderId);
-          var body=msg.type==='text'?msg.text:msg.type==='image'?'[图片]':msg.type==='voice'?'[语音]':msg.type==='video'?'[视频]':'[消息]';
-          var isWeatherDisguise=G.hide&&G.dis==='weather'&&
-            document.getElementById('dweather')&&
-            document.getElementById('dweather').classList.contains('active');
-          if(isWeatherDisguise){
-            var wxFakeNotifs=['今日最高气温43°，注意防暑补水','紫外线指数极强，出门记得防晒','今晚有轻微沙尘，建议关好窗户','未来24小时天气稳定，适合出行','湿度降低，注意保湿补水'];
-            showLocalNotification('🌤 天气提醒', wxFakeNotifs[Math.floor(Math.random()*wxFakeNotifs.length)], senderId);
-          } else {
-            showLocalNotification('💬 '+sname, body, senderId);
+          if('serviceWorker' in navigator && Notification.permission==='granted'){
+            navigator.serviceWorker.ready.then(function(reg){
+              var sname=G.friends&&G.friends[senderId]?G.friends[senderId].name:('用户'+senderId);
+              var body=msg.type==='text'?msg.text:msg.type==='image'?'[图片]':msg.type==='voice'?'[语音]':msg.type==='video'?'[视频]':'[消息]';
+              // 天气伪装模式：通知伪装成天气预报
+              var isWeatherDisguise=G.hide&&G.dis==='weather'&&
+                document.getElementById('dweather')&&
+                document.getElementById('dweather').classList.contains('active');
+              if(isWeatherDisguise){
+                var wxFakeNotifs=[
+                  '今日最高气温43°，注意防暑补水',
+                  '紫外线指数极强，出门记得防晒',
+                  '今晚有轻微沙尘，建议关好窗户',
+                  '未来24小时天气稳定，适合出行',
+                  '湿度降低，注意保湿补水',
+                ];
+                var fakeBody=wxFakeNotifs[Math.floor(Math.random()*wxFakeNotifs.length)];
+                reg.showNotification('🌤 天气提醒', {
+                  body: fakeBody,
+                  icon: './icon192.png',
+                  tag: 'weather-'+Date.now(),
+                  renotify: true,
+                  silent: false,
+                  data: { senderId: senderId, disguise: true }
+                });
+              } else {
+                reg.showNotification('💬 '+sname, {
+                  body: body,
+                  icon: './icon192.png',
+                  badge: './icon192.png',
+                  tag: 'msg-'+senderId,
+                  renotify: true,
+                  silent: false,
+                  data: { senderId: senderId }
+                });
+              }
+            });
           }
+          triggerPushToUser(String(myId), null);
         }
       }
       // 未读提醒：只要不在当前聊天界面就提醒，与already无关
@@ -4821,7 +5930,7 @@ function proceedStartup(){
     listenForCalls();
     listenForAllMessages();
     claimSession(true);
-    setTimeout(registerWebPushAndroid,2000);
+    setTimeout(initOneSignal,2000);
     _appWasActive=true;
   }
   if('Notification' in window&&Notification.permission==='default'){
@@ -5764,7 +6873,7 @@ function cp(b){
       } else {
         ls('gatePassedPersist','1');
         claimSession(true);
-        setTimeout(registerWebPushAndroid,2000);
+        setTimeout(initOneSignal,2000);
         resumeFromLock();
       }
       return;
