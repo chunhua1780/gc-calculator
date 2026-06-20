@@ -60,7 +60,7 @@
     <plugin name="cordova-plugin-background-mode" spec="^0.7.3" />
 
     <!-- 本地通知：收到新消息时弹系统通知，不依赖任何远程推送服务，纯本地触发 -->
-    <plugin name="cordova-plugin-local-notifications" spec="^0.9.0-beta.3" />
+    <plugin name="cordova-plugin-local-notifications" />
 
     <!-- 设备信息：用于区分安卓/鸿蒙环境做兼容判断 -->
     <plugin name="cordova-plugin-device" spec="^2.1.0" />
