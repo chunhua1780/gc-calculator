@@ -18,18 +18,31 @@
     <preference name="AndroidInsecureFileModeEnabled" value="true" />
     <preference name="MixedContentMode" value="0" />
 
-    <!-- 不显示安装包默认的Cordova启动闪屏耽误时间 -->
+    <!-- 启动屏 & 窗口背景：统一计算器品牌色，消除白屏闪烁 -->
+    <!-- BackgroundColor 设置 WebView 背景，避免 HTML 加载前出现白屏 (ARGB) -->
+    <preference name="BackgroundColor" value="0xffe8e0ff" />
     <preference name="AutoHideSplashScreen" value="true" />
-    <preference name="SplashScreenDelay" value="0" />
-    <preference name="FadeSplashScreen" value="false" />
+    <preference name="SplashScreenDelay" value="500" />
+    <preference name="FadeSplashScreen" value="true" />
+    <preference name="FadeSplashScreenDuration" value="300" />
+    <preference name="ShowSplashScreenSpinner" value="false" />
+    <!-- Android 12+ 系统级 SplashScreen API：背景色与计算器界面统一 -->
+    <preference name="AndroidWindowSplashScreenBackground" value="#E8E0FF" />
+    <preference name="AndroidWindowSplashScreenIconBackgroundColor" value="#E8E0FF" />
 
     <platform name="android">
-        <!-- 图标（圆角计算器图标） -->
-        <icon density="mdpi" src="icon192.png" />
-        <icon density="hdpi" src="icon192.png" />
-        <icon density="xhdpi" src="icon192.png" />
-        <icon density="xxhdpi" src="icon512.png" />
-        <icon density="xxxhdpi" src="icon512.png" />
+        <!-- 图标：src=传统图标(Android<8), foreground+background=自适应图标(Android 8+) -->
+        <!-- background 与启动画面色 #E8E0FF 一致，系统裁剪后无白边 -->
+        <icon density="mdpi"     src="icon192.png" foreground="icon192.png" background="#E8E0FF" />
+        <icon density="hdpi"     src="icon192.png" foreground="icon192.png" background="#E8E0FF" />
+        <icon density="xhdpi"    src="icon192.png" foreground="icon192.png" background="#E8E0FF" />
+        <icon density="xxhdpi"   src="icon512.png" foreground="icon512.png" background="#E8E0FF" />
+        <icon density="xxxhdpi"  src="icon512.png" foreground="icon512.png" background="#E8E0FF" />
+
+        <!-- Cordova 内置启动屏背景色（cordova-android splashscreen 读取此颜色） -->
+        <config-file target="res/values/colors.xml" parent="/resources">
+            <color name="cdv_splashscreen_background">#E8E0FF</color>
+        </config-file>
 
         <!-- 应用权限：保活+通知必需
              注意：READ/WRITE_EXTERNAL_STORAGE 不在这里手动声明，

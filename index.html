@@ -4447,8 +4447,9 @@ function toggleCam(){
 }
 
 var _msgSub=null;
-function listenForAllMessages(){
-  if(_msgSub)return;
+function listenForAllMessages(force){
+  if(_msgSub&&!force)return;
+  if(_msgSub){try{_msgSub.unsubscribe();}catch(e){}_msgSub=null;}
   var mid=String(myId);
   _msgSub=_sb.channel('all_msgs_'+mid)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},function(p){
@@ -4590,6 +4591,34 @@ function listenForAllMessages(){
       console.log('All msgs sub:',s);
     });
 }
+
+// ═══ 连接健康检查 ═══
+var _healthCheckTimer=null;
+function _checkConnectionHealth(){
+  if(!lg('registered')||!myId)return;
+  var ok=false;
+  try{
+    if(_msgSub&&_msgSub.state==='joined')ok=true;
+  }catch(e){}
+  if(!ok){
+    console.log('[Health] msgSub not joined (state:'+(_msgSub&&_msgSub.state)+'), reconnecting...');
+    listenForAllMessages(true);
+  }
+}
+function _startHealthCheck(){
+  if(_healthCheckTimer)clearInterval(_healthCheckTimer);
+  _healthCheckTimer=setInterval(_checkConnectionHealth,30000);
+}
+window.addEventListener('online',function(){
+  console.log('[Health] online event — checking connection');
+  _checkConnectionHealth();
+});
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'){
+    console.log('[Health] page visible — checking connection');
+    _checkConnectionHealth();
+  }
+});
 
 var _callSub=null;
 function listenForCalls(){
@@ -5086,6 +5115,7 @@ function proceedStartup(){
     listenForCalls();
     listenForAllMessages();
     claimSession(true);
+    _startHealthCheck();
     setTimeout(initOneSignal,2000);
     _appWasActive=true;
   }
