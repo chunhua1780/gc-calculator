@@ -40,27 +40,56 @@ jobs:
         cordova platform add android
 
         # ── 启动屏品牌化：消除默认白底/Android机器人图标 ──────────────────
-        # 1. 为 Android 12+ 的强制 SplashScreen API 注入品牌主题
-        #    （values-v31 仅在 API 31+ 生效，不影响旧机器）
         PLATFORM_RES=platforms/android/app/src/main/res
-        mkdir -p $PLATFORM_RES/values-v31
-        printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' \
-          '    <color name="cdv_splash_bg">#E8E0FF</color>' \
-          '    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">' \
-          '        <item name="windowSplashScreenBackground">@color/cdv_splash_bg</item>' \
-          '        <item name="postSplashScreenTheme">@style/Theme.AppCompat.NoActionBar</item>' \
-          '    </style>' '</resources>' \
-          > $PLATFORM_RES/values-v31/splash_theme.xml
+        MANIFEST=platforms/android/app/src/main/AndroidManifest.xml
 
-        # 2. 旧版 Android (<12)：确保 colors.xml 存在供 Cordova config-file 合并
+        # 1. 旧版 Android (<12) 通用回退主题：让 Activity 背景立即变品牌色，
+        #    避免 WebView 加载前出现任何白屏或默认图标
         mkdir -p $PLATFORM_RES/values
+        printf '%s\n' \
+          '<?xml version="1.0" encoding="utf-8"?>' \
+          '<resources>' \
+          '    <color name="cdv_splash_bg">#E8E0FF</color>' \
+          '    <style name="Theme.App.SplashScreen" parent="Theme.AppCompat.NoActionBar">' \
+          '        <item name="android:windowBackground">@color/cdv_splash_bg</item>' \
+          '        <item name="android:windowNoTitle">true</item>' \
+          '        <item name="android:windowFullscreen">false</item>' \
+          '    </style>' \
+          '</resources>' \
+          > $PLATFORM_RES/values/splash_theme.xml
         if [ ! -f $PLATFORM_RES/values/colors.xml ]; then
           printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' \
             > $PLATFORM_RES/values/colors.xml
         fi
-        # 3. 键盘 adjustResize：让 WebView 在键盘弹出时缩小，input bar 自然上浮
+
+        # 2. Android 12+ (API 31+) 专用：使用系统级 SplashScreen API，
+        #    纯品牌色背景 + 应用图标，彻底消除默认 Android 机器人 Logo
+        mkdir -p $PLATFORM_RES/values-v31
+        printf '%s\n' \
+          '<?xml version="1.0" encoding="utf-8"?>' \
+          '<resources>' \
+          '    <color name="cdv_splash_bg">#E8E0FF</color>' \
+          '    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">' \
+          '        <item name="windowSplashScreenBackground">@color/cdv_splash_bg</item>' \
+          '        <item name="windowSplashScreenIconBackgroundColor">@color/cdv_splash_bg</item>' \
+          '        <item name="android:windowSplashScreenBrandingImage">@null</item>' \
+          '        <item name="postSplashScreenTheme">@style/Theme.AppCompat.NoActionBar</item>' \
+          '    </style>' \
+          '</resources>' \
+          > $PLATFORM_RES/values-v31/splash_theme.xml
+
+        # 3. 将品牌启动主题应用到 MainActivity（替换掉 Cordova 默认 NoActionBar）
+        #    同时兼容有 / 没有 android:theme 属性两种情况
+        if grep -q 'android:theme=' $MANIFEST; then
+          sed -i 's|android:theme="[^"]*"|android:theme="@style/Theme.App.SplashScreen"|g' $MANIFEST
+        else
+          sed -i 's|<activity android:configChanges|<activity android:theme="@style/Theme.App.SplashScreen" android:configChanges|g' $MANIFEST
+        fi
+        echo "[SplashTheme] AndroidManifest theme patched:"
+        grep 'android:theme' $MANIFEST || echo "  (no theme attr found)"
+
+        # 4. 键盘 adjustResize：让 WebView 在键盘弹出时缩小，input bar 自然上浮
         #    config.xml 的 edit-config 用 XPath 匹配 MainActivity，这里用 sed 双重保险
-        MANIFEST=platforms/android/app/src/main/AndroidManifest.xml
         if grep -q 'windowSoftInputMode' $MANIFEST; then
           sed -i 's/android:windowSoftInputMode="[^"]*"/android:windowSoftInputMode="adjustResize"/g' $MANIFEST
         else

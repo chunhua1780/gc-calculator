@@ -476,7 +476,7 @@ body{
 .screen > .scroll{flex:1 !important;min-height:0 !important;overflow-y:auto !important;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 .screen > .tabs{flex-shrink:0 !important;width:100%;}
 /* chat页：cbg填满，ibar底部固定 */
-#chat{display:none;flex-direction:column;position:fixed;inset:0;will-change:height,top;transition:height 0.28s cubic-bezier(0.25,0.46,0.45,0.94),top 0.28s cubic-bezier(0.25,0.46,0.45,0.94);}
+#chat{display:none;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;will-change:height,top;transition:height 0.28s cubic-bezier(0.25,0.46,0.45,0.94),top 0.28s cubic-bezier(0.25,0.46,0.45,0.94);}
 #chat.active{display:flex;}
 #chat > .nav-bar{flex-shrink:0;}
 #chat > .cbg{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
@@ -2324,7 +2324,9 @@ function handleViewportResize(){
     chatEl.style.transition='';
     chatEl.style.height=vvh+'px';
     chatEl.style.top=vvt+'px';
-    chatEl.style.bottom='';
+    // 显式设为 auto 覆盖 CSS inset:0 的 bottom:0，
+    // 避免 position:fixed 同时受 bottom 约束导致高度冲突跳动
+    chatEl.style.bottom='auto';
     // 等 transition 结束后滚到底
     if(_chatKbScrollTimer)clearTimeout(_chatKbScrollTimer);
     _chatKbScrollTimer=setTimeout(function(){
@@ -2352,7 +2354,8 @@ function initChatLayout(){
   chatEl.style.transition='none';
   chatEl.style.height=(vv?vv.height:window.innerHeight)+'px';
   chatEl.style.top=(vv?vv.offsetTop:0)+'px';
-  chatEl.style.bottom='';
+  // 显式 auto 覆盖 CSS inset:0 的 bottom:0，让 height 单独决定高度
+  chatEl.style.bottom='auto';
   // 强制 reflow 后恢复 transition（后续键盘事件才会有动画）
   void chatEl.offsetHeight;
   chatEl.style.transition='';
@@ -2476,6 +2479,36 @@ document.addEventListener('deviceready', function(){
     }catch(e){console.log('[Notif] click handler failed:',e);}
   }
   // ── 通知初始化结束 ──────────────────────────────────────────────────────────
+
+  // ── Cordova 后台恢复事件 ─────────────────────────────────────────────────
+  // resume 在 App 从后台切回前台时触发（比 visibilitychange 更可靠）
+  document.addEventListener('resume', function(){
+    console.log('[Cordova] resume fired');
+    // 重置踢出标记，允许重新建立会话
+    _kicked = false;
+    if(lg('registered') && myId){
+      // 延迟让网络先恢复，再重建 session 和 Supabase 实时通道
+      setTimeout(function(){
+        claimSession(true).catch(function(e){
+          console.log('[Resume] claimSession err:', e && e.message);
+        });
+        // 重启消息和通话监听（WebSocket 在后台可能已断开）
+        try{ listenForAllMessages(); }catch(e){}
+        try{ listenForCalls(); }catch(e){}
+      }, 1000);
+    }
+    // 确保键盘相关布局正确重置（有时 resume 后布局偏移未恢复）
+    setTimeout(handleViewportResize, 200);
+  }, false);
+
+  // pause 事件：记录进入后台时间，用于调试和 autoLockLeave 逻辑
+  document.addEventListener('pause', function(){
+    console.log('[Cordova] pause fired');
+    ls('lastHiddenAt', String(Date.now()));
+    // 刷新 IndexedDB 备份，防止 localStorage 在后台被系统回收
+    try{ _backupCredentials(); }catch(e){}
+  }, false);
+  // ───────────────────────────────────────────────────────────────────────────
 }, false);
 
 window.onload=async function(){
