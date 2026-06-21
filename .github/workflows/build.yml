@@ -39,49 +39,70 @@ jobs:
         cd app
         cordova platform add android
 
-        # ── 启动屏品牌化：消除默认白底/Android机器人图标 ──────────────────
+        # ── 先装插件，再 prepare，最后 patch，最后 compile ─────────────────
+        # 关键顺序说明：
+        #   cordova build android = cordova prepare + Gradle
+        #   prepare 会用 config.xml 重新生成 themes.xml，覆盖任何手动 patch。
+        #   正确顺序：platform add → plugin add → prepare（生成最终文件）
+        #             → 手动 patch（此时不会再被 prepare 覆盖）
+        #             → cordova compile（只跑 Gradle，不再 prepare）
+        # ──────────────────────────────────────────────────────────────────
+
+        # 1. 安装所有插件（插件的 config-file 会在 prepare 时一并合并进去）
+        cordova plugin add cordova-plugin-background-mode
+        cordova plugin add cordova-plugin-local-notification@1.2.3
+        cordova plugin add cordova-plugin-device
+        cordova plugin add cordova-plugin-statusbar
+        cordova plugin add cordova-plugin-camera
+        cordova plugin add cordova-plugin-file
+
+        # 2. 运行 prepare（生成最终平台文件，包含 themes.xml、AndroidManifest.xml 等）
+        #    这是最后一次自动生成，之后的手动 patch 不会被覆盖
+        cordova prepare android
+
+        # ── 启动屏品牌化补丁（在 prepare 之后、compile 之前）────────────────
         PLATFORM_RES=platforms/android/app/src/main/res
         MANIFEST=platforms/android/app/src/main/AndroidManifest.xml
 
-        # 1. 品牌色注入 colors.xml（所有后续 theme 引用 @color/cdv_splash_bg）
-        #    Cordova 13 自动生成 values/themes.xml，里面已有 Theme.App.SplashScreen，
-        #    所以不能再创建 values/splash_theme.xml（会产生 Duplicate resources 错误）。
-        #    正确做法：只写 colors.xml，然后用 sed 把颜色注入现有的 themes.xml。
+        # 3. 确保 colors.xml 存在并含有品牌色
         mkdir -p $PLATFORM_RES/values
         if [ ! -f $PLATFORM_RES/values/colors.xml ]; then
           printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' \
             > $PLATFORM_RES/values/colors.xml
         fi
-        # 追加品牌色（如果还没有）
         if ! grep -q 'cdv_splash_bg' $PLATFORM_RES/values/colors.xml; then
           sed -i 's|</resources>|    <color name="cdv_splash_bg">#E8E0FF</color>\n</resources>|' \
             $PLATFORM_RES/values/colors.xml
         fi
 
-        # 2. 旧版 Android (<12)：在 Cordova 已生成的 themes.xml 里的
-        #    Theme.App.SplashScreen 中追加 windowBackground，
-        #    让 Activity 在 WebView 加载前就显示品牌色（消除白屏和默认图标）
+        # 4. 旧版 Android (<12)：在 themes.xml 里给 Theme.App.SplashScreen
+        #    注入 android:windowBackground，让 Activity 窗口在 WebView 绘制前
+        #    就显示品牌色，彻底消除白屏/默认图标
         if [ -f $PLATFORM_RES/values/themes.xml ] && \
            grep -q 'Theme.App.SplashScreen' $PLATFORM_RES/values/themes.xml && \
            ! grep -q 'cdv_splash_bg' $PLATFORM_RES/values/themes.xml; then
           sed -i '/<style name="Theme.App.SplashScreen"/a\        <item name="android:windowBackground">@color\/cdv_splash_bg<\/item>' \
             $PLATFORM_RES/values/themes.xml
-          echo "[SplashBg] values/themes.xml patched with brand windowBackground"
+          echo "[SplashBg] values/themes.xml patched"
+        else
+          echo "[SplashBg] values/themes.xml skip (already patched or not found)"
         fi
+        echo "--- values/themes.xml after patch ---"
+        cat $PLATFORM_RES/values/themes.xml 2>/dev/null || echo "(not found)"
 
-        # 3. Android 12+ (API 31+)：同样先尝试 patch 已有的 values-v31/themes.xml；
-        #    如果 Cordova 没有生成该文件，才创建 splash_theme.xml（无重名冲突）
+        # 5. Android 12+ (API 31+)：patch 已有 values-v31/themes.xml，
+        #    或在不存在时创建（不会 Duplicate，因为我们用不同文件名）
         mkdir -p $PLATFORM_RES/values-v31
         if [ -f $PLATFORM_RES/values-v31/themes.xml ] && \
            grep -q 'Theme.App.SplashScreen' $PLATFORM_RES/values-v31/themes.xml; then
-          # Patch 已有文件
           if ! grep -q 'cdv_splash_bg' $PLATFORM_RES/values-v31/themes.xml; then
-            sed -i '/<style name="Theme.App.SplashScreen"/a\        <item name="windowSplashScreenBackground">@color\/cdv_splash_bg<\/item>\n        <item name="windowSplashScreenIconBackgroundColor">@color\/cdv_splash_bg<\/item>' \
+            sed -i '/<style name="Theme.App.SplashScreen"/a\        <item name="windowSplashScreenBackground">@color\/cdv_splash_bg<\/item>' \
+              $PLATFORM_RES/values-v31/themes.xml
+            sed -i '/<style name="Theme.App.SplashScreen"/a\        <item name="windowSplashScreenIconBackgroundColor">@color\/cdv_splash_bg<\/item>' \
               $PLATFORM_RES/values-v31/themes.xml
           fi
           echo "[SplashBg] values-v31/themes.xml patched"
         else
-          # Cordova 未在 values-v31 生成 themes.xml，安全创建我们的文件
           printf '%s\n' \
             '<?xml version="1.0" encoding="utf-8"?>' \
             '<resources>' \
@@ -95,35 +116,27 @@ jobs:
           echo "[SplashBg] values-v31/splash_theme.xml created"
         fi
 
-        # 4. 将品牌启动主题应用到 MainActivity（替换掉 Cordova 默认主题）
+        # 6. 确保 MainActivity 使用品牌启动主题
         if grep -q 'android:theme=' $MANIFEST; then
           sed -i 's|android:theme="[^"]*"|android:theme="@style/Theme.App.SplashScreen"|g' $MANIFEST
         else
           sed -i 's|<activity android:configChanges|<activity android:theme="@style/Theme.App.SplashScreen" android:configChanges|g' $MANIFEST
         fi
-        echo "[SplashTheme] AndroidManifest theme patched:"
+        echo "[SplashTheme] AndroidManifest theme:"
         grep 'android:theme' $MANIFEST || echo "  (no theme attr found)"
 
-        # 4. 键盘 adjustResize：让 WebView 在键盘弹出时缩小，input bar 自然上浮
-        #    config.xml 的 edit-config 用 XPath 匹配 MainActivity，这里用 sed 双重保险
+        # 7. 键盘 adjustResize 双重保险
         if grep -q 'windowSoftInputMode' $MANIFEST; then
           sed -i 's/android:windowSoftInputMode="[^"]*"/android:windowSoftInputMode="adjustResize"/g' $MANIFEST
         else
           sed -i 's/<activity /<activity android:windowSoftInputMode="adjustResize" /g' $MANIFEST
         fi
-        echo "[adjustResize] AndroidManifest patched:"
+        echo "[adjustResize] AndroidManifest:"
         grep 'windowSoftInputMode' $MANIFEST || echo "  (no match found)"
-        # ───────────────────────────────────────────────────────────────────
+        # ──────────────────────────────────────────────────────────────────
 
-        # 核心插件：后台保活 + 本地通知（不依赖任何远程推送服务）
-        cordova plugin add cordova-plugin-background-mode
-        cordova plugin add cordova-plugin-local-notification@1.2.3
-        cordova plugin add cordova-plugin-device
-        cordova plugin add cordova-plugin-statusbar
-        cordova plugin add cordova-plugin-camera
-        cordova plugin add cordova-plugin-file
-
-        cordova build android
+        # 3. 只编译，不再 prepare（patch 内容完整保留到 APK）
+        cordova compile android
 
     - name: Find APK
       run: find . -name "*.apk" 2>/dev/null

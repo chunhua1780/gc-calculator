@@ -476,7 +476,7 @@ body{
 .screen > .scroll{flex:1 !important;min-height:0 !important;overflow-y:auto !important;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 .screen > .tabs{flex-shrink:0 !important;width:100%;}
 /* chat页：cbg填满，ibar底部固定 */
-#chat{display:none;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;will-change:height,top;transition:height 0.28s cubic-bezier(0.25,0.46,0.45,0.94),top 0.28s cubic-bezier(0.25,0.46,0.45,0.94);}
+#chat{display:none;flex-direction:column;position:fixed;top:0;left:0;right:0;bottom:0;will-change:height,top;}
 #chat.active{display:flex;}
 #chat > .nav-bar{flex-shrink:0;}
 #chat > .cbg{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
@@ -2306,59 +2306,50 @@ var G={
 };
 
 // ═══ 启动 ═══
-// 键盘弹出时chat页面高度跟随，其余页面fixed不动
-// rAF 合并同一帧内的连续 resize 事件，避免键盘滑入期间多次跳变；
-// CSS transition 负责从旧值平滑过渡到新值，整体效果：输入框随键盘平滑上升
-var _chatKbRaf=null;
+// 键盘弹出/收起时同步更新 chat 页面高度。
+// 核心原则：同步更新（不用 rAF），不加 CSS transition。
+//   rAF 会延迟一帧（~16ms），这一帧里 #chat 还是全屏高度，ibar 滑到键盘下方，
+//   随后 transition 从错误起点开始动画，造成"跳动"。
+//   去掉 rAF + transition 后，每次 viewport 变化立即同步写入新高度，
+//   ibar 随键盘同步上移，完全贴合，无跳动无闪烁。
 var _chatKbScrollTimer=null;
 function handleViewportResize(){
-  if(_chatKbRaf)cancelAnimationFrame(_chatKbRaf);
-  _chatKbRaf=requestAnimationFrame(function(){
-    _chatKbRaf=null;
-    var vv=window.visualViewport;
-    var vvh=vv?vv.height:window.innerHeight;
-    var vvt=vv?vv.offsetTop:0;
-    var chatEl=document.getElementById('chat');
-    if(!chatEl||!chatEl.classList.contains('active'))return;
-    // 恢复 transition（initChatLayout 会临时禁用）
-    chatEl.style.transition='';
-    chatEl.style.height=vvh+'px';
-    chatEl.style.top=vvt+'px';
-    // 显式设为 auto 覆盖 CSS inset:0 的 bottom:0，
-    // 避免 position:fixed 同时受 bottom 约束导致高度冲突跳动
-    chatEl.style.bottom='auto';
-    // 等 transition 结束后滚到底
-    if(_chatKbScrollTimer)clearTimeout(_chatKbScrollTimer);
-    _chatKbScrollTimer=setTimeout(function(){
-      _chatKbScrollTimer=null;
-      var cm=document.getElementById('chatMsgs');
-      if(cm)cm.scrollTop=cm.scrollHeight;
-    },320);
-  });
+  var vv=window.visualViewport;
+  var vvh=vv?vv.height:window.innerHeight;
+  var vvt=vv?vv.offsetTop:0;
+  var chatEl=document.getElementById('chat');
+  if(!chatEl||!chatEl.classList.contains('active'))return;
+  // 同步写高度，禁止 CSS transition（避免从旧高度"动画"到新高度）
+  chatEl.style.transition='none';
+  chatEl.style.height=vvh+'px';
+  chatEl.style.top=vvt+'px';
+  chatEl.style.bottom='auto';
+  // 键盘稳定后滚到最新消息
+  if(_chatKbScrollTimer)clearTimeout(_chatKbScrollTimer);
+  _chatKbScrollTimer=setTimeout(function(){
+    _chatKbScrollTimer=null;
+    var cm=document.getElementById('chatMsgs');
+    if(cm)cm.scrollTop=cm.scrollHeight;
+  },150);
 }
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize',handleViewportResize);
   window.visualViewport.addEventListener('scroll',handleViewportResize);
 }
-// window.resize 在 adjustResize 模式下会触发（visualViewport 的双重保险）
+// adjustResize 模式下 window.resize 也会触发，双重保险
 window.addEventListener('resize',handleViewportResize);
 window.addEventListener('orientationchange',function(){
   setTimeout(handleViewportResize,300);
 });
-// chat页打开时初始化高度（不动画，避免进入动效异常）
+// chat页打开时立即同步初始化高度
 function initChatLayout(){
   var vv=window.visualViewport;
   var chatEl=document.getElementById('chat');
   if(!chatEl)return;
-  // 临时禁用 transition，确保初始定位是瞬间完成的
   chatEl.style.transition='none';
   chatEl.style.height=(vv?vv.height:window.innerHeight)+'px';
   chatEl.style.top=(vv?vv.offsetTop:0)+'px';
-  // 显式 auto 覆盖 CSS inset:0 的 bottom:0，让 height 单独决定高度
   chatEl.style.bottom='auto';
-  // 强制 reflow 后恢复 transition（后续键盘事件才会有动画）
-  void chatEl.offsetHeight;
-  chatEl.style.transition='';
 }
 
 document.addEventListener('visibilitychange',function(){
@@ -2642,6 +2633,12 @@ window.onload=async function(){
     claimSession(true);
     setTimeout(initOneSignal,3000);
     _handleDeeplink();
+    // 每 60 秒刷新一次 IndexedDB 凭据备份。
+    // pause 事件里 _backupCredentials() 是异步的，进程被杀前可能来不及写完；
+    // 定期写入确保备份始终是最新的，重启后 _restoreFromBackup() 能正确恢复。
+    setInterval(function(){
+      if(lg('registered')&&myId)_backupCredentials();
+    },60000);
   }
   ['click','keydown','touchstart','mousemove','scroll'].forEach(function(ev){
     document.addEventListener(ev,resetGateIdleTimer,{passive:true});
