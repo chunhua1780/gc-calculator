@@ -31,13 +31,13 @@
     <preference name="AndroidWindowSplashScreenIconBackgroundColor" value="#E8E0FF" />
 
     <platform name="android">
-        <!-- 图标：src=传统图标(Android<8), foreground+background=自适应图标(Android 8+) -->
-        <!-- background 与启动画面色 #E8E0FF 一致，系统裁剪后无白边 -->
-        <icon density="mdpi"     src="icon192.png" foreground="icon192.png" background="#E8E0FF" />
-        <icon density="hdpi"     src="icon192.png" foreground="icon192.png" background="#E8E0FF" />
-        <icon density="xhdpi"    src="icon192.png" foreground="icon192.png" background="#E8E0FF" />
-        <icon density="xxhdpi"   src="icon512.png" foreground="icon512.png" background="#E8E0FF" />
-        <icon density="xxxhdpi"  src="icon512.png" foreground="icon512.png" background="#E8E0FF" />
+        <!-- 图标：标准 PNG 格式，兼容所有 Android 版本 -->
+        <!-- 启动画面背景色由 AndroidWindowSplashScreenBackground 统一控制 -->
+        <icon density="mdpi"     src="icon192.png" />
+        <icon density="hdpi"     src="icon192.png" />
+        <icon density="xhdpi"    src="icon192.png" />
+        <icon density="xxhdpi"   src="icon512.png" />
+        <icon density="xxxhdpi"  src="icon512.png" />
 
         <!-- Cordova 内置启动屏背景色（cordova-android splashscreen 读取此颜色） -->
         <config-file target="res/values/colors.xml" parent="/resources">
