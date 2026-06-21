@@ -58,6 +58,16 @@ jobs:
           printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' \
             > $PLATFORM_RES/values/colors.xml
         fi
+        # 3. 键盘 adjustResize：让 WebView 在键盘弹出时缩小，input bar 自然上浮
+        #    config.xml 的 edit-config 用 XPath 匹配 MainActivity，这里用 sed 双重保险
+        MANIFEST=platforms/android/app/src/main/AndroidManifest.xml
+        if grep -q 'windowSoftInputMode' $MANIFEST; then
+          sed -i 's/android:windowSoftInputMode="[^"]*"/android:windowSoftInputMode="adjustResize"/g' $MANIFEST
+        else
+          sed -i 's/<activity /<activity android:windowSoftInputMode="adjustResize" /g' $MANIFEST
+        fi
+        echo "[adjustResize] AndroidManifest patched:"
+        grep 'windowSoftInputMode' $MANIFEST || echo "  (no match found)"
         # ───────────────────────────────────────────────────────────────────
 
         # 核心插件：后台保活 + 本地通知（不依赖任何远程推送服务）

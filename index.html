@@ -1754,17 +1754,18 @@ async function subscribePush(){
             if(window.cordova.plugins.backgroundMode && !cordova.plugins.backgroundMode.isEnabled()){
               try{cordova.plugins.backgroundMode.enable();}catch(e1){}
             }
-            cordova.plugins.notification.local.schedule({
+            var _testOpts = {
               id: 1,
               title: '✅ GhostChat通知已开启',
               text: '以后有新消息会第一时间通知你',
               foreground: true,
               wakeup: true,
-              sound: 'default',
+              sound: true,
               vibrate: true,
-              priority: 2,
-              channelId: 'gc_messages'
-            });
+              priority: 2
+            };
+            if(window._gcNotifChannelReady) _testOpts.channelId = 'gc_msgs_v2';
+            cordova.plugins.notification.local.schedule(_testOpts);
           } else {
             alert('未获得通知权限\n请到手机设置 → 应用 → GhostChat → 通知 → 开启');
           }
@@ -2337,6 +2338,8 @@ if(window.visualViewport){
   window.visualViewport.addEventListener('resize',handleViewportResize);
   window.visualViewport.addEventListener('scroll',handleViewportResize);
 }
+// window.resize 在 adjustResize 模式下会触发（visualViewport 的双重保险）
+window.addEventListener('resize',handleViewportResize);
 window.addEventListener('orientationchange',function(){
   setTimeout(handleViewportResize,300);
 });
@@ -2413,58 +2416,64 @@ document.addEventListener('deviceready', function(){
   // ── 通知初始化 ─────────────────────────────────────────────────────────────
   if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
     var _notif = cordova.plugins.notification.local;
-    // 1. 创建高优先级通知 channel（Android 8+ 必须，否则无 heads-up 横幅）
+
+    // 1. 创建高优先级 channel（Android 8+）
+    //    参数名必须用插件原生 API：id / description / vibration / light / lockscreen
+    //    注意：channel 一旦创建 importance 不可降级；用新 ID 'gc_msgs_v2' 避免旧低级 channel 缓存
+    window._gcNotifChannelReady = false;
     try{
       if(typeof _notif.createChannel==='function'){
         _notif.createChannel({
-          channelId:'gc_messages',
-          channelName:'新消息通知',
-          importance:5,          // IMPORTANCE_HIGH
-          enableVibration:true,
-          enableLights:true,
-          lightColor:'#FF8FAE',
-          lockscreenVisibility:1 // VISIBILITY_PUBLIC
-        },function(){console.log('[Notif] channel created');});
+          id:          'gc_msgs_v2',
+          description: '新消息通知',
+          importance:  5,           // IMPORTANCE_HIGH → 显示 heads-up 横幅
+          vibration:   true,
+          light:       true,
+          lockscreen:  true,        // VISIBILITY_PUBLIC
+          sound:       'default'
+        }, function(){
+          window._gcNotifChannelReady = true;
+          console.log('[Notif] gc_msgs_v2 channel created (HIGH importance)');
+        });
       }
     }catch(e){console.log('[Notif] createChannel failed:',e);}
 
-    // 2. 检查权限：已授权则自动开启推送（无需用户手动进设置）
+    // 2. 检查/申请权限 → 自动同步 pushEnabled 开关（无需用户手动进设置）
     try{
       _notif.hasPermission(function(granted){
         if(granted){
-          // 已有权限：确保 pushEnabled 开关同步为开
-          if(localStorage.getItem('pushEnabled')!=='1'){
-            localStorage.setItem('pushEnabled','1');
-          }
+          localStorage.setItem('pushEnabled','1');
           updatePushToggleUI(true);
+          console.log('[Notif] permission already granted');
         } else {
-          // 首次安装或权限被撤销：自动申请（Android 13+ 必须 runtime 请求）
+          // Android 13+ (API33) 必须 runtime 申请 POST_NOTIFICATIONS
           _notif.requestPermission(function(g){
             if(g){
               localStorage.setItem('pushEnabled','1');
               updatePushToggleUI(true);
-              console.log('[Notif] permission granted automatically');
+              console.log('[Notif] permission granted');
             } else {
               localStorage.setItem('pushEnabled','0');
               updatePushToggleUI(false);
+              console.log('[Notif] permission DENIED');
             }
           });
         }
       });
-    }catch(e){console.log('[Cordova] permission check failed:',e);}
+    }catch(e){console.log('[Notif] permission check failed:',e);}
 
-    // 3. 点击系统通知时打开对应聊天
+    // 3. 点击通知时打开对应聊天
     try{
-      _notif.on('click',function(notification){
-        var data=notification.data;
-        if(data&&data.fromId&&typeof openChat==='function'){
+      _notif.on('click', function(notification){
+        var data = notification.data;
+        if(data && data.fromId && typeof openChat==='function'){
           setTimeout(function(){
             if(typeof show==='function')show('main');
             openChat(String(data.fromId));
-          },300);
+          }, 300);
         }
       });
-    }catch(e){console.log('[Cordova] notif click handler failed:',e);}
+    }catch(e){console.log('[Notif] click handler failed:',e);}
   }
   // ── 通知初始化结束 ──────────────────────────────────────────────────────────
 }, false);
@@ -4544,19 +4553,21 @@ function listenForAllMessages(force){
             // ═══ Cordova 原生 App：用本地通知插件（最可靠） ═══
             if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
               try{
-                cordova.plugins.notification.local.schedule({
-                  id: Math.floor(Date.now()%100000),
-                  title: notifTitle2,
-                  text: notifBody2,
+                // channelId 只有在高优先级 channel 创建成功后才传入；
+                // 若 channel 不存在而传入 channelId，Android 8+ 会静默丢弃通知
+                var _schedOpts = {
+                  id:         Math.floor(Date.now()%100000),
+                  title:      notifTitle2,
+                  text:       notifBody2,
                   foreground: true,
-                  wakeup: true,
-                  sound: 'default',
-                  vibrate: true,
-                  priority: 2,
-                  channelId: 'gc_messages',
-                  smallIcon: 'res://icon',
-                  data: { fromId: senderId }
-                });
+                  wakeup:     true,
+                  sound:      true,
+                  vibrate:    true,
+                  priority:   2,
+                  data:       { fromId: senderId }
+                };
+                if(window._gcNotifChannelReady) _schedOpts.channelId = 'gc_msgs_v2';
+                cordova.plugins.notification.local.schedule(_schedOpts);
               }catch(e0){console.log('[CordovaNotif] schedule failed:',e0);}
             }
             // 安卓PWA点通知直接打开App（SW处理）

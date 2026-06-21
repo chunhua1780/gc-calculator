@@ -67,6 +67,11 @@
         <edit-config target="/manifest/application" file="AndroidManifest.xml" mode="merge">
             <application android:usesCleartextTraffic="true" />
         </edit-config>
+
+        <!-- 键盘弹出时 WebView 缩小而非平移，input bar 自动上浮到键盘上方 -->
+        <edit-config target="/manifest/application/activity[@android:name='MainActivity']" file="AndroidManifest.xml" mode="merge">
+            <activity android:windowSoftInputMode="adjustResize" />
+        </edit-config>
     </platform>
 
     <!-- ═══ 核心：长连接保活插件 ═══ -->
