@@ -476,7 +476,7 @@ body{
 .screen > .scroll{flex:1 !important;min-height:0 !important;overflow-y:auto !important;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
 .screen > .tabs{flex-shrink:0 !important;width:100%;}
 /* chat页：cbg填满，ibar底部固定 */
-#chat{display:none;flex-direction:column;position:fixed;inset:0;}
+#chat{display:none;flex-direction:column;position:fixed;inset:0;will-change:height,top;transition:height 0.28s cubic-bezier(0.25,0.46,0.45,0.94),top 0.28s cubic-bezier(0.25,0.46,0.45,0.94);}
 #chat.active{display:flex;}
 #chat > .nav-bar{flex-shrink:0;}
 #chat > .cbg{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
@@ -1758,7 +1758,12 @@ async function subscribePush(){
               id: 1,
               title: '✅ GhostChat通知已开启',
               text: '以后有新消息会第一时间通知你',
-              foreground: true
+              foreground: true,
+              wakeup: true,
+              sound: 'default',
+              vibrate: true,
+              priority: 2,
+              channelId: 'gc_messages'
             });
           } else {
             alert('未获得通知权限\n请到手机设置 → 应用 → GhostChat → 通知 → 开启');
@@ -2301,26 +2306,32 @@ var G={
 
 // ═══ 启动 ═══
 // 键盘弹出时chat页面高度跟随，其余页面fixed不动
-var _chatKeyboardTimer=null;
+// rAF 合并同一帧内的连续 resize 事件，避免键盘滑入期间多次跳变；
+// CSS transition 负责从旧值平滑过渡到新值，整体效果：输入框随键盘平滑上升
+var _chatKbRaf=null;
+var _chatKbScrollTimer=null;
 function handleViewportResize(){
-  var vv=window.visualViewport;
-  var vvh=vv?vv.height:window.innerHeight;
-  var vvt=vv?vv.offsetTop:0;
-  // 只调整chat页，其他页面用fixed inset:0不受键盘影响
-  var chatEl=document.getElementById('chat');
-  if(chatEl&&chatEl.classList.contains('active')){
+  if(_chatKbRaf)cancelAnimationFrame(_chatKbRaf);
+  _chatKbRaf=requestAnimationFrame(function(){
+    _chatKbRaf=null;
+    var vv=window.visualViewport;
+    var vvh=vv?vv.height:window.innerHeight;
+    var vvt=vv?vv.offsetTop:0;
+    var chatEl=document.getElementById('chat');
+    if(!chatEl||!chatEl.classList.contains('active'))return;
+    // 恢复 transition（initChatLayout 会临时禁用）
+    chatEl.style.transition='';
     chatEl.style.height=vvh+'px';
     chatEl.style.top=vvt+'px';
     chatEl.style.bottom='';
-    // 键盘弹出/收起后滚到底，双rAF确保布局稳定后再滚
-    if(_chatKeyboardTimer)cancelAnimationFrame(_chatKeyboardTimer);
-    _chatKeyboardTimer=requestAnimationFrame(function(){
-      requestAnimationFrame(function(){
-        var cm=document.getElementById('chatMsgs');
-        if(cm)cm.scrollTop=cm.scrollHeight;
-      });
-    });
-  }
+    // 等 transition 结束后滚到底
+    if(_chatKbScrollTimer)clearTimeout(_chatKbScrollTimer);
+    _chatKbScrollTimer=setTimeout(function(){
+      _chatKbScrollTimer=null;
+      var cm=document.getElementById('chatMsgs');
+      if(cm)cm.scrollTop=cm.scrollHeight;
+    },320);
+  });
 }
 if(window.visualViewport){
   window.visualViewport.addEventListener('resize',handleViewportResize);
@@ -2329,14 +2340,19 @@ if(window.visualViewport){
 window.addEventListener('orientationchange',function(){
   setTimeout(handleViewportResize,300);
 });
-// chat页打开时初始化高度
+// chat页打开时初始化高度（不动画，避免进入动效异常）
 function initChatLayout(){
   var vv=window.visualViewport;
   var chatEl=document.getElementById('chat');
   if(!chatEl)return;
+  // 临时禁用 transition，确保初始定位是瞬间完成的
+  chatEl.style.transition='none';
   chatEl.style.height=(vv?vv.height:window.innerHeight)+'px';
   chatEl.style.top=(vv?vv.offsetTop:0)+'px';
   chatEl.style.bottom='';
+  // 强制 reflow 后恢复 transition（后续键盘事件才会有动画）
+  void chatEl.offsetHeight;
+  chatEl.style.transition='';
 }
 
 document.addEventListener('visibilitychange',function(){
@@ -2394,34 +2410,63 @@ document.addEventListener('deviceready', function(){
     console.log('[BackgroundMode] plugin not available');
   }
 
-  // 如果用户之前已经开启过推送，App重新打开时静默确认权限状态（不强制弹窗）
-  if(localStorage.getItem('pushEnabled')==='1' && window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
+  // ── 通知初始化 ─────────────────────────────────────────────────────────────
+  if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
+    var _notif = cordova.plugins.notification.local;
+    // 1. 创建高优先级通知 channel（Android 8+ 必须，否则无 heads-up 横幅）
     try{
-      cordova.plugins.notification.local.hasPermission(function(granted){
-        if(!granted){
-          // 权限被用户手动关闭了，同步本地状态
-          localStorage.setItem('pushEnabled','0');
-          updatePushToggleUI(false);
-        } else {
+      if(typeof _notif.createChannel==='function'){
+        _notif.createChannel({
+          channelId:'gc_messages',
+          channelName:'新消息通知',
+          importance:5,          // IMPORTANCE_HIGH
+          enableVibration:true,
+          enableLights:true,
+          lightColor:'#FF8FAE',
+          lockscreenVisibility:1 // VISIBILITY_PUBLIC
+        },function(){console.log('[Notif] channel created');});
+      }
+    }catch(e){console.log('[Notif] createChannel failed:',e);}
+
+    // 2. 检查权限：已授权则自动开启推送（无需用户手动进设置）
+    try{
+      _notif.hasPermission(function(granted){
+        if(granted){
+          // 已有权限：确保 pushEnabled 开关同步为开
+          if(localStorage.getItem('pushEnabled')!=='1'){
+            localStorage.setItem('pushEnabled','1');
+          }
           updatePushToggleUI(true);
+        } else {
+          // 首次安装或权限被撤销：自动申请（Android 13+ 必须 runtime 请求）
+          _notif.requestPermission(function(g){
+            if(g){
+              localStorage.setItem('pushEnabled','1');
+              updatePushToggleUI(true);
+              console.log('[Notif] permission granted automatically');
+            } else {
+              localStorage.setItem('pushEnabled','0');
+              updatePushToggleUI(false);
+            }
+          });
         }
       });
     }catch(e){console.log('[Cordova] permission check failed:',e);}
-  }
-  // 点击系统通知时打开对应聊天
-  if(window.cordova && window.cordova.plugins && window.cordova.plugins.notification){
+
+    // 3. 点击系统通知时打开对应聊天
     try{
-      cordova.plugins.notification.local.on('click', function(notification){
-        var data = notification.data;
-        if(data && data.fromId && typeof openChat==='function'){
+      _notif.on('click',function(notification){
+        var data=notification.data;
+        if(data&&data.fromId&&typeof openChat==='function'){
           setTimeout(function(){
             if(typeof show==='function')show('main');
             openChat(String(data.fromId));
-          }, 300);
+          },300);
         }
       });
     }catch(e){console.log('[Cordova] notif click handler failed:',e);}
   }
+  // ── 通知初始化结束 ──────────────────────────────────────────────────────────
 }, false);
 
 window.onload=async function(){
@@ -4504,6 +4549,12 @@ function listenForAllMessages(force){
                   title: notifTitle2,
                   text: notifBody2,
                   foreground: true,
+                  wakeup: true,
+                  sound: 'default',
+                  vibrate: true,
+                  priority: 2,
+                  channelId: 'gc_messages',
+                  smallIcon: 'res://icon',
                   data: { fromId: senderId }
                 });
               }catch(e0){console.log('[CordovaNotif] schedule failed:',e0);}
