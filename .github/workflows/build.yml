@@ -43,43 +43,59 @@ jobs:
         PLATFORM_RES=platforms/android/app/src/main/res
         MANIFEST=platforms/android/app/src/main/AndroidManifest.xml
 
-        # 1. 旧版 Android (<12) 通用回退主题：让 Activity 背景立即变品牌色，
-        #    避免 WebView 加载前出现任何白屏或默认图标
+        # 1. 品牌色注入 colors.xml（所有后续 theme 引用 @color/cdv_splash_bg）
+        #    Cordova 13 自动生成 values/themes.xml，里面已有 Theme.App.SplashScreen，
+        #    所以不能再创建 values/splash_theme.xml（会产生 Duplicate resources 错误）。
+        #    正确做法：只写 colors.xml，然后用 sed 把颜色注入现有的 themes.xml。
         mkdir -p $PLATFORM_RES/values
-        printf '%s\n' \
-          '<?xml version="1.0" encoding="utf-8"?>' \
-          '<resources>' \
-          '    <color name="cdv_splash_bg">#E8E0FF</color>' \
-          '    <style name="Theme.App.SplashScreen" parent="Theme.AppCompat.NoActionBar">' \
-          '        <item name="android:windowBackground">@color/cdv_splash_bg</item>' \
-          '        <item name="android:windowNoTitle">true</item>' \
-          '        <item name="android:windowFullscreen">false</item>' \
-          '    </style>' \
-          '</resources>' \
-          > $PLATFORM_RES/values/splash_theme.xml
         if [ ! -f $PLATFORM_RES/values/colors.xml ]; then
           printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<resources>' '</resources>' \
             > $PLATFORM_RES/values/colors.xml
         fi
+        # 追加品牌色（如果还没有）
+        if ! grep -q 'cdv_splash_bg' $PLATFORM_RES/values/colors.xml; then
+          sed -i 's|</resources>|    <color name="cdv_splash_bg">#E8E0FF</color>\n</resources>|' \
+            $PLATFORM_RES/values/colors.xml
+        fi
 
-        # 2. Android 12+ (API 31+) 专用：使用系统级 SplashScreen API，
-        #    纯品牌色背景 + 应用图标，彻底消除默认 Android 机器人 Logo
+        # 2. 旧版 Android (<12)：在 Cordova 已生成的 themes.xml 里的
+        #    Theme.App.SplashScreen 中追加 windowBackground，
+        #    让 Activity 在 WebView 加载前就显示品牌色（消除白屏和默认图标）
+        if [ -f $PLATFORM_RES/values/themes.xml ] && \
+           grep -q 'Theme.App.SplashScreen' $PLATFORM_RES/values/themes.xml && \
+           ! grep -q 'cdv_splash_bg' $PLATFORM_RES/values/themes.xml; then
+          sed -i '/<style name="Theme.App.SplashScreen"/a\        <item name="android:windowBackground">@color\/cdv_splash_bg<\/item>' \
+            $PLATFORM_RES/values/themes.xml
+          echo "[SplashBg] values/themes.xml patched with brand windowBackground"
+        fi
+
+        # 3. Android 12+ (API 31+)：同样先尝试 patch 已有的 values-v31/themes.xml；
+        #    如果 Cordova 没有生成该文件，才创建 splash_theme.xml（无重名冲突）
         mkdir -p $PLATFORM_RES/values-v31
-        printf '%s\n' \
-          '<?xml version="1.0" encoding="utf-8"?>' \
-          '<resources>' \
-          '    <color name="cdv_splash_bg">#E8E0FF</color>' \
-          '    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">' \
-          '        <item name="windowSplashScreenBackground">@color/cdv_splash_bg</item>' \
-          '        <item name="windowSplashScreenIconBackgroundColor">@color/cdv_splash_bg</item>' \
-          '        <item name="android:windowSplashScreenBrandingImage">@null</item>' \
-          '        <item name="postSplashScreenTheme">@style/Theme.AppCompat.NoActionBar</item>' \
-          '    </style>' \
-          '</resources>' \
-          > $PLATFORM_RES/values-v31/splash_theme.xml
+        if [ -f $PLATFORM_RES/values-v31/themes.xml ] && \
+           grep -q 'Theme.App.SplashScreen' $PLATFORM_RES/values-v31/themes.xml; then
+          # Patch 已有文件
+          if ! grep -q 'cdv_splash_bg' $PLATFORM_RES/values-v31/themes.xml; then
+            sed -i '/<style name="Theme.App.SplashScreen"/a\        <item name="windowSplashScreenBackground">@color\/cdv_splash_bg<\/item>\n        <item name="windowSplashScreenIconBackgroundColor">@color\/cdv_splash_bg<\/item>' \
+              $PLATFORM_RES/values-v31/themes.xml
+          fi
+          echo "[SplashBg] values-v31/themes.xml patched"
+        else
+          # Cordova 未在 values-v31 生成 themes.xml，安全创建我们的文件
+          printf '%s\n' \
+            '<?xml version="1.0" encoding="utf-8"?>' \
+            '<resources>' \
+            '    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">' \
+            '        <item name="windowSplashScreenBackground">@color/cdv_splash_bg</item>' \
+            '        <item name="windowSplashScreenIconBackgroundColor">@color/cdv_splash_bg</item>' \
+            '        <item name="postSplashScreenTheme">@style/Theme.AppCompat.NoActionBar</item>' \
+            '    </style>' \
+            '</resources>' \
+            > $PLATFORM_RES/values-v31/splash_theme.xml
+          echo "[SplashBg] values-v31/splash_theme.xml created"
+        fi
 
-        # 3. 将品牌启动主题应用到 MainActivity（替换掉 Cordova 默认 NoActionBar）
-        #    同时兼容有 / 没有 android:theme 属性两种情况
+        # 4. 将品牌启动主题应用到 MainActivity（替换掉 Cordova 默认主题）
         if grep -q 'android:theme=' $MANIFEST; then
           sed -i 's|android:theme="[^"]*"|android:theme="@style/Theme.App.SplashScreen"|g' $MANIFEST
         else
