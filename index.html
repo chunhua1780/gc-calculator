@@ -3851,6 +3851,7 @@ window.addEventListener('pagehide',function(){
 function _startMain(){
   ls('gatePassedPersist','1');
   sessionStorage.setItem('testGatePassed','1');
+  window._gcDisguiseMode=false; // 解锁完成，清除伪装标记
   if(!window._gcFastBoot){show('main');} // 已由 DOMContentLoaded 快速启动则跳过重复show
   _appWasActive=true;
   // 非关键初始化全部异步，不阻塞UI
@@ -3876,10 +3877,12 @@ function _needStartupLock(){
   return !!(cfg.lock&&lg('appLockPin'));
 }
 function _showStartupStealth(){
-  // hide 模式 → 先显示伪装界面（计算器/天气/时钟/备忘录）
-  // 非 hide 模式（工作模式）→ 直接显示锁屏 PIN
   var hideOn=lg('hide')==='true';
+  var hasPin=!!lg('appLockPin');
+  // 未设 PIN 且未开 hide 模式 → 强制伪装，防止冷启动直接暴露聊天界面
+  if(!hideOn&&!hasPin){hideOn=true;}
   G.hide=hideOn;G.dis=lg('dis')||'calculator';
+  window._gcDisguiseMode=true; // 标记：伪装界面已显示，window.onload 不得调 _startMain
   if(hideOn){
     var dm={weather:'dweather',calculator:'dcalc',clock:'dclk',note:'dnote'};
     show(dm[G.dis]||'dcalc');
@@ -3895,23 +3898,20 @@ function _fastBootSetName(){
   try{var _sn=lg('myName')||'';var _nd=document.getElementById('nameDisplay');if(_nd&&_sn)_nd.textContent=_sn;var _av=document.getElementById('avatarDisplay');if(_av&&_sn)_av.textContent=_sn[0].toUpperCase();}catch(e){}
 }
 
-// ★★★ 快速启动：DOMContentLoaded 时同步检查 localStorage，
-//     已登录用户无需等 window.onload，立刻显示界面+缓存列表 ★★★
+// ★★★ 快速启动：DOMContentLoaded 时同步检查 localStorage
+//     已登录且本 session 已解锁 → 直接进聊天；否则 → 无论何种模式先显示伪装界面 ★★★
 document.addEventListener('DOMContentLoaded', function(){
   if(lg('registered')==='true'&&lg('myId')){
     myId=lg('myId')||'';
     _fastBootSetName();
-    if(_needStartupLock()){
-      // 隐身/工作模式：先显示伪装界面或锁屏，等用户解锁后再初始化
-      _showStartupStealth();
-      // 不设置 _gcFastBoot，解锁后由 _startMain() show('main')
-    } else {
-      // 自由模式或本 session 已解锁：直接快速进入聊天
+    if(sessionStorage.getItem('testGatePassed')==='1'){
+      // 同一 session 已解锁过（用户未关闭标签页）→ 直接进聊天
       window._gcFastBoot=true;
-      ls('gatePassedPersist','1');
-      sessionStorage.setItem('testGatePassed','1');
       show('main');
       _renderChatListCache();
+    } else {
+      // 新 session（冷启动 / 重新打开）→ 无论任何模式先显示伪装界面
+      _showStartupStealth();
     }
   }else{
     // 未登录：立即显示注册页，不白屏等待
@@ -3921,14 +3921,13 @@ document.addEventListener('DOMContentLoaded', function(){
       if(ok&&lg('myId')&&lg('registered')){
         myId=lg('myId')||'';
         _fastBootSetName();
-        if(_needStartupLock()){
-          _showStartupStealth();
-        } else {
+        if(sessionStorage.getItem('testGatePassed')==='1'){
           window._gcFastBoot=true;
-          ls('gatePassedPersist','1');
-          sessionStorage.setItem('testGatePassed','1');
           show('main');
           _renderChatListCache();
+          _saveDeviceToken(myId);
+        } else {
+          _showStartupStealth();
           _saveDeviceToken(myId);
         }
       }else{
@@ -3984,7 +3983,8 @@ window.onload=async function(){
   // ★★★ 永久登录守卫（保护凭证，不干扰隐身锁屏逻辑）★★★
   (function _permanentLoginGuard(){
     function _guardSetSession(){
-      // 仅非锁屏模式才自动写 session（锁屏模式需要用户手动解锁才能写）
+      // 伪装界面尚未解锁时不写 session，防止冷启动绕过伪装
+      if(window._gcDisguiseMode)return;
       var _m=lg('focusMode')||'free';
       var _c=(typeof FOCUS_MODES!=='undefined'&&FOCUS_MODES[_m])||{lock:false};
       if(!_c.lock||!lg('appLockPin'))sessionStorage.setItem('testGatePassed','1');
@@ -4100,6 +4100,10 @@ window.onload=async function(){
           show('reg');
         }
       }).catch(function(){clearTimeout(_regShowTimer);show('reg');});
+    } else if(window._gcDisguiseMode){
+      // DOMContentLoaded 已显示伪装界面，等用户解锁后由 _startMain() 接管
+      // 后台仅同步设置，不触发任何聊天初始化
+      pullSettings().catch(function(e){console.log('[Startup] pullSettings failed:',e&&e.message);});
     } else {
       _startMain();
     }
