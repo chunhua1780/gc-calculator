@@ -572,7 +572,7 @@ function renderMsgs(){
     var inPaw=(s&&i===_lastReadSentIdx)?'<span style="display:inline-block;margin-left:5px;font-size:12px;opacity:0.65;vertical-align:bottom;line-height:1;">🐾</span>':'';
     // 气泡：我发未读→暖橙；我发已读→bub-read白底暗字立体；收到→自然色
     var bubSty='';
-    if(s&&m.id!=null&&!m.failed&&!m.read){bubSty=' style="background:#ff8c5a;color:#fff;"';}
+    if(s&&m.id!=null&&!m.failed&&!m.read){bubSty=' style="background:var(--cs-sent-unread,#ff8c5a);color:#fff;"';}
     var bubCls='bub'+(s&&m.read&&m.id!=null?' bub-read':'');
     var midAttr=(s&&m.id!=null)?(' data-mid="'+m.id+'"'):'';
     html+='<div class="mr '+(s?'s':'r')+'"><div class="'+bubCls+'"'+midAttr+bubSty+'>'+b+inPaw+'</div><div class="mt">'+m.t+statusTick+'</div></div>';
