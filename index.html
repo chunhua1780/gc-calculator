@@ -3389,7 +3389,7 @@ function setLang(code){
 
 
 // ═══ 核心版本 ═══
-var CORE_VERSION='v1.69';
+var CORE_VERSION='v1.70';
 
 // ═══ 广告系统配置（统一后台广告）═══
 var ADS_CONFIG = {
@@ -3956,38 +3956,43 @@ function _fastBootSetName(){
 // ★★★ 快速启动：DOMContentLoaded 时同步检查 localStorage
 //     已登录且本 session 已解锁 → 直接进聊天；否则 → 无论何种模式先显示伪装界面 ★★★
 document.addEventListener('DOMContentLoaded', function(){
-  if(lg('registered')==='true'&&lg('myId')){
+  var _hasLocal=lg('registered')==='true'&&lg('myId')&&lg('gcDevTok');
+  var _tokenExp=parseInt(lg('tokenExpiry')||'0');
+  var _tokenOk=_tokenExp>Date.now();
+
+  if(_hasLocal&&_tokenOk){
+    // ★ Token 有效 → 直接快速启动
     myId=lg('myId')||'';
     _fastBootSetName();
     if(sessionStorage.getItem('testGatePassed')==='1'){
-      // 同一 session 已解锁过（用户未关闭标签页）→ 直接进聊天
-      window._gcFastBoot=true;
-      show('main');
-      _renderChatListCache();
-    } else {
-      // 新 session（冷启动 / 重新打开）→ 无论任何模式先显示伪装界面
+      window._gcFastBoot=true;show('main');_renderChatListCache();
+    }else{
       _showStartupStealth();
     }
+  }else if(_hasLocal&&!_tokenOk){
+    // ★ Token 过期 → 向服务器刷新；期间先显示登录页（不白屏）
+    show('reg');
+    _tryRefreshToken().then(function(ok){
+      if(ok&&lg('myId')){
+        myId=lg('myId')||'';_fastBootSetName();
+        _showStartupStealth();
+      }else{
+        myId=null;show('reg');switchTo('login');
+      }
+    });
   }else{
-    // 未登录：立即显示注册页，不白屏等待
+    // ★ 无本地凭据 → 尝试多层恢复（IDB → Cookie → Server Token）
     var _qt=setTimeout(function(){show('reg');},50);
     _restoreSession().then(function(ok){
       clearTimeout(_qt);
       if(ok&&lg('myId')&&lg('registered')){
-        myId=lg('myId')||'';
-        _fastBootSetName();
+        myId=lg('myId')||'';_fastBootSetName();
         if(sessionStorage.getItem('testGatePassed')==='1'){
-          window._gcFastBoot=true;
-          show('main');
-          _renderChatListCache();
-          _saveDeviceToken(myId);
-        } else {
-          _showStartupStealth();
-          _saveDeviceToken(myId);
+          window._gcFastBoot=true;show('main');_renderChatListCache();_saveDeviceToken(myId);
+        }else{
+          _showStartupStealth();_saveDeviceToken(myId);
         }
-      }else{
-        show('reg');
-      }
+      }else{show('reg');}
     }).catch(function(){clearTimeout(_qt);show('reg');});
   }
 });
@@ -4531,12 +4536,42 @@ function _genToken(){
 function _saveDeviceToken(uid){
   if(!uid)return;
   var tok=lg('gcDevTok')||_genToken();
-  ls('gcDevTok',tok);
-  _ckSet('gcDevTok',tok);
+  ls('gcDevTok',tok);_ckSet('gcDevTok',tok);
+  // access_token 本地 7 天有效期
+  ls('tokenExpiry',String(Date.now()+7*24*60*60*1000));
   _sb.from('device_tokens').upsert({
     token:tok,user_id:parseInt(uid)||0,
     user_name:lg('myName')||'',last_used:new Date().toISOString()
   },{onConflict:'token'}).then(function(){}).catch(function(){});
+}
+// 清除所有本地凭据（供登出 + 强制踢出使用）
+function _clearAllCredentials(){
+  ['registered','gatePassedPersist','sessionToken','pin','myId','myName','gcDevTok','myEmail','rescueCode','appLockPin','tokenExpiry'].forEach(function(k){ls(k,'');});
+  ['myId','registered','pin','myName','myEmail','gcDevTok','rescueCode'].forEach(function(k){
+    try{document.cookie='gc_'+k+'=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax';}catch(e){}
+  });
+  try{sessionStorage.clear();}catch(e){}
+}
+// Token 刷新：用 device token 向服务器验证，成功则续期本地 access token
+async function _tryRefreshToken(){
+  var tok=lg('gcDevTok'),uid=lg('myId');
+  if(!tok||!uid)return false;
+  try{
+    var r=await _sb.from('device_tokens').select('user_id').eq('token',tok).eq('user_id',parseInt(uid)||0).maybeSingle();
+    if(r&&r.data){
+      // Server 确认有效 → 续期 7 天
+      ls('tokenExpiry',String(Date.now()+7*24*60*60*1000));
+      _sb.from('device_tokens').update({last_used:new Date().toISOString()}).eq('token',tok).then(function(){}).catch(function(){});
+      return true;
+    }
+    // Server 无此 token（被 logout 删除 / 已过期）→ 强制清除
+    _clearAllCredentials();
+    return false;
+  }catch(e){
+    // 网络不通时给 1 小时宽限期（离线模式），不强制踢出
+    if(!navigator.onLine){ls('tokenExpiry',String(Date.now()+60*60*1000));return true;}
+    return false;
+  }
 }
 async function _restoreFromToken(){
   try{
@@ -5167,11 +5202,9 @@ async function doLogin(){
 
   // 登录成功：保存凭据（密码只存本地）
   myId=String(res.data.id);
-  ls('myId',myId);
-  ls('myName',res.data.name);
-  ls('pin',pin);
-  G.pin=pin;
+  ls('myId',myId);ls('myName',res.data.name);ls('pin',pin);G.pin=pin;
   ls('registered','true');
+  ls('tokenExpiry',String(Date.now()+7*24*60*60*1000)); // 7-day access token
   await _backupCredentials();
   _saveDeviceToken(myId);
   await pullSettings();
