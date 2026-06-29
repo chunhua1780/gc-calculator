@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="GhostChat" />
+  <meta name="theme-color" content="#E8E0FF" />
+  <title>GhostChat — Private Chat</title>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #F5F3F8;
+      color: #333;
+      overflow: hidden;
+      position: fixed;
+    }
+
+    /* ─── Splash Screen with Smooth Transition ─── */
+    .splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(160deg, #FBE9F0 0%, #E7E0F9 100%);
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.6s cubic-bezier(0.2, 0, 0.2, 1);
+    }
+
+    .splash.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .splash-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .splash-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF8FAE, #E8729A);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: white;
+      box-shadow: 0 8px 24px rgba(232, 114, 154, 0.3);
+      animation: splash-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes splash-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .splash-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #5B5470;
+      text-align: center;
+    }
+
+    .splash-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(91, 84, 112, 0.1);
+      border-top-color: #FF8FAE;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ─── Main Chat Container ─── */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      background: #F5F3F8;
+      opacity: 0;
+      transition: opacity 0.6s cubic-bezier(0.2, 0, 0.2, 1);
+    }
+
+    .app-container.visible {
+      opacity: 1;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #FF8FAE, #E8729A);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(232, 114, 154, 0.15);
+      padding-top: max(12px, env(safe-area-inset-top));
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* ─── Messages Container ─── */
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 16px;
+      max-width: 85%;
+      word-wrap: break-word;
+      animation: message-in 0.3s ease-out;
+    }
+
+    @keyframes message-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.sent {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #FF8FAE, #E8729A);
+      color: white;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 2px 8px rgba(232, 114, 154, 0.2);
+    }
+
+    .message.received {
+      align-self: flex-start;
+      background: white;
+      color: #333;
+      border: 1px solid #E8E0FF;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 8px rgba(120, 90, 140, 0.08);
+    }
+
+    .message-time {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #999;
+      text-align: center;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #B0A4C4;
+    }
+
+    /* ─── Input Container with Keyboard Handling ─── */
+    .input-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      padding: 12px 16px;
+      background: white;
+      border-top: 1px solid #E8E0FF;
+      flex-shrink: 0;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      
+      /* Critical: Prevent input from being hidden by keyboard */
+      position: relative;
+      z-index: 100;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #F5F3F8;
+      border-radius: 24px;
+      border: 1px solid #E8E0FF;
+      padding: 0 16px;
+      transition: all 0.2s ease;
+    }
+
+    .input-wrapper.focused {
+      border-color: #FF8FAE;
+      background: white;
+      box-shadow: 0 2px 8px rgba(255, 143, 174, 0.12);
+    }
+
+    .chat-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 12px 0;
+      font-size: 16px;
+      color: #333;
+      max-height: 100px;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+      -webkit-appearance: none;
+    }
+
+    .chat-input::placeholder {
+      color: #C9C0DD;
+    }
+
+    .send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF8FAE, #E8729A);
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(232, 114, 154, 0.2);
+    }
+
+    .send-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 4px rgba(232, 114, 154, 0.15);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ─── Notification Card Style with Animation ─── */
+    .notification-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      max-width: 380px;
+      z-index: 9000;
+      animation: slide-in 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+    }
+
+    @keyframes slide-in {
+      from {
+        transform: translateX(400px) translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .notification-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      border-left: 4px solid #FF8FAE;
+    }
+
+    .notification-header {
+      background: linear-gradient(135deg, rgba(255, 143, 174, 0.1), rgba(232, 114, 154, 0.08));
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #F0E8F8;
+    }
+
+    .notification-title {
+      font-weight: 700;
+      color: #5B5470;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .notification-close {
+      background: none;
+      border: none;
+      color: #C9C0DD;
+      cursor: pointer;
+      font-size: 18px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease;
+    }
+
+    .notification-close:hover {
+      color: #5B5470;
+    }
+
+    .notification-body {
+      padding: 16px;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .notification-footer {
+      padding: 12px 16px;
+      border-top: 1px solid #F0E8F8;
+      display: flex;
+      gap: 8px;
+    }
+
+    .notification-action {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .notification-action-primary {
+      background: linear-gradient(135deg, #FF8FAE, #E8729A);
+      color: white;
+    }
+
+    .notification-action-primary:active {
+      transform: scale(0.98);
+    }
+
+    .notification-action-secondary {
+      background: #F5F3F8;
+      color: #5B5470;
+    }
+
+    .notification-action-secondary:active {
+      background: #E8E0FF;
+    }
+
+    /* ─── Connection Status Modal ─── */
+    .connection-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #FF8FAE;
+      color: white;
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 9500;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease;
+      padding-top: max(8px, env(safe-area-inset-top));
+    }
+
+    .connection-banner.show {
+      transform: translateY(0);
+    }
+
+    /* ─── Keyboard Visibility Adjustment ─── */
+    @media (max-height: 600px) {
+      .header-status {
+        display: none;
+      }
+    }
+
+    /* Prevent layout shift on keyboard open */
+    body.keyboard-open .messages-container {
+      padding-bottom: 8px;
+    }
+
+    /* Safe area support */
+    @supports(padding: max(0px)) {
+      body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom Splash Screen with Smooth Transition -->
+  <div class="splash" id="splash">
+    <div class="splash-content">
+      <div class="splash-logo">👻</div>
+      <div class="splash-text">GhostChat</div>
+      <div class="splash-spinner"></div>
+    </div>
+  </div>
+
+  <!-- Main Application -->
+  <div class="app-container" id="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-title">GhostChat</div>
+      <div class="header-status">
+        <span class="status-dot"></span>
+        <span id="status-text">Connected</span>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div class="messages-container" id="messagesContainer">
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        <div class="empty-text">No messages yet. Start a conversation!</div>
+      </div>
+    </div>
+
+    <!-- Input Container -->
+    <div class="input-container" id="inputContainer">
+      <div class="input-wrapper" id="inputWrapper">
+        <textarea
+          id="chatInput"
+          class="chat-input"
+          placeholder="Type a message..."
+          rows="1"
+          maxlength="2000"
+        ></textarea>
+      </div>
+      <button class="send-btn" id="sendBtn" title="Send message">
+        ➤
+      </button>
+    </div>
+  </div>
+
+  <!-- Connection Status Banner -->
+  <div class="connection-banner" id="connectionBanner">
+    Reconnecting...
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // GhostChat Application - Fixed with Stability, Splash, Keyboard, and Notification UI
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    class GhostChatApp {
+      constructor() {
+        this.messages = [];
+        this.isConnected = false;
+        this.isMinimized = false;
+        this.keyboardVisible = false;
+        this.messageBuffer = [];
+        
+        this.initializeDOM();
+        this.setupAppLifecycle();
+        this.setupKeyboardHandling();
+        this.setupInputHandling();
+        this.registerServiceWorker();
+        this.showSplashScreen();
+        this.setupVisibilityHandling();
+        this.setupNotificationSupport();
+      }
+
+      initializeDOM() {
+        this.splash = document.getElementById('splash');
+        this.app = document.getElementById('app');
+        this.messagesContainer = document.getElementById('messagesContainer');
+        this.chatInput = document.getElementById('chatInput');
+        this.inputWrapper = document.getElementById('inputWrapper');
+        this.inputContainer = document.getElementById('inputContainer');
+        this.sendBtn = document.getElementById('sendBtn');
+        this.connectionBanner = document.getElementById('connectionBanner');
+        this.statusText = document.getElementById('status-text');
+      }
+
+      // ─── Splash Screen with Smooth Transition ─── 
+      showSplashScreen() {
+        // Keep splash for 800ms then fade out
+        setTimeout(() => {
+          this.splash.classList.add('hidden');
+          this.app.classList.add('visible');
+          
+          // Fully remove splash after animation
+          setTimeout(() => {
+            this.splash.style.display = 'none';
+          }, 600);
+        }, 800);
+      }
+
+      // ─── App Lifecycle: Prevent Unexpected Exit ───
+      setupAppLifecycle() {
+        // Handle app pause/resume on Android
+        document.addEventListener('pause', () => {
+          this.handleAppPause();
+        });
+
+        document.addEventListener('resume', () => {
+          this.handleAppResume();
+        });
+
+        // Handle visibility change (browser tab/window)
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            this.handleAppMinimize();
+          } else {
+            this.handleAppRestore();
+          }
+        });
+
+        // Prevent accidental back button exit
+        document.addEventListener('backbutton', (e) => {
+          e.preventDefault();
+          // Only exit if already at root (chat screen)
+          // Additional back nav could be added here
+          if (this.messages.length === 0) {
+            navigator.app?.exitApp?.();
+          }
+        });
+
+        // Prevent default Android exit behavior
+        window.addEventListener('unload', (e) => {
+          // Save state before exit
+          this.saveState();
+        });
+      }
+
+      handleAppPause() {
+        this.isMinimized = true;
+        console.log('App paused - state preserved');
+        this.saveState();
+      }
+
+      handleAppResume() {
+        this.isMinimized = false;
+        console.log('App resumed - restoring state');
+        this.restoreState();
+        this.refreshConnection();
+      }
+
+      handleAppMinimize() {
+        this.isMinimized = true;
+        this.saveState();
+      }
+
+      handleAppRestore() {
+        this.isMinimized = false;
+        this.restoreState();
+        this.refreshConnection();
+      }
+
+      saveState() {
+        try {
+          localStorage.setItem('gc_messages', JSON.stringify(this.messages));
+          localStorage.setItem('gc_timestamp', Date.now().toString());
+        } catch (e) {
+          console.warn('Could not save state:', e);
+        }
+      }
+
+      restoreState() {
+        try {
+          const saved = localStorage.getItem('gc_messages');
+          if (saved) {
+            this.messages = JSON.parse(saved);
+            this.renderMessages();
+          }
+        } catch (e) {
+          console.warn('Could not restore state:', e);
+        }
+      }
+
+      refreshConnection() {
+        // Simulate reconnection
+        this.setConnected(true);
+      }
+
+      // ─── Keyboard Handling: Keep Input Above Keyboard ───
+      setupKeyboardHandling() {
+        // Listen for keyboard show/hide events
+        if (window.cordova?.exec) {
+          // Cordova keyboard plugin
+          window.addEventListener('keyboardshow', () => {
+            this.handleKeyboardShow();
+          });
+
+          window.addEventListener('keyboardhide', () => {
+            this.handleKeyboardHide();
+          });
+        }
+
+        // Fallback: Monitor input focus and window resize
+        this.chatInput.addEventListener('focus', () => {
+          this.handleKeyboardShow();
+        });
+
+        this.chatInput.addEventListener('blur', () => {
+          this.handleKeyboardHide();
+        });
+
+        // Detect keyboard via resize (handles mobile browsers)
+        let lastHeight = window.innerHeight;
+        window.addEventListener('resize', () => {
+          const newHeight = window.innerHeight;
+          if (newHeight < lastHeight * 0.75) {
+            this.handleKeyboardShow();
+          } else if (newHeight > lastHeight * 0.9) {
+            this.handleKeyboardHide();
+          }
+          lastHeight = newHeight;
+        });
+
+        // Handle orientationchange
+        window.addEventListener('orientationchange', () => {
+          setTimeout(() => {
+            this.scrollToBottom();
+          }, 300);
+        });
+      }
+
+      handleKeyboardShow() {
+        this.keyboardVisible = true;
+        document.body.classList.add('keyboard-open');
+        
+        // Ensure input stays visible
+        setTimeout(() => {
+          this.inputContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          this.scrollToBottom();
+        }, 100);
+      }
+
+      handleKeyboardHide() {
+        this.keyboardVisible = false;
+        document.body.classList.remove('keyboard-open');
+      }
+
+      // ─── Input Handling ───
+      setupInputHandling() {
+        this.chatInput.addEventListener('input', () => {
+          this.adjustTextareaHeight();
+          this.updateSendButtonState();
+        });
+
+        this.chatInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.sendMessage();
+          }
+        });
+
+        this.sendBtn.addEventListener('click', () => {
+          this.sendMessage();
+        });
+      }
+
+      adjustTextareaHeight() {
+        this.chatInput.style.height = 'auto';
+        this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 100) + 'px';
+      }
+
+      updateSendButtonState() {
+        const isEmpty = !this.chatInput.value.trim();
+        this.sendBtn.disabled = isEmpty;
+        this.sendBtn.style.opacity = isEmpty ? '0.5' : '1';
+      }
+
+      sendMessage() {
+        const text = this.chatInput.value.trim();
+        if (!text) return;
+
+        const message = {
+          id: Date.now(),
+          text,
+          type: 'sent',
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        this.messages.push(message);
+        this.renderMessages();
+        this.chatInput.value = '';
+        this.adjustTextareaHeight();
+        this.updateSendButtonState();
+        this.scrollToBottom();
+        this.saveState();
+
+        // Simulate echo response
+        setTimeout(() => {
+          this.receiveMessage(`Echo: ${text}`);
+        }, 1000);
+      }
+
+      receiveMessage(text) {
+        const message = {
+          id: Date.now(),
+          text,
+          type: 'received',
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        };
+
+        this.messages.push(message);
+        this.renderMessages();
+        this.scrollToBottom();
+        this.saveState();
+      }
+
+      renderMessages() {
+        if (this.messages.length === 0) {
+          this.messagesContainer.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">💬</div>
+              <div class="empty-text">No messages yet. Start a conversation!</div>
+            </div>
+          `;
+          return;
+        }
+
+        this.messagesContainer.innerHTML = this.messages.map(msg => `
+          <div class="message ${msg.type}">
+            <div>${this.escapeHTML(msg.text)}</div>
+            <div class="message-time">${msg.timestamp}</div>
+          </div>
+        `).join('');
+      }
+
+      scrollToBottom() {
+        setTimeout(() => {
+          this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        }, 10);
+      }
+
+      // ─── Visibility and Connection Handling ───
+      setupVisibilityHandling() {
+        // Monitor network connection
+        window.addEventListener('online', () => {
+          this.setConnected(true);
+        });
+
+        window.addEventListener('offline', () => {
+          this.setConnected(false);
+        });
+
+        // Initial connection state
+        this.setConnected(navigator.onLine ?? true);
+      }
+
+      setConnected(connected) {
+        this.isConnected = connected;
+        this.statusText.textContent = connected ? 'Connected' : 'Offline';
+        if (!connected) {
+          this.connectionBanner.classList.add('show');
+        } else {
+          this.connectionBanner.classList.remove('show');
+        }
+      }
+
+      // ─── Notification Support ───
+      setupNotificationSupport() {
+        // Listen for messages from service worker
+        navigator.serviceWorker?.controller?.postMessage({
+          type: 'SUBSCRIBE_NOTIFICATIONS'
+        });
+
+        if (navigator.serviceWorker) {
+          navigator.serviceWorker.addEventListener('message', (e) => {
+            if (e.data.type === 'NOTIFICATION_RECEIVED') {
+              this.showNotification(e.data.payload);
+            }
+          });
+        }
+
+        // Handle notification click
+        if (window.Notification && Notification.permission === 'granted') {
+          navigator.serviceWorker?.ready.then(reg => {
+            // Notifications handled in sw.js
+          });
+        }
+      }
+
+      showNotification(data) {
+        // Show in-app card-style notification
+        const container = document.createElement('div');
+        container.className = 'notification-container';
+        
+        container.innerHTML = `
+          <div class="notification-card">
+            <div class="notification-header">
+              <div class="notification-title">${this.escapeHTML(data.title || 'New Message')}</div>
+              <button class="notification-close" aria-label="Close">✕</button>
+            </div>
+            <div class="notification-body">
+              ${this.escapeHTML(data.body || 'You have a new notification')}
+            </div>
+            <div class="notification-footer">
+              <button class="notification-action notification-action-primary">Open</button>
+              <button class="notification-action notification-action-secondary">Dismiss</button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(container);
+
+        const closeBtn = container.querySelector('.notification-close');
+        const openBtn = container.querySelector('.notification-action-primary');
+        const dismissBtn = container.querySelector('.notification-action-secondary');
+
+        const remove = () => {
+          container.style.animation = 'slide-in 0.4s cubic-bezier(0.2, 0, 0.2, 1) reverse';
+          setTimeout(() => container.remove(), 400);
+        };
+
+        closeBtn.addEventListener('click', remove);
+        dismissBtn.addEventListener('click', remove);
+        openBtn.addEventListener('click', () => {
+          this.receiveMessage(`📢 ${data.title || 'Notification'}`);
+          remove();
+        });
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(remove, 5000);
+      }
+
+      // ─── Service Worker Registration ───
+      registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('../sw.js').catch(err => {
+            console.warn('ServiceWorker registration failed:', err);
+          });
+        }
+      }
+
+      // ─── Utility Functions ───
+      escapeHTML(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    }
+
+    // Initialize app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        window.ghostchatApp = new GhostChatApp();
+      });
+    } else {
+      window.ghostchatApp = new GhostChatApp();
+    }
+
+    // Handle app lifecycle events
+    document.addEventListener('deviceready', () => {
+      console.log('Device ready - Cordova initialized');
+      if (window.ghostchatApp) {
+        window.ghostchatApp.refreshConnection();
+      }
+    });
+  </script>
+</body>
+</html>
