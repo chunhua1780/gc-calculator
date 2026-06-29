@@ -5950,7 +5950,16 @@ setInterval(function(){
   if(mainEl&&mainEl.classList.contains('active')){
     loadContacts();
   }
-},60000);
+},15000);
+
+// 切回前台时立即同步聊天室消息（loadContacts 由另一个 visibilitychange 处理）
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState!=='visible'||!lg('registered'))return;
+  var chatEl=document.getElementById('chat');
+  if(chatEl&&chatEl.classList.contains('active')&&G.chat){
+    syncRoomMessages(G.chat).catch(function(){});
+  }
+});
 
 async function joinRoom(name){
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
@@ -5980,7 +5989,7 @@ async function joinRoom(name){
           if(G.chat===name)renderMsgs();
           saveLocalMsgs(name,list);
           var lastM=list[list.length-1];
-          if(lastM&&lastM.sent)updateLastPreview(name,lastM.type==='text'?lastM.text:('['+lastM.type+']'),lastM.type,false,lastM.read?'read':'sent',lastM.ts);
+          if(lastM&&lastM.sent)updateLastPreview(name,lastM.type==='text'?lastM.text:('['+lastM.type+']'),lastM.type,false,lastM.read?'read':(lastM.delivered?'delivered':'sent'),lastM.ts);
         }
       })
       .subscribe();
@@ -6014,7 +6023,18 @@ async function joinRoom(name){
           if(G.chat===name)scheduleMarkRoomRead(name);
         }
         updateLastPreview(m.sender,m.type==='text'?m.content:('['+m.type+']'),m.type,true,null);
-      }).subscribe(function(status){console.log('Realtime:',status);});
+      }).subscribe(function(status){
+        console.log('Realtime:',status);
+        if((status==='CLOSED'||status==='CHANNEL_ERROR')&&G.chat&&currentRoom){
+          var _roomSnap=currentRoom,_nameSnap=G.chat;
+          setTimeout(function(){
+            if(G.chat===_nameSnap&&currentRoom===_roomSnap){
+              realtimeSub=null;
+              joinRoom(_nameSnap).catch(function(){});
+            }
+          },3000);
+        }
+      });
   }catch(e){console.log('realtime channel setup failed:',e&&e.message);}
 
   await syncRoomMessages(name);
@@ -6037,8 +6057,6 @@ function cleanupMediaMessage(id,url,expired){
 
 // 拉取服务器上该房间的消息，与本地缓存合并去重，并刷新界面
 async function syncRoomMessages(name){
-  // 已删联系人：不从 DB 拉取历史，保持本地清空状态
-  if(typeof isDeletedContact==='function'&&isDeletedContact(name))return;
   var localMsgs=loadLocalMsgs(name);
   try{
   var a=parseInt(myId)||myId, b=parseInt(name)||name;
@@ -6080,7 +6098,7 @@ async function syncRoomMessages(name){
       if(msg.type==='text'&&msg.text&&msg.text.length>2000)msg.text='[Message]';
       if(msg.sent){
         // 我发出的消息：用对方的last_read时间点判断对方是否已读
-        msg.delivered=true;
+        msg.delivered=!!m.delivered;
         msg.read=(otherLastRead>=msg.ts)||!!prevReadIds[m.id];
       }else{
         msg.delivered=true;msg.read=true;
@@ -6131,7 +6149,7 @@ async function syncRoomMessages(name){
   if(merged.length>prevLen){
     var last=merged[merged.length-1];
     var isUnread=!last.sent&&G.chat!==name;
-    var rs=last.sent?(last.read?'read':'sent'):null;
+    var rs=last.sent?(last.read?'read':(last.delivered?'delivered':'sent')):null;
     updateLastPreview(name,last.type==='text'?last.text:('['+last.type+']'),last.type,isUnread,rs,last.ts);
     if(isUnread){addUnread(name);sendNotif();}
   }
@@ -6612,7 +6630,10 @@ function _onConvChange(p){
   var mid=String(myId),iMid=parseInt(mid)||0;
   var otherId=String(conv.user1===iMid?conv.user2:conv.user1);
   if(isBlocked&&isBlocked(otherId))return;
-  if(isDeletedContact&&isDeletedContact(otherId))return;
+  if(isDeletedContact&&isDeletedContact(otherId)){
+    var _dlc2=getDeletedContacts();
+    setDeletedContacts(_dlc2.filter(function(x){return x!==otherId;}));
+  }
   var ts=conv.last_ts||new Date(conv.updated_at).getTime()||Date.now();
   var content=conv.last_msg||'';
   var type=conv.last_type||'text';
@@ -6640,8 +6661,11 @@ function listenForAllMessages(){
       if(m.type==='read_receipt'||m.type==='gc_del')return;
       var senderId=parts[0]===mid?parts[1]:parts[0];
       if(isBlocked(senderId))return;
-      // 永久删除的联系人：静默丢弃，不让其因新消息复活
-      if(isDeletedContact(senderId))return;
+      // 删除聊天只影响列表显示，不阻止收消息；收到新消息时自动恢复
+      if(isDeletedContact(senderId)){
+        var _dlr=getDeletedContacts();
+        setDeletedContacts(_dlr.filter(function(x){return x!==senderId;}));
+      }
       if(m.type==='recall'){
         var tgtG=(G.msgs[senderId]||[]).find(function(x){return String(x.id)===String(m.content);});
         if(tgtG){tgtG.type='recalled';tgtG.text='';tgtG.src=null;if(G.chat===senderId)renderMsgs();saveLocalMsgs(senderId,G.msgs[senderId]);}
@@ -6880,8 +6904,10 @@ function renderMsgs(){
     var bubExtra='';
     if(s){
       if(m.failed){statusTick='<span style="color:#ff3b30;font-size:11px;margin-left:2px;cursor:pointer;" title="发送失败，点重试" onclick="retrySendText(this)">⚠️失败</span>';}
-      else if(m.id==null||m.loading){statusTick='<span class="msg-tick" title="发送中">🌱</span>';}
+      else if(m.id==null||m.loading){statusTick='<span style="color:#aaa;font-size:11px;margin-left:2px;" title="发送中">🕐</span>';}
       else if(m.read){bubExtra='<span class="msg-paw" title="对方已读">🐾</span>';}
+      else if(m.delivered){statusTick='<span style="color:#34c759;font-size:11px;margin-left:2px;font-weight:700;letter-spacing:-1px;" title="已送达">✓✓</span>';}
+      else{statusTick='<span style="color:#8e8e93;font-size:11px;margin-left:2px;font-weight:700;" title="已发送">✓</span>';}
     }
     var bubCls='bub'+(s&&m.read?' bub-read':'');
     var midAttr=(s&&m.id!=null)?(' data-mid="'+m.id+'"'):'';
@@ -7135,7 +7161,13 @@ function retryFailedMsgs(){
   }
   next();
 }
-window.addEventListener('online',function(){setTimeout(retryFailedMsgs,800);});
+window.addEventListener('online',function(){
+  setTimeout(function(){
+    retryFailedMsgs();
+    if(G.chat){syncRoomMessages(G.chat).catch(function(){});}
+    _lastContactsLoad=0;loadContacts();
+  },800);
+});
 
 // ═══ 键盘高度自动适配（APK + 移动浏览器通用）═══
 // 使用 visualViewport API 检测软键盘高度，动态上移聊天窗口
@@ -7229,10 +7261,11 @@ function updateLastPreview(cid,content,type,highlight,readState,ts){
   lastEl.textContent=label;
   if(highlight){lastEl.style.color='#d4537e';lastEl.style.fontWeight='600';}
   else if(readState==='sent'){lastEl.style.color='var(--theme-accent1,#a18cd1)';lastEl.style.fontWeight='600';}
+  else if(readState==='delivered'){lastEl.style.color='var(--theme-accent1,#a18cd1)';lastEl.style.fontWeight='600';}
   else if(readState==='read'){lastEl.style.color='var(--theme-icon,#8e8e93)';lastEl.style.fontWeight='normal';}
   else{lastEl.style.color='';lastEl.style.fontWeight='';}
   var prefixEl=lastEl.parentElement&&lastEl.parentElement.querySelector('.last-prefix');
-  if(prefixEl)prefixEl.innerHTML=(readState==='sent'||readState==='read')?'我: ':'';
+  if(prefixEl)prefixEl.innerHTML=(readState==='sent'||readState==='delivered'||readState==='read')?'我: ':'';
   if(ts){
     var tsEl=document.getElementById('lastts-'+String(cid));
     if(tsEl)tsEl.textContent=fmtLastTime(ts);
@@ -7905,7 +7938,11 @@ function _renderContacts(contactIds,seen,friendMap,userMap,avatarMap){
       var cached=loadLocalMsgs(cid);
       var myLast=null;
       for(var ci=cached.length-1;ci>=0;ci--){if(cached[ci].sent){myLast=cached[ci];break;}}
-      if(myLast){readTick=myLast.read?' <span style="color:var(--theme-accent1,#a18cd1);font-size:11px;">已读</span>':' <span style="color:var(--theme-icon,#999);font-size:11px;">未读</span>';}
+      if(myLast){
+        if(myLast.read){readTick=' <span style="color:var(--theme-accent1,#a18cd1);font-size:11px;">已读</span>';}
+        else if(myLast.delivered){readTick=' <span style="color:#34c759;font-size:11px;font-weight:700;letter-spacing:-1px;">✓✓</span>';}
+        else if(myLast.id!=null){readTick=' <span style="color:var(--theme-icon,#999);font-size:11px;font-weight:700;">✓</span>';}
+      }
     }
     // 视觉规则：未读=主题色加粗，已读=灰色
     var accent='var(--theme-accent1,#a18cd1)';
