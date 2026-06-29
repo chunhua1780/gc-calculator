@@ -3390,7 +3390,7 @@ function setLang(code){
 
 
 // ═══ 核心版本 ═══
-var CORE_VERSION='v1.73';
+var CORE_VERSION='v1.74';
 
 // ═══ 广告系统配置（统一后台广告）═══
 var ADS_CONFIG = {
@@ -5432,10 +5432,10 @@ async function doLogout(){
   if(!confirm('确定退出登录？\n\n退出后需要重新输入密码才能登录。'))return;
   // 1. 清 IDB 备份
   try{await _idbSet('account',null);}catch(e){}
-  // 2. 删除服务器 device token（防止下次自动恢复旧账户）
+  // 2. 删除服务器 device token（await 确保完成，防止下次自动恢复旧账户）
   try{
     var _dt=lg('gcDevTok')||(typeof _ckGet==='function'?_ckGet('gcDevTok'):'');
-    if(_dt)_sb.from('device_tokens').delete().eq('token',_dt).then(function(){}).catch(function(){});
+    if(_dt)await _sb.from('device_tokens').delete().eq('token',_dt);
   }catch(e){}
   // 3. 从数据库多设备列表里移除本机
   try{
@@ -5459,8 +5459,8 @@ async function doLogout(){
   try{Object.keys(_unread).forEach(function(k){_unread[k]=0;});updateUnreadBadge();}catch(e){}
   _stopSessionWatch();
   _kicked=false;
-  show('reg');
-  switchTo('login');
+  // 页面重载：彻底清除所有内存状态（包括登录表单字段）
+  location.reload();
 }
 function doRecovery(){
   var input=(document.getElementById('rescueInput').value||'').replace(/-/g,'').toUpperCase().trim();
