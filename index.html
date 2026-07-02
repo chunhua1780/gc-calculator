@@ -1377,7 +1377,7 @@ body.theme-dark .mr.s .bub.bub-read,body.theme-neon .mr.s .bub.bub-read,body.the
         <div class="si" style="background:var(--theme-row-bg);font-size:18px;">🗑️</div>
         <div style="flex:1;"><div style="font-size:17px;color:#ff3b30;">注销账号</div><div style="font-size:13px;color:#8e8e93;margin-top:1px;">永久删除账号和数据</div></div>
       </div>
-      <div class="row" onclick="window.open('https://chunhua1780.github.io/ghostchat/privacy.html','_blank')" style="border-top:1px solid var(--theme-border);padding:14px 16px;">
+      <div class="row" onclick="window.open(GC_BASE_URL+'privacy.html','_blank')" style="border-top:1px solid var(--theme-border);padding:14px 16px;">
         <div class="si" style="background:var(--theme-row-bg);font-size:18px;">📄</div>
         <div style="flex:1;"><div style="font-size:17px;">隐私政策</div></div>
         <span style="color:#c7c7cc;font-size:18px;">›</span>
@@ -2033,6 +2033,9 @@ body.theme-dark .mr.s .bub.bub-read,body.theme-neon .mr.s .bub.bub-read,body.the
 })();
 
 // ═══ 推送通知 ═══
+// 本App的部署根地址：不要写死某个伪装App的域名，每个伪装App各自部署在不同域名/路径下，
+// 写死会导致图标、深链、manifest全部指向了别的App。用当前页面地址动态算出来，天然适配每个部署。
+var GC_BASE_URL = location.origin + location.pathname.replace(/[^/]*$/, '');
 // ═══ OneSignal 推送系统 ═══
 var ONESIGNAL_APP_ID = 'ff584e0a-51e5-44a7-9d2c-488262c4faa9';
 var ONESIGNAL_API_KEY = 'os_v2_app_75me4csr4vckphjmjcbg' + 'frh2vhe7itzdumbuvq5tnn5gi4gw6buyz5ng5olfdzdsf6olaljkyu7gyng3o3eqdrkjhvjkix53l6gdwty';
@@ -2072,7 +2075,7 @@ async function initOneSignal(){
 // ═══ Web Push推送（主通道）═══
 async function _sendWebPushToUser(toUserId, title, body){
   try{
-    var gcUrl='https://chunhua1780.github.io/ghostchat/#from='+encodeURIComponent(String(myId));
+    var gcUrl=GC_BASE_URL+'#from='+encodeURIComponent(String(myId));
     await fetch(PUSH_SERVER+'?action=push',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -2101,12 +2104,12 @@ async function sendOneSignalPush(toUserId, title, body){
         headings:{en:title||'💬 新消息',zh:title||'💬 新消息'},
         contents:{en:body||'你有一条新消息',zh:body||'你有一条新消息'},
         // ★ url必须完全等于manifest.start_url，iOS才会在PWA里打开（不跳Safari）
-        url:'https://chunhua1780.github.io/ghostchat/',
-        web_url:'https://chunhua1780.github.io/ghostchat/',
+        url:GC_BASE_URL,
+        web_url:GC_BASE_URL,
         // from信息通过additionalData传递，SW从这里读取然后postMessage给PWA
         data:{from:String(myId),type:'chat_message'},
-        chrome_web_icon:'https://chunhua1780.github.io/ghostchat/icon192.png',
-        small_icon:'https://chunhua1780.github.io/ghostchat/icon192.png',
+        chrome_web_icon:GC_BASE_URL+'icon192.png',
+        small_icon:GC_BASE_URL+'icon192.png',
         priority:10,ttl:86400
       })
     });
@@ -2188,7 +2191,7 @@ async function subscribePush(){
           reg.showNotification('✅ 计算器通知已开启',{
             body:'以后点通知直接进聊天，无需跳转',
             icon:'./icon192.png',badge:'./icon192.png',
-            data:{url:'https://chunhua1780.github.io/ghostchat/'}
+            data:{url:GC_BASE_URL}
           });
         },800);
         return;
@@ -2243,8 +2246,8 @@ function installAs(type){
   var pwaName=lg('pwaAppName')||name;
   var mf={
     name:pwaName,short_name:pwaName,
-    start_url:'https://chunhua1780.github.io/ghostchat/',
-    scope:'https://chunhua1780.github.io/ghostchat/',
+    start_url:GC_BASE_URL,
+    scope:GC_BASE_URL,
     display:'standalone',orientation:'portrait',
     background_color:'#fdf2f8',theme_color:'#a18cd1',
     icons:[{src:'./icon192.png',sizes:'192x192',type:'image/png'}]
@@ -2540,7 +2543,7 @@ function initBarkIconUI(){
 function _getBarkDirectUrl(){
   // 专属跳转URL：用hash传参，不影响iOS识别PWA scope
   // iOS只匹配 ? 前的路径，hash不影响
-  var base='https://chunhua1780.github.io/ghostchat/';
+  var base=GC_BASE_URL;
   var uid=myId||lg('myId')||'me';
   return base+'#pwa=1&to='+encodeURIComponent(String(uid));
 }
@@ -2787,11 +2790,11 @@ async function _sendBarkToUser(toUserId, title, body){
     var barkLevel=isPassive?'passive':'active';
     var barkSound=isPassive?'':'sound=bell&';
     // 读取对方存的自定义图标，没有就用默认
-    var rawIcon=(s.barkIconUrl||'').trim()||'https://chunhua1780.github.io/ghostchat/icon192.png';
+    var rawIcon=(s.barkIconUrl||'').trim()||(GC_BASE_URL+'icon192.png');
     var barkIcon=encodeURIComponent(rawIcon);
     // 点击通知跳转到计算器并自动打开与发送者的聊天
     // 隐身模式下不带from参数（避免泄露），直接打开首页
-    var gcBaseUrl='https://chunhua1780.github.io/ghostchat/';
+    var gcBaseUrl=GC_BASE_URL;
     var fromParam='#pwa=1&from='+encodeURIComponent(String(myId));
     var gcDeepUrl=gcBaseUrl+fromParam; // 带发送者ID的hash链接
 
@@ -2904,7 +2907,7 @@ function showAfterDownloadGuide(){
 }
 
 function showShortcutManualGuide(){
-  var gcUrl='https://chunhua1780.github.io/ghostchat/';
+  var gcUrl=GC_BASE_URL;
   var overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
   overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
@@ -2967,7 +2970,7 @@ function showShortcutManualGuide(){
 }
 
 function _copyGcUrl(){
-  var url='https://chunhua1780.github.io/ghostchat/';
+  var url=GC_BASE_URL;
   if(navigator.clipboard){
     navigator.clipboard.writeText(url).then(function(){
       alert('✅ 已复制！粘贴到捷径的URL框里');
@@ -3005,7 +3008,7 @@ function saveShortcutName(){
 }
 
 function showShortcutGuide(){
-  var gcUrl='https://chunhua1780.github.io/ghostchat/';
+  var gcUrl=GC_BASE_URL;
   var shortcutName=lg('shortcutName')||'打开计算器';
   var overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-end;';
@@ -3065,8 +3068,8 @@ function savePwaAppName(){
     var mf={
       name:name,
       short_name:name,
-      start_url:'https://chunhua1780.github.io/ghostchat/',
-      scope:'https://chunhua1780.github.io/ghostchat/',
+      start_url:GC_BASE_URL,
+      scope:GC_BASE_URL,
       display:'standalone',
       orientation:'portrait',
       background_color:'#fdf2f8',
@@ -3160,7 +3163,7 @@ function showPwaGuide(){
       +'<div>① 安装 <b>Edge</b> 或 <b>Firefox</b>（华为应用市场有）</div>'
       +'<div>② 用新浏览器打开此网址：</div>'
       +'<div style="background:rgba(0,122,255,.08);border-radius:8px;padding:6px 10px;margin:4px 0;font-family:monospace;font-size:11.5px;color:#007aff;word-break:break-all;">'
-      +'https://chunhua1780.github.io/ghostchat/'
+      +GC_BASE_URL
       +'</div>'
       +'<div>③ 浏览器菜单 <b>⋮</b> → <b>添加到主屏幕</b></div>'
       +'<div>④ 从桌面图标打开 → 真正的独立App ✅</div>'
@@ -3215,7 +3218,7 @@ function showPwaGuide(){
     btn1.textContent='📋 复制链接';
     btn1.style.cssText='flex:1;padding:13px;background:rgba(0,122,255,.1);color:#007aff;border:1.5px solid rgba(0,122,255,.3);border-radius:13px;font-size:15px;font-weight:600;cursor:pointer;';
     btn1.onclick=function(){
-      var url='https://chunhua1780.github.io/ghostchat/';
+      var url=GC_BASE_URL;
       if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){alert('✅ 已复制！粘贴到Chrome地址栏打开');});}
       else{
         var ta=document.createElement('textarea');ta.value=url;document.body.appendChild(ta);ta.select();
@@ -3536,7 +3539,7 @@ function setLang(code){
 
 
 // ═══ 核心版本 ═══
-var CORE_VERSION='v1.85';
+var CORE_VERSION='v1.86';
 
 // ═══ 广告系统配置（统一后台广告）═══
 var ADS_CONFIG = {
@@ -6902,7 +6905,7 @@ function listenForAllMessages(){
             var notifBody2=msg.type==='text'?(msg.text||'').slice(0,80):'['+msg.type+']';
             if(navigator.serviceWorker&&navigator.serviceWorker.controller){
               navigator.serviceWorker.ready.then(function(reg){
-                reg.showNotification(notifTitle2,{body:notifBody2,icon:'./icon192.png',badge:'./icon192.png',tag:'gc-msg-'+senderId,renotify:true,data:{fromId:senderId,url:'https://chunhua1780.github.io/ghostchat/'}});
+                reg.showNotification(notifTitle2,{body:notifBody2,icon:'./icon192.png',badge:'./icon192.png',tag:'gc-msg-'+senderId,renotify:true,data:{fromId:senderId,url:GC_BASE_URL}});
               }).catch(function(){new Notification(notifTitle2,{body:notifBody2,icon:'./icon192.png',tag:'gc-msg-'+senderId});});
             } else {
               new Notification(notifTitle2,{body:notifBody2,icon:'./icon192.png',tag:'gc-msg-'+senderId});

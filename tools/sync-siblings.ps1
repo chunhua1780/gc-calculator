@@ -18,7 +18,6 @@ param(
   [switch]$DryRun
 )
 
-$ErrorActionPreference = 'Stop'
 $configPath = Join-Path $PSScriptRoot 'sync-config.json'
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
 
@@ -49,7 +48,8 @@ foreach ($sib in $config.siblings) {
   }
 
   $diffFile = [System.IO.Path]::GetTempFileName()
-  Set-Content -Path $diffFile -Value $diff -Encoding utf8NoBOM
+  $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+  [System.IO.File]::WriteAllText($diffFile, ($diff -join "`n") + "`n", $utf8NoBom)
 
   $checkOutput = git -C $sib.path apply --check $diffFile 2>&1
   if ($LASTEXITCODE -ne 0) {
