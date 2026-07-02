@@ -1,17 +1,50 @@
-{
-  "core": {
-    "name": "gc-calculator",
-    "path": "C:\\Users\\chunh\\Desktop\\gc-calculator",
-    "file": "index.html"
-  },
-  "siblings": [
-    { "name": "AChat", "path": "C:\\Users\\chunh\\Desktop\\AChat", "lastSynced": "44624bf" },
-    { "name": "gc-weather", "path": "C:\\Users\\chunh\\Desktop\\gc-weather", "lastSynced": "44624bf" },
-    { "name": "ghostchat", "path": "C:\\Users\\chunh\\Desktop\\ghostchat", "lastSynced": "44624bf" },
-    { "name": "ghostchat-site", "path": "C:\\Users\\chunh\\Desktop\\ghostchat-site", "lastSynced": "44624bf" },
-    { "name": "gc-news", "path": "C:\\Users\\chunh\\Desktop\\gc-news", "lastSynced": "44624bf" },
-    { "name": "gc-clock", "path": "C:\\Users\\chunh\\Desktop\\gc-clock", "lastSynced": "44624bf" },
-    { "name": "gc-notebook", "path": "C:\\Users\\chunh\\Desktop\\gc-notebook", "lastSynced": "44624bf" },
-    { "name": "secretchat", "path": "C:\\Users\\chunh\\Desktop\\secretchat", "lastSynced": null, "note": "diverged legacy Cordova codebase (www/index.html, missing weather/world-clock/notes-list/newChat/recall/contactPicker features) - auto-sync disabled, needs manual porting if ever aligned" }
-  ]
+﻿{
+    "core":  {
+                 "name":  "gc-calculator",
+                 "path":  "C:\\Users\\chunh\\Desktop\\gc-calculator",
+                 "file":  "index.html"
+             },
+    "siblings":  [
+                     {
+                         "name":  "AChat",
+                         "path":  "C:\\Users\\chunh\\Desktop\\AChat",
+                         "lastSynced":  "e19cbdc"
+                     },
+                     {
+                         "name":  "gc-weather",
+                         "path":  "C:\\Users\\chunh\\Desktop\\gc-weather",
+                         "lastSynced":  "e19cbdc"
+                     },
+                     {
+                         "name":  "ghostchat",
+                         "path":  "C:\\Users\\chunh\\Desktop\\ghostchat",
+                         "lastSynced":  "e19cbdc"
+                     },
+                     {
+                         "name":  "ghostchat-site",
+                         "path":  "C:\\Users\\chunh\\Desktop\\ghostchat-site",
+                         "lastSynced":  "e19cbdc"
+                     },
+                     {
+                         "name":  "gc-news",
+                         "path":  "C:\\Users\\chunh\\Desktop\\gc-news",
+                         "lastSynced":  "e19cbdc"
+                     },
+                     {
+                         "name":  "gc-clock",
+                         "path":  "C:\\Users\\chunh\\Desktop\\gc-clock",
+                         "lastSynced":  "e19cbdc"
+                     },
+                     {
+                         "name":  "gc-notebook",
+                         "path":  "C:\\Users\\chunh\\Desktop\\gc-notebook",
+                         "lastSynced":  "e19cbdc"
+                     },
+                     {
+                         "name":  "secretchat",
+                         "path":  "C:\\Users\\chunh\\Desktop\\secretchat",
+                         "lastSynced":  null,
+                         "note":  "diverged legacy Cordova codebase (www/index.html, missing weather/world-clock/notes-list/newChat/recall/contactPicker features) - auto-sync disabled, needs manual porting if ever aligned"
+                     }
+                 ]
 }
