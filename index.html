@@ -577,11 +577,11 @@ textarea.field-input{resize:none;line-height:1.5;}
 .ibar{box-shadow:0 -1px 0 rgba(0,0,0,.02),0 -4px 14px -6px rgba(0,0,0,.05);}
 .mr{display:flex;flex-direction:column;margin-bottom:2px;}
 .mr.s{align-items:flex-end;}.mr.r{align-items:flex-start;}
-.bub{max-width:72%;padding:10px 15px;border-radius:22px;font-size:15.5px;line-height:1.5;word-break:break-word;position:relative;transition:background .45s ease,color .35s ease,box-shadow .3s ease,opacity .25s ease;}
+.bub{max-width:72%;padding:10px 15px;border-radius:22px;font-size:var(--chat-font-size,15.5px);line-height:1.5;word-break:break-word;position:relative;transition:background .45s ease,color .35s ease,box-shadow .3s ease,opacity .25s ease;}
 .mr.s .bub{background:var(--cs-sent-unread,linear-gradient(145deg,#f7c2e0 0%,#d6b4f8 50%,#b8a8f8 100%));color:var(--cs-sent-text,#3a1048);border-bottom-right-radius:6px;font-weight:500;border:none;box-shadow:0 2px 8px rgba(180,130,210,.18),0 4px 18px rgba(180,130,210,.12),0 1px 2px rgba(0,0,0,.06);}
 .mr.s .bub.bub-read{background:linear-gradient(145deg,var(--theme-bub-read1,#fde8f2) 0%,var(--theme-bub-read2,#e8d8ff) 100%);color:var(--theme-bub-read-text,#6c2e66);font-weight:400;border:none;box-shadow:0 1px 4px rgba(0,0,0,.05),0 2px 10px rgba(0,0,0,.04);}
 body.theme-dark .mr.s .bub.bub-read,body.theme-neon .mr.s .bub.bub-read,body.theme-aurora .mr.s .bub.bub-read,body.theme-midnight .mr.s .bub.bub-read{background:linear-gradient(145deg,var(--theme-bub-read1),var(--theme-bub-read2));color:var(--theme-bub-read-text);border:none;box-shadow:0 2px 10px rgba(0,0,0,.25);}
-.mr.r .bub{background:var(--cs-recv-bg,rgba(255,252,254,0.97));color:var(--cs-recv-text,#2a2030);border-bottom-left-radius:6px;border:1px solid var(--cs-recv-border,rgba(220,200,230,.38));box-shadow:0 2px 6px rgba(172,145,192,.08),0 4px 16px rgba(172,145,192,.06);font-size:15.5px;line-height:1.5;}
+.mr.r .bub{background:var(--cs-recv-bg,rgba(255,252,254,0.97));color:var(--cs-recv-text,#2a2030);border-bottom-left-radius:6px;border:1px solid var(--cs-recv-border,rgba(220,200,230,.38));box-shadow:0 2px 6px rgba(172,145,192,.08),0 4px 16px rgba(172,145,192,.06);font-size:var(--chat-font-size,15.5px);line-height:1.5;}
 .mt{font-size:11px;color:#8e8e93;margin-top:2px;padding:0 4px;}
 .msg-tick{margin-left:4px;font-size:13px;display:inline-block;vertical-align:middle;}
 .msg-paw{display:inline-block;font-size:15px;vertical-align:middle;margin-left:5px;opacity:.9;transform-origin:center;}
@@ -827,7 +827,7 @@ body.theme-dark .mr.s .bub.bub-read,body.theme-neon .mr.s .bub.bub-read,body.the
 </div>
 
 <!-- 注册/登录 -->
-<div id="reg" class="screen active">
+<div id="reg" class="screen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:linear-gradient(160deg,#fdf2f8,#eef2ff);position:relative;">
     <div style="position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;">
       <select id="regLangSelect" onchange="setLang(this.value)" style="background:rgba(255,255,255,.85);border:1px solid #e5e5ea;border-radius:10px;padding:6px 10px;font-size:13px;color:#3a3a3c;">
@@ -1343,6 +1343,11 @@ body.theme-dark .mr.s .bub.bub-read,body.theme-neon .mr.s .bub.bub-read,body.the
           <div id="chatStyleGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
         </div>
       </div>
+      <!-- 字体大小 -->
+      <div style="border-top:1px solid var(--theme-border);padding:14px 16px 12px;">
+        <div style="font-size:17px;margin-bottom:10px;">字体大小</div>
+        <div id="fontSizeGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+      </div>
     </div>
 
     <!-- ─── 账号操作 ─── -->
@@ -1698,7 +1703,7 @@ body.theme-dark .mr.s .bub.bub-read,body.theme-neon .mr.s .bub.bub-read,body.the
 </div>
 
 <!-- 伪装：计算器 iOS风格升级版 -->
-<div id="dcalc" class="screen" style="background:#000;flex-direction:column;overflow:hidden;">
+<div id="dcalc" class="screen active" style="background:#000;flex-direction:column;overflow:hidden;">
   <!-- 顶部状态栏占位 + 模式切换 -->
   <div style="flex-shrink:0;padding:max(52px,calc(44px + var(--safe-top))) 16px 0;display:flex;justify-content:space-between;align-items:center;">
     <span id="calcModeBtn" onclick="toggleCalcMode()" style="background:rgba(255,255,255,.15);color:#fff;border-radius:12px;padding:5px 14px;font-size:13px;cursor:pointer;user-select:none;">科学</span>
@@ -1821,6 +1826,17 @@ body.theme-dark .mr.s .bub.bub-read,body.theme-neon .mr.s .bub.bub-read,body.the
     <div style="display:flex;gap:8px;">
       <button onclick="closeRecallModal()" style="flex:1;background:var(--theme-row-bg,#f2f2f7);color:var(--theme-text);border:none;padding:10px 0;border-radius:12px;font-size:15px;cursor:pointer;">取消</button>
       <button onclick="confirmRecall()" style="flex:1;background:linear-gradient(135deg,var(--theme-accent1),var(--theme-accent2));color:#fff;border:none;padding:10px 0;border-radius:12px;font-size:15px;cursor:pointer;">确定</button>
+    </div>
+  </div>
+</div>
+
+<div id="logoutConfirmModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:750;display:none;align-items:center;justify-content:center;">
+  <div style="background:var(--theme-field-bg,#fff);border-radius:18px;padding:22px;text-align:center;width:260px;box-shadow:0 20px 50px rgba(0,0,0,.25);">
+    <div style="font-size:17px;font-weight:700;margin-bottom:8px;color:var(--theme-text);">确定退出登录？</div>
+    <div style="font-size:13px;color:#8e8e93;margin-bottom:18px;">退出后需要重新输入密码才能登录</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="document.getElementById('logoutConfirmModal').style.display='none'" style="flex:1;background:var(--theme-row-bg,#f2f2f7);color:var(--theme-text);border:none;padding:10px 0;border-radius:12px;font-size:15px;cursor:pointer;">取消</button>
+      <button onclick="_doLogoutConfirmed()" style="flex:1;background:#ff3b30;color:#fff;border:none;padding:10px 0;border-radius:12px;font-size:15px;cursor:pointer;">确定退出</button>
     </div>
   </div>
 </div>
@@ -3483,6 +3499,37 @@ function toggleChatStyleDrawer(){
   d.style.display=open?'block':'none';
   if(a)a.style.transform=open?'rotate(90deg)':'';
 }
+
+// ── 字体大小 ──
+var _FONT_SIZES=[
+  {id:'sm',name:'小',px:13.5},
+  {id:'md',name:'标准',px:15.5},
+  {id:'lg',name:'大',px:17.5},
+  {id:'xl',name:'超大',px:19.5}
+];
+function applyFontSize(id){
+  var s=_FONT_SIZES.filter(function(x){return x.id===id;})[0]||_FONT_SIZES[1];
+  var chat=document.getElementById('chat');
+  if(chat)chat.style.setProperty('--chat-font-size',s.px+'px');
+  ls('chatFontSize',s.id);
+  _buildFontSizeGrid();
+}
+function _buildFontSizeGrid(){
+  var g=document.getElementById('fontSizeGrid');
+  if(!g)return;
+  var cur=lg('chatFontSize')||'md';
+  g.innerHTML='';
+  _FONT_SIZES.forEach(function(s){
+    var sel=s.id===cur;
+    var d=document.createElement('div');
+    d.style.cssText='cursor:pointer;border-radius:12px;padding:10px 4px;text-align:center;background:var(--theme-row-bg);border:2px solid '+(sel?'var(--theme-accent1)':'transparent')+';-webkit-tap-highlight-color:transparent;';
+    d.innerHTML='<div style="font-weight:'+(sel?'700':'400')+';color:var(--theme-text);font-size:'+s.px+'px;">A</div>'+
+      '<div style="font-size:11px;color:#8e8e93;margin-top:4px;">'+s.name+'</div>';
+    (function(sid){d.onclick=function(){applyFontSize(sid);};})(s.id);
+    g.appendChild(d);
+  });
+}
+(function(){var _f=lg('chatFontSize');if(_f&&_f!=='md'){var _s=_FONT_SIZES.filter(function(x){return x.id===_f;})[0];if(_s){var _ce=document.getElementById('chat');if(_ce)_ce.style.setProperty('--chat-font-size',_s.px+'px');}}})();
 function _buildChatStyleGrid(){
   var g=document.getElementById('chatStyleGrid');
   if(!g)return;
@@ -3539,7 +3586,7 @@ function setLang(code){
 
 
 // ═══ 核心版本 ═══
-var CORE_VERSION='v1.86';
+var CORE_VERSION='v1.87';
 
 // ═══ 广告系统配置（统一后台广告）═══
 var ADS_CONFIG = {
@@ -4785,7 +4832,7 @@ function show(id){
     var stack=new Error().stack||'no stack';
     _logDiag('show(reg) called from: '+stack.split('\n').slice(1,4).join(' | '));
     console.warn('[DIAG] show(reg) triggered:',stack);
-  }document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();if(id==='dnote')initNotes();if(id==='settings'){initBarkUI();initQuickToggles();_updateThemeHeader(lg('theme')||'');_initPwaBindStatus();_initPwaAppNameInput();_initShortcutInput();_refreshEmailBindStatus();refreshAdminEntry();AdManager._updateConsentUI();_updateChatStyleHeader(lg('chatStyle')||'default');}
+  }document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');if(id==='dweather')initWeather();if(id==='dnote')initNotes();if(id==='settings'){initBarkUI();initQuickToggles();_updateThemeHeader(lg('theme')||'');_initPwaBindStatus();_initPwaAppNameInput();_initShortcutInput();_refreshEmailBindStatus();refreshAdminEntry();AdManager._updateConsentUI();_updateChatStyleHeader(lg('chatStyle')||'default');_buildFontSizeGrid();}
 if(id==='dcalc'){var en=document.getElementById('cNum');if(en&&!CALC.buf&&CALC.result==null)en.textContent='0';setTimeout(initCalcEvents,0);}}
 
 // ═══ 注册/登录 ═══
@@ -5590,8 +5637,15 @@ function playVoice(el,src){
   audio.onended=function(){el.innerHTML='▶️ '+(el.textContent.split(' ')[1]||'');};
 }
 
-async function doLogout(){
-  if(!confirm('确定退出登录？\n\n退出后需要重新输入密码才能登录。'))return;
+function doLogout(){
+  // 原生 confirm() 在打包成 Cordova/WebView App 时不可靠（部分设备直接不弹或静默返回false），
+  // 会导致这里第一行就直接 return，退出登录看起来完全没反应。改用App自己的弹窗。
+  var m=document.getElementById('logoutConfirmModal');
+  if(m)m.style.display='flex';
+}
+async function _doLogoutConfirmed(){
+  var m=document.getElementById('logoutConfirmModal');
+  if(m)m.style.display='none';
   // 1. 清 IDB 备份
   try{await _idbSet('account',null);}catch(e){}
   // 2. 删除服务器 device token（await 确保完成，防止下次自动恢复旧账户）
@@ -8885,6 +8939,23 @@ function cp(b){
     var entered=CALC.buf.replace(/[^0-9]/g,'');
     var pin=(lg('pin')||G.pin||'1234').replace(/[^0-9]/g,'');
     var gatePin=(lg('testGatePin')||TEST_GATE_DEFAULT).replace(/[^0-9]/g,'');
+    // 特殊码 00000000：始终跳到登录/注册页（切换账号用），不管当前是否已登录。
+    // show('reg') 本身在已登录时会被安全守卫拦截（防止意外跳回注册页），
+    // 所以这里走和"退出登录"完全一样的清理流程，清完凭据后 reload 自然落到 reg，不会撞上守卫。
+    if(entered==='00000000'){
+      CALC.buf='';CALC.op='';CALC.prev='';CALC.result=null;
+      var elz=document.getElementById('cNum');if(elz)elz.textContent='0';
+      if(expr)expr.textContent='';
+      window._gcDisguiseMode=false;
+      if(lg('registered')==='true'&&lg('myId')){
+        _doLogoutConfirmed();
+      }else{
+        ls('gatePassedPersist','1');
+        sessionStorage.setItem('testGatePassed','1');
+        show('reg');
+      }
+      return;
+    }
     // 密码匹配：进入App
     if(entered&&(entered===pin||entered===gatePin)){
       CALC.buf='';CALC.op='';CALC.prev='';CALC.result=null;
