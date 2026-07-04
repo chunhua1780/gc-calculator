@@ -59,15 +59,16 @@ app.post('/api/push', async (req, res) => {
 
   if (error || !data) return res.status(404).json({ error: 'no subscription' });
 
-  // 伪装通知内容（用用户设定的隐秘文案）
+  // 伪装通知内容（用用户设定的隐秘文案）——服务端不知道收件人选择的界面语言，
+  // 统一用英文兜底，不再硬编码中文，避免非中文用户在通知栏看到残留中文。
   const titles = {
-    sys: '系统更新完成', sync: '数据同步中', cal: '日程提醒', none: ''
+    sys: 'System update complete', sync: 'Syncing data', cal: 'Calendar reminder', none: ''
   };
   const syms = {
     dot:'●', line:'|', star:'✦', tri:'▲', dia:'◆', wave:'～', sync:'↻', mail:'✉'
   };
   const sym = syms[notifSym] || '●';
-  const bodyText = titles[notifTxt] || '系统更新完成';
+  const bodyText = titles[notifTxt] || 'System update complete';
 
   const payload = JSON.stringify({
     title: sym,

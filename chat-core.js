@@ -127,7 +127,7 @@ function notifyTyping(){
 function showTypingIndicator(){
   var el=document.getElementById('chatName');if(!el)return;
   if(!el.dataset.origName)el.dataset.origName=el.textContent;
-  el.innerHTML='<span style="color:#ff6b9d;">对方正在输入<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></span>';
+  el.innerHTML='<span style="color:#ff6b9d;">'+esc(i18nT('typingNow'))+'<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span></span>';
   if(_typingTimeout)clearTimeout(_typingTimeout);
   _typingTimeout=setTimeout(function(){if(el.dataset.origName)el.textContent=el.dataset.origName;_typingTimeout=null;},3000);
 }
@@ -174,7 +174,7 @@ async function joinRoom(name){
     realtimeSub=_sb.channel('room:'+currentRoom)
       .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+currentRoom},function(p){
         var m=p.new;if(String(m.sender)===String(myId))return;
-        if(m.type==='read_receipt'||m.type==='gc_del')return;
+        if(m.type==='read_receipt'||m.type==='gc_del'||m.type==='destruct_cfg')return;
         var createdMs=new Date(m.created_at).getTime()||Date.now();
         var dl=new Date(createdMs);
         var msg={id:m.id,text:m.content,type:m.type||'text',sent:false,t:dl.getHours()+':'+(dl.getMinutes()<10?'0':'')+dl.getMinutes(),ts:createdMs};
@@ -236,7 +236,7 @@ async function syncRoomMessages(name){
     (G.msgs[name]||[]).forEach(function(m){if(m.sent&&m.read&&m.id!=null)prevReadIds[m.id]=true;});
     if(res.data&&res.data.length>0){
       serverMsgs=res.data
-        .filter(function(m){return m.type!=='gc_del'&&m.type!=='read_receipt';})
+        .filter(function(m){return m.type!=='gc_del'&&m.type!=='read_receipt'&&m.type!=='destruct_cfg';})
         .map(function(m){
           try{
             var content=m.content||'';
@@ -269,8 +269,8 @@ async function syncRoomMessages(name){
       serverMsgs.forEach(function(m){if(recallTargets[String(m.id)]){m.type='recalled';m.text='';m.src=null;}});
       localMsgs.forEach(function(m){if(recallTargets[String(m.id)]){m.type='recalled';m.text='';m.src=null;}});
     }
-    localMsgs=localMsgs.filter(function(m){return m.type!=='recall'&&m.type!=='read_receipt';});
-    serverMsgs=serverMsgs.filter(function(m){return m.type!=='recall'&&m.type!=='read_receipt';});
+    localMsgs=localMsgs.filter(function(m){return m.type!=='recall'&&m.type!=='read_receipt'&&m.type!=='destruct_cfg';});
+    serverMsgs=serverMsgs.filter(function(m){return m.type!=='recall'&&m.type!=='read_receipt'&&m.type!=='destruct_cfg';});
     // ★ WhatsApp标准：应用删除截断点，只显示截断点之后的消息
     if(cutoff>0){
       serverMsgs=serverMsgs.filter(function(m){return m.ts>cutoff;});
@@ -282,11 +282,12 @@ async function syncRoomMessages(name){
     var merged=localMsgs.filter(function(m){return !(m.id!=null&&serverIds[m.id]);}).concat(serverMsgs);
     var mergedTs=new Set(merged.map(function(m){return m.ts+'_'+m.text;}));
     pendingMsgs.forEach(function(m){if(!mergedTs.has(m.ts+'_'+m.text))merged.push(m);});
-    merged.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+    merged.sort(function(a,b){return (a.ts||0)-(b.ts||0)||((a.id||1e15)-(b.id||1e15));});
     var prevLen=(G.msgs[name]||[]).length;
     G.msgs[name]=merged;
     if(G.chat===name)renderMsgs();
     saveLocalMsgs(name,merged);
+    enforceDestructTTL(name).catch(function(){});
     if(merged.length>prevLen){
       var last=merged[merged.length-1];
       var isUnread=!last.sent&&G.chat!==name;
@@ -298,10 +299,49 @@ async function syncRoomMessages(name){
     console.log('syncRoomMessages failed, falling back to local cache:',e&&e.message);
     if(localMsgs.length){
       var filtered=cutoff>0?localMsgs.filter(function(m){return m.ts>cutoff;}):localMsgs;
-      filtered.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+      filtered.sort(function(a,b){return (a.ts||0)-(b.ts||0)||((a.id||1e15)-(b.id||1e15));});
       G.msgs[name]=filtered;if(G.chat===name)renderMsgs();
     }
   }
+}
+
+// ── 单聊自动销毁计时器 ──
+// 不设置(0/无) = 永久保留（现有默认行为）；设置后，超过时限的消息在本地和云端都会被清除。
+// 复用 gc_del 哨兵同样的思路：把配置写成一条 messages 里的合成记录（type:'destruct_cfg'），
+// 双方都能读到，且已在所有渲染/预览路径里过滤掉，不需要改数据库结构。
+var G_destructTTL={}; // { [peerId]: seconds }，0 或不存在 = 永久保留
+function getDestructTTLCached(name){return G_destructTTL[String(name)]||0;}
+async function fetchDestructTTL(name){
+  try{
+    var room=roomIdOf(parseInt(myId)||myId,parseInt(name)||name);
+    var r=await _sb.from('messages').select('content,created_at').eq('room_id',room).eq('type','destruct_cfg').order('created_at',{ascending:false}).limit(1).maybeSingle();
+    var ttl=(r&&r.data&&r.data.content!=null)?(parseInt(r.data.content)||0):0;
+    G_destructTTL[String(name)]=ttl;
+    return ttl;
+  }catch(e){return G_destructTTL[String(name)]||0;}
+}
+async function setDestructTTL(name,seconds){
+  var secs=parseInt(seconds)||0;
+  var room=roomIdOf(parseInt(myId)||myId,parseInt(name)||name);
+  await _sb.from('messages').insert({room_id:room,sender:String(myId),type:'destruct_cfg',content:String(secs)});
+  G_destructTTL[String(name)]=secs;
+  return enforceDestructTTL(name);
+}
+async function enforceDestructTTL(name){
+  try{
+    var ttl=await fetchDestructTTL(name);
+    if(!ttl)return; // 未设置/关闭 = 永久保留，什么都不做
+    var cutoff=Date.now()-ttl*1000;
+    var list=G.msgs[name]||[];
+    var kept=list.filter(function(m){return (m.ts||0)>cutoff;});
+    if(kept.length!==list.length){
+      G.msgs[name]=kept;saveLocalMsgs(name,kept);if(G.chat===name)renderMsgs();
+    }
+    var room=roomIdOf(parseInt(myId)||myId,parseInt(name)||name);
+    var cutoffIso=new Date(cutoff).toISOString();
+    // 保留 destruct_cfg 这条配置记录本身，其余早于截止时间的消息（含已读回执等）云端一并清除
+    await _sb.from('messages').delete().eq('room_id',room).neq('type','destruct_cfg').lt('created_at',cutoffIso);
+  }catch(e){console.log('[enforceDestructTTL] failed:',e&&e.message);}
 }
 
 // ── 已读回执 ──
@@ -386,7 +426,7 @@ function listenForAllMessages(){
         var m=p.new;if(!m||!m.room_id)return;
         var parts=m.room_id.split('_');if(parts.indexOf(mid)<0)return;
         if(String(m.sender)===mid)return;
-        if(m.type==='read_receipt'||m.type==='gc_del')return;
+        if(m.type==='read_receipt'||m.type==='gc_del'||m.type==='destruct_cfg')return;
         var senderId=parts[0]===mid?parts[1]:parts[0];
         if(isBlocked(senderId))return;
         // ★ WhatsApp标准：删除聊天不阻止收消息，收到新消息时：
@@ -418,7 +458,7 @@ function listenForAllMessages(){
         if(!already){
           var chatOpenNow=(G.chat===senderId)&&document.getElementById('chat')&&document.getElementById('chat').classList.contains('active');
           msg.delivered=true;msg.read=false;
-          G.msgs[senderId].push(msg);G.msgs[senderId].sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+          G.msgs[senderId].push(msg);G.msgs[senderId].sort(function(a,b){return (a.ts||0)-(b.ts||0)||((a.id||1e15)-(b.id||1e15));});
           saveLocalMsgs(senderId,G.msgs[senderId]);
           _sb.from('messages').update({delivered:true}).eq('id',m.id).then(function(){});
           if(chatOpenNow)scheduleMarkRoomRead(senderId);
@@ -444,8 +484,8 @@ function listenForAllMessages(){
           if(!chatOpenNow){
             if('serviceWorker' in navigator&&Notification.permission==='granted'){
               navigator.serviceWorker.ready.then(function(reg){
-                var sn=G.friends&&G.friends[senderId]?G.friends[senderId].name:('用户'+senderId);
-                var body=msg.type==='text'?msg.text:msg.type==='image'?'[图片]':msg.type==='voice'?'[语音]':msg.type==='video'?'[视频]':'[消息]';
+                var sn=G.friends&&G.friends[senderId]?G.friends[senderId].name:('User '+senderId);
+                var body=msg.type==='text'?msg.text:msg.type==='image'?i18nT('msgImage'):msg.type==='voice'?i18nT('msgVoice'):msg.type==='video'?i18nT('msgVideo'):'['+msg.type+']';
                 var isWeatherDisguise=G.hide&&G.dis==='weather'&&document.getElementById('dweather')&&document.getElementById('dweather').classList.contains('active');
                 if(isWeatherDisguise){
                   var wxFakeNotifs=['今日最高气温43°，注意防暑补水','紫外线指数极强，出门记得防晒','今晚有轻微沙尘，建议关好窗户','未来24小时天气稳定，适合出行','湿度降低，注意保湿补水'];
@@ -499,7 +539,7 @@ function openChat(name,ini,color,displayName){
     var cutoff=getDeletedCutoff(name);
     var cur=G.msgs[name]||[];var curIds=new Set(cur.map(function(m){return m.id;}));var added=false;
     idbMsgs.forEach(function(m){if((cutoff>0?m.ts>cutoff:true)&&(m.id==null||!curIds.has(m.id))){cur.push(m);added=true;}});
-    if(added){cur.sort(function(a,b){return (a.ts||0)-(b.ts||0);});G.msgs[name]=cur;if(G.chat===name)renderMsgs();}
+    if(added){cur.sort(function(a,b){return (a.ts||0)-(b.ts||0)||((a.id||1e15)-(b.id||1e15));});G.msgs[name]=cur;if(G.chat===name)renderMsgs();}
   });
   joinRoom(name).catch(function(e){console.log('joinRoom error:',e&&e.message);});
 }
@@ -523,7 +563,7 @@ async function recallMsg(mid){
   renderMsgs();saveLocalMsgs(G.chat,msgs);
   var room=roomIdOf(parseInt(myId)||myId,parseInt(G.chat)||G.chat);
   var ins=await _sb.from('messages').insert({room_id:room,sender:String(myId),content:String(mid),type:'recall'});
-  if(ins.error){alert('撤回失败: '+ins.error.message);m.type=backup.type;m.text=backup.text;m.src=backup.src;renderMsgs();saveLocalMsgs(G.chat,msgs);}
+  if(ins.error){alert(i18nT('recallFailed')+ins.error.message);m.type=backup.type;m.text=backup.text;m.src=backup.src;renderMsgs();saveLocalMsgs(G.chat,msgs);}
 }
 
 // ── 渲染消息 ──
@@ -536,11 +576,11 @@ function renderMsgs(){
   for(var _j=msgs.length-1;_j>=0;_j--){if(msgs[_j].sent&&msgs[_j].read&&msgs[_j].id!=null&&!msgs[_j].failed){_lastReadSentIdx=_j;break;}}
   for(var i=0;i<msgs.length;i++){
     var m=msgs[i];var s=m.sent;var b='';
-    if(m.type==='recalled'){html+='<div style="text-align:center;color:#aaa;font-size:12px;margin:6px 0;">'+(s?'你撤回了一条消息':'对方撤回了一条消息')+'</div>';continue;}
+    if(m.type==='recalled'){html+='<div style="text-align:center;color:#aaa;font-size:12px;margin:6px 0;">'+esc(s?i18nT('youRecalled'):i18nT('theyRecalled'))+'</div>';continue;}
     if(m.type==='image'){
-      if(m.loading&&!m.src)b='<div style="width:160px;height:120px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:13px;opacity:.8;">📷 处理中...</div>';
-      else if(m.loading)b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.6;"><div style="font-size:12px;opacity:.7;">发送中...</div></div>';
-      else if(m.failed)b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.5;" onclick="openImgViewer(this.src)"><div style="font-size:12px;color:#ff3b30;">⚠️ 发送失败</div></div>';
+      if(m.loading&&!m.src)b='<div style="width:160px;height:120px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:13px;opacity:.8;">📷 '+esc(i18nT('processingEllipsis'))+'</div>';
+      else if(m.loading)b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.6;"><div style="font-size:12px;opacity:.7;">'+esc(i18nT('sendingEllipsis'))+'</div></div>';
+      else if(m.failed)b='<div style="display:flex;flex-direction:column;gap:4px;"><img class="msg-img" src="'+m.src+'" style="opacity:.5;" onclick="openImgViewer(this.src)"><div style="font-size:12px;color:#ff3b30;">⚠️ '+esc(i18nT('sendFailed'))+'</div></div>';
       else if(m.src&&m.src.length>4){if(m.thumb&&!m.sent)b='<img class="msg-img" src="'+m.thumb+'" style="filter:blur(3px);transition:filter .3s;" data-full="'+m.src+'" onload="upgradeImg(this)" onclick="openImgViewer(this.dataset.full||this.src)">';else b='<img class="msg-img" src="'+m.src+'" onclick="openImgViewer(this.src)">';}
       else b='<div>📷 Image</div>';
     }else if(m.type==='voice'){
@@ -550,21 +590,21 @@ function renderMsgs(){
       b='<div>📍 <a href="'+mapUrl+'" target="_blank" style="color:inherit;text-decoration:underline;">'+(m.addr||'Location')+'</a></div>';
     }else if(m.type==='contact'){
       var ccName=m.cname||('User '+m.cid);
-      b='<div onclick="openContactCard(\''+esc(String(m.cid||''))+'\',\''+esc(ccName).replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:10px;cursor:pointer;min-width:160px;"><div style="width:40px;height:40px;border-radius:50%;background:#a18cd1;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">'+esc(ccName[0].toUpperCase())+'</div><div><div style="font-weight:600;">'+esc(ccName)+'</div><div style="font-size:12px;opacity:.7;">名片 · 点击查看</div></div></div>';
+      b='<div onclick="openContactCard(\''+esc(String(m.cid||''))+'\',\''+esc(ccName).replace(/'/g,"\\'")+'\')" style="display:flex;align-items:center;gap:10px;cursor:pointer;min-width:160px;"><div style="width:40px;height:40px;border-radius:50%;background:#a18cd1;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;">'+esc(ccName[0].toUpperCase())+'</div><div><div style="font-weight:600;">'+esc(ccName)+'</div><div style="font-size:12px;opacity:.7;">'+esc(i18nT('contactCardHint'))+'</div></div></div>';
     }else if(m.type==='video'){
-      if(m.loading)b='<div style="opacity:.6;font-size:13px;">Sending...</div>';
-      else if(m.failed)b='<div style="font-size:12px;color:#ff3b30;">⚠️ 视频发送失败</div>';
+      if(m.loading)b='<div style="opacity:.6;font-size:13px;">'+esc(i18nT('sendingEllipsis'))+'</div>';
+      else if(m.failed)b='<div style="font-size:12px;color:#ff3b30;">'+esc(i18nT('videoSendFailed'))+'</div>';
       else if(m.src)b='<video class="msg-img" src="'+m.src+'" controls style="max-width:220px;border-radius:10px;"></video>';
       else b='<div>🎬 Video</div>';
     }else if(m.type==='file'){
-      if(m.loading)b='<div style="opacity:.6;font-size:13px;">📄 '+esc(m.fname||'File')+' (Sending...)</div>';
-      else if(m.failed)b='<div style="font-size:12px;color:#ff3b30;">⚠️ '+esc(m.fname||'File')+' 发送失败</div>';
-      else if(m.src)b='<a href="'+m.src+'" target="_blank" download style="display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;min-width:160px;"><span style="font-size:24px;">📄</span><div style="overflow:hidden;"><div style="font-weight:600;word-break:break-all;">'+esc(m.fname||'File')+'</div><div style="font-size:12px;opacity:.7;">点击下载</div></div></a>';
+      if(m.loading)b='<div style="opacity:.6;font-size:13px;">📄 '+esc(m.fname||'File')+' ('+esc(i18nT('sendingEllipsis'))+')</div>';
+      else if(m.failed)b='<div style="font-size:12px;color:#ff3b30;">'+esc(i18nT('fileSendFailed'))+esc(m.fname||'File')+'</div>';
+      else if(m.src)b='<a href="'+m.src+'" target="_blank" download style="display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;min-width:160px;"><span style="font-size:24px;">📄</span><div style="overflow:hidden;"><div style="font-weight:600;word-break:break-all;">'+esc(m.fname||'File')+'</div><div style="font-size:12px;opacity:.7;">'+esc(i18nT('tapToDownload'))+'</div></div></a>';
       else b='<div>📄 File</div>';
     }else{var txt=m.text||m.content||'';if(txt.length>500)txt='[Message]';b=esc(txt);}
     // 状态：只保留失败提示，去掉发送中图标
     var statusTick='';
-    if(s&&m.failed)statusTick='<span style="color:#ff3b30;font-size:11px;margin-left:2px;cursor:pointer;" title="发送失败，点重试" onclick="retrySendText(this)">⚠️失败</span>';
+    if(s&&m.failed)statusTick='<span style="color:#ff3b30;font-size:11px;margin-left:2px;cursor:pointer;" title="'+esc(i18nT('sendFailedRetryHint'))+'" onclick="retrySendText(this)">'+esc(i18nT('sendFailedShort'))+'</span>';
     // 🐾 已读猫爪，每条已读消息内部右侧，柔和灰棕色
     var inPaw=(s&&m.read&&m.id!=null)?'<span style="display:inline-block;margin-left:4px;vertical-align:bottom;line-height:1;font-size:10px;filter:sepia(0.5) saturate(0.4) brightness(1.1);opacity:0.62;">🐾</span>':'';
     // 气泡背景与文字颜色通过CSS变量控制
@@ -602,7 +642,7 @@ var _sendLock=false,_sendLockTimer=null;
 async function sendMsg(){
   var inp=document.getElementById('mi'),t=inp.value.trim();if(!t)return;
   if(_sendLock)return;
-  if(G.chat&&isBlocked(G.chat)){alert('对方已被你拉黑，请先在通讯录中解除拉黑');return;}
+  if(G.chat&&isBlocked(G.chat)){alert(i18nT('blockedSendMsg'));return;}
   // ★ 发送消息时，如果联系人在隐藏列表（已删除聊天），恢复显示
   if(G.chat){
     var _h=getHiddenContacts();
@@ -619,19 +659,32 @@ async function sendMsg(){
   finally{clearTimeout(_sendLockTimer);_sendLockTimer=setTimeout(function(){_sendLock=false;_sendLockTimer=null;},300);}
 }
 async function _doSendText(msgObj,chatAtSend,room){
-  if(!room)return;var _tmr=null;
+  if(!room||msgObj.sending)return;
+  msgObj.sending=true;
+  // ★ 不再用 Promise.race 掐断请求：网络慢时提前判失败会导致请求其实已经在服务器落地，
+  // 用户一点"重试"就插入重复消息。改为让真实请求跑到底，超时只是提前给UI一个"失败"提示，
+  // 请求最终成功时会自动纠正（补上id/服务器时间戳），不会重复插入。
+  var settled=false;
+  var _tmr=setTimeout(function(){if(!settled)_markFailed(msgObj,chatAtSend);},20000);
   try{
-    var _timeout=new Promise(function(_,rej){_tmr=setTimeout(function(){rej(new Error('send_timeout'));},8000);});
-    var r=await Promise.race([_sb.from('messages').insert({room_id:room,sender:String(myId),content:msgObj.text,type:'text'}).select().single(),_timeout]);
-    clearTimeout(_tmr);
+    var r=await _sb.from('messages').insert({room_id:room,sender:String(myId),content:msgObj.text,type:'text'}).select().single();
+    settled=true;clearTimeout(_tmr);
     if(r&&r.data&&!r.error){
       msgObj.id=r.data.id;msgObj.failed=false;msgObj.failCount=0;
-      saveLocalMsgs(chatAtSend,G.msgs[chatAtSend]||[]);
+      // ★ 用服务器时间戳纠正乐观时间戳，避免设备时钟偏移导致消息顺序错乱
+      var serverTs=new Date(r.data.created_at).getTime();
+      if(serverTs)msgObj.ts=serverTs;
+      var list=G.msgs[chatAtSend]||[];
+      list.sort(function(a,b){return (a.ts||0)-(b.ts||0)||((a.id||1e15)-(b.id||1e15));});
+      saveLocalMsgs(chatAtSend,list);
       if(G.chat===chatAtSend)renderMsgs();
       triggerPushToUser(String(chatAtSend),msgObj.text);
       _upsertConv(room,msgObj.text,'text',myId,msgObj.ts);
     }else{_markFailed(msgObj,chatAtSend);}
-  }catch(e){if(_tmr)clearTimeout(_tmr);_markFailed(msgObj,chatAtSend);console.log('[sendMsg] failed:',e&&e.message);}
+  }catch(e){
+    settled=true;clearTimeout(_tmr);
+    _markFailed(msgObj,chatAtSend);console.log('[sendMsg] failed:',e&&e.message);
+  }finally{msgObj.sending=false;}
 }
 function _markFailed(msgObj,chatAtSend){
   msgObj.failed=true;msgObj.failCount=(msgObj.failCount||0)+1;
@@ -642,7 +695,7 @@ function retryFailedMsgs(){
   if(_retrying||!myId||!navigator.onLine)return;_retrying=true;var tasks=[];
   Object.keys(G.msgs||{}).forEach(function(peerId){
     var room=roomIdOf(parseInt(myId)||myId,parseInt(peerId)||peerId);
-    (G.msgs[peerId]||[]).forEach(function(m){if(m.failed&&m.sent&&(m.type==='text'||!m.type)&&m.text&&m.id==null)tasks.push({m:m,peerId:peerId,room:room});});
+    (G.msgs[peerId]||[]).forEach(function(m){if(m.failed&&m.sent&&(m.type==='text'||!m.type)&&m.text&&m.id==null&&!m.sending)tasks.push({m:m,peerId:peerId,room:room});});
   });
   tasks.sort(function(a,b){return (a.m.ts||0)-(b.m.ts||0);});
   var i=0;function next(){if(i>=tasks.length){_retrying=false;return;}var t=tasks[i++];t.m.failed=false;_doSendText(t.m,t.peerId,t.room).then(function(){setTimeout(next,200);}).catch(function(){next();});}
@@ -655,18 +708,19 @@ window._gcOnlineHandler=function(){setTimeout(function(){retryFailedMsgs();if(G.
 window.addEventListener('online',window._gcOnlineHandler);
 
 if(window._gcVisHandler)document.removeEventListener('visibilitychange',window._gcVisHandler);
-window._gcVisHandler=function(){if(document.visibilityState!=='visible'||!lg('registered'))return;var chatEl=document.getElementById('chat');if(chatEl&&chatEl.classList.contains('active')&&G.chat)syncRoomMessages(G.chat).catch(function(){});};
+window._gcVisHandler=function(){if(document.visibilityState!=='visible'||!lg('registered'))return;retryFailedMsgs();var chatEl=document.getElementById('chat');if(chatEl&&chatEl.classList.contains('active')&&G.chat)syncRoomMessages(G.chat).catch(function(){});};
 document.addEventListener('visibilitychange',window._gcVisHandler);
 
 if(window._gcPollInterval)clearInterval(window._gcPollInterval);
 window._gcPollInterval=setInterval(function(){
   if(!lg('registered'))return;
+  retryFailedMsgs();
   var chatEl=document.getElementById('chat');if(chatEl&&chatEl.classList.contains('active')&&G.chat)syncRoomMessages(G.chat);
   var mainEl=document.getElementById('main');if(mainEl&&mainEl.classList.contains('active'))loadContacts();
 },15000);
 
 // ── 工具函数 ──
-function fmtLastTime(ts){if(!ts)return'';var d=new Date(ts),now=new Date();if(d.toDateString()===now.toDateString())return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();if(now-d<7*24*60*60*1000){var days=['日','一','二','三','四','五','六'];return'周'+days[d.getDay()];}return(d.getMonth()+1)+'/'+(d.getDate());}
+function fmtLastTime(ts){if(!ts)return'';var d=new Date(ts),now=new Date();if(d.toDateString()===now.toDateString())return d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();if(now-d<7*24*60*60*1000){return i18nT('wd'+d.getDay());}return(d.getMonth()+1)+'/'+(d.getDate());}
 function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
 
 function updateLastPreview(cid,content,type,highlight,readState,ts){
@@ -685,7 +739,7 @@ function updateLastPreview(cid,content,type,highlight,readState,ts){
     _lastContactsLoad=0;setTimeout(function(){loadContacts();},800);return;
   }
   var label;
-  if(type==='text')label=content;else if(type==='contact')label='[名片]';else if(type==='image')label='[图片]';else if(type==='voice')label='[语音]';else if(type==='video')label='[视频]';else if(type==='file')label='[文件]';else if(type==='location')label='[位置]';else label='['+type+']';
+  if(type==='text')label=content;else if(type==='contact')label=i18nT('msgContact');else if(type==='image')label=i18nT('msgImage');else if(type==='voice')label=i18nT('msgVoice');else if(type==='video')label=i18nT('msgVideo');else if(type==='file')label=i18nT('msgFile');else if(type==='location')label=i18nT('msgLocation');else label='['+type+']';
   lastEl.textContent=label;
   // 颜色：收到未读→暖玫瑰；我发未读→暖橙；已读→灰；其余默认
   if(highlight){lastEl.style.color='#e05b9b';lastEl.style.fontWeight='700';lastEl.style.fontSize='13.5px';}
@@ -693,7 +747,7 @@ function updateLastPreview(cid,content,type,highlight,readState,ts){
   else if(readState==='read'){lastEl.style.color='var(--theme-icon,#8e8e93)';lastEl.style.fontWeight='normal';lastEl.style.fontSize='';}
   else{lastEl.style.color='';lastEl.style.fontWeight='';lastEl.style.fontSize='';}
   var prefixEl=lastEl.parentElement&&lastEl.parentElement.querySelector('.last-prefix');
-  if(prefixEl)prefixEl.innerHTML=(readState==='sent'||readState==='delivered'||readState==='read')?'我: ':'';
+  if(prefixEl)prefixEl.textContent=(readState==='sent'||readState==='delivered'||readState==='read')?i18nT('youPrefix'):'';
   if(ts){var tsEl=document.getElementById('lastts-'+String(cid));if(tsEl)tsEl.textContent=fmtLastTime(ts);}
   var wrap=document.getElementById('wrap-'+String(cid));var chatList=document.getElementById('chatList');
   if(wrap&&chatList&&chatList.firstChild!==wrap)chatList.insertBefore(wrap,chatList.firstChild);
@@ -760,7 +814,7 @@ function _removeCidFromChatListCache(cid){
 async function loadContacts(){
   if(!myId)return;if(_loadingContacts)return;
   var _n=Date.now();var list=document.getElementById('chatList');if(!list)return;
-  if(list.children.length===0||list.querySelector('.gc-loading')){var hadCache=_renderChatListCache();if(!hadCache)list.innerHTML='<div class="gc-loading" style="text-align:center;color:#8e8e93;padding:48px 0;font-size:15px;">加载中…</div>';}
+  if(list.children.length===0||list.querySelector('.gc-loading')){var hadCache=_renderChatListCache();if(!hadCache)list.innerHTML='<div class="gc-loading" style="text-align:center;color:#8e8e93;padding:48px 0;font-size:15px;">'+esc(i18nT('loadingEllipsis'))+'</div>';}
   if(_lastContactsLoad>0&&_n-_lastContactsLoad<2000&&!list.querySelector('.gc-loading'))return;
   _lastContactsLoad=_n;_loadingContacts=true;setTimeout(function(){_loadingContacts=false;},5000);
   try{
@@ -798,7 +852,7 @@ async function loadContacts(){
         });
       }
     }catch(e){}
-    if(contactIds.length===0){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:64px 0 32px;font-size:15px;">暂无聊天<br><span style="font-size:13px;margin-top:8px;display:block;">在通讯录添加好友后开始聊天</span></div>';return;}
+    if(contactIds.length===0){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:64px 0 32px;font-size:15px;">'+esc(i18nT('noChatsYet'))+'<br><span style="font-size:13px;margin-top:8px;display:block;">'+esc(i18nT('addFriendsHint'))+'</span></div>';return;}
     var uids=contactIds.map(function(i){return parseInt(i)||0;});
     var users=await _sb.from('users').select('id,name,avatar_url').in('id',uids);
     var userMap={},avatarMap={};if(users.data)users.data.forEach(function(u){userMap[String(u.id)]=u.name;if(u.avatar_url)avatarMap[String(u.id)]=u.avatar_url;});
@@ -837,7 +891,7 @@ function _renderContacts(contactIds,seen,friendMap,userMap,avatarMap){
     var lastText='点击开始聊天';
     if(lm&&lm.content){
       if(lm.type==='text')lastText=lm.content.length<80?lm.content:lm.content.substring(0,77)+'...';
-      else if(lm.type==='image')lastText='[图片]';else if(lm.type==='voice')lastText='[语音]';else if(lm.type==='video')lastText='[视频]';else if(lm.type==='file')lastText='[文件]';else if(lm.type==='location')lastText='[位置]';else if(lm.type==='contact')lastText='[名片]';else lastText='['+lm.type+']';
+      else if(lm.type==='image')lastText=i18nT('msgImage');else if(lm.type==='voice')lastText=i18nT('msgVoice');else if(lm.type==='video')lastText=i18nT('msgVideo');else if(lm.type==='file')lastText=i18nT('msgFile');else if(lm.type==='location')lastText=i18nT('msgLocation');else if(lm.type==='contact')lastText=i18nT('msgContact');else lastText='['+lm.type+']';
     }
     var hasUnread=(_unread[cid]||0)>0;var isMine=lm&&String(lm.sender)===mid;var readTick='';var myLastIsRead=false;
     if(isMine&&lm&&lm.content){
@@ -860,7 +914,7 @@ function _renderContacts(contactIds,seen,friendMap,userMap,avatarMap){
       nameStyle='font-size:17px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       timeStyle='font-size:12px;color:var(--theme-icon,#c7c7cc);flex-shrink:0;';
     }
-    var lastTime=lm&&lm.created_at?fmtLastTime(new Date(lm.created_at).getTime()):'';var prefix=isMine?'我: ':'';
+    var lastTime=lm&&lm.created_at?fmtLastTime(new Date(lm.created_at).getTime()):'';var prefix=isMine?i18nT('youPrefix'):'';
     var wrap=document.createElement('div');wrap.className='swipe-wrap';wrap.id='wrap-'+cid;wrap.style.cssText='position:relative;overflow:hidden;margin:6px 8px;border-radius:16px;';
     var actions=document.createElement('div');actions.style.cssText='position:absolute;top:0;right:0;bottom:0;display:flex;width:140px;transform:translateX(140px);';
     var _btnStyle='display:flex;align-items:center;justify-content:center;width:70px;font-size:14px;font-weight:600;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;';
