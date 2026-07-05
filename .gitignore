@@ -3,3 +3,4 @@ tests/node_modules/
 tests/test-results/
 tests/screenshots/
 test-results/
+tools/telegram-config.json
