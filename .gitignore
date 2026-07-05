@@ -4,3 +4,4 @@ tests/test-results/
 tests/screenshots/
 test-results/
 tools/telegram-config.json
+tools/telegram-state.json
