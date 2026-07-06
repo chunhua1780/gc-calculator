@@ -3674,7 +3674,7 @@ function i18nT(key){
 function setLang(code){
   curLang=code;
   ls('lang',code);
-  applyLang();
+  _ensureLangPack(code,function(){applyLang();});
 }
 
 
@@ -4378,7 +4378,7 @@ window.onload=async function(){
       }
     }, 8000);
   })();
-  try{applyLang();var rls=document.getElementById('regLangSelect');if(rls)rls.value=curLang;}catch(e){console.log('i18n err',e);}
+  try{_ensureLangPack(curLang,function(){applyLang();var rls=document.getElementById('regLangSelect');if(rls)rls.value=curLang;});}catch(e){console.log('i18n err',e);}
   try{
     if(lg('registered')){
       var savedName=lg('myName')||'';
@@ -4415,7 +4415,7 @@ window.onload=async function(){
   if(gateBubble){gateBubble.addEventListener('animationend',function(e){if(e.animationName==='gateShake')gateBubble.classList.remove('gate-shake');});}
   var lockBubble=document.getElementById('lockBubble');
   if(lockBubble){lockBubble.addEventListener('animationend',function(e){if(e.animationName==='gateShake')lockBubble.classList.remove('gate-shake');});}
-  applyLang();
+  _ensureLangPack(curLang,function(){applyLang();});
   tickClock();
   var _cv=document.getElementById('coreVerBadge');if(_cv)_cv.textContent=CORE_VERSION;
   var _sv=document.getElementById('settingsVerLabel');if(_sv)_sv.textContent=i18nT('calculator')+' '+CORE_VERSION;
@@ -6274,6 +6274,43 @@ function buildLangList(){
   var ll=document.getElementById('langList');if(!ll)return;
   ll.innerHTML='<div style="height:8px;"></div><div style="background:#fff;border-radius:12px;margin:0 16px;overflow:hidden;">'+Object.keys(LANGS).map(function(c){var l=LANGS[c];var sel=c===curLang;return '<div onclick="pickLang(\''+c+'\')" style="display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid rgba(60,60,67,0.18);cursor:pointer;background:'+(sel?'#f0f7ff':'#fff')+'"><span style="font-size:calc(24px * var(--ui-font-scale,1));margin-right:14px;">'+l.flag+'</span><span style="font-size:calc(16px * var(--ui-font-scale,1));flex:1;">'+l.name+'</span>'+(sel?'<span style="color:#007aff;font-size:calc(18px * var(--ui-font-scale,1));">✓</span>':'<span style="color:#c7c7cc;font-size:calc(18px * var(--ui-font-scale,1));">›</span>')+'</div>';}).join('')+'</div>';
 }
+// ═══ 语言包按需下载：核心只内置中英文，其他语言首次切换时联网下载并缓存到本地 ═══
+var _langPackLoading={};
+function _needsLangPack(code){
+  if(code==='en'||code==='zh-CN')return false;
+  var have=I18N_DICT[code]?Object.keys(I18N_DICT[code]).length:0;
+  var need=Object.keys(I18N_DICT.en).length;
+  return have<need;
+}
+function _ensureLangPack(code,cb){
+  if(!_needsLangPack(code)){cb&&cb();return;}
+  var cacheKey='langPack_'+code;
+  var cached=null;
+  try{cached=localStorage.getItem(cacheKey);}catch(e){}
+  if(cached){
+    try{
+      var data=JSON.parse(cached);
+      I18N_DICT[code]=Object.assign({},I18N_DICT[code]||{},data);
+    }catch(e){}
+    cb&&cb();
+    return;
+  }
+  if(_langPackLoading[code]){cb&&cb();return;}
+  _langPackLoading[code]=true;
+  fetch('./lang/'+code+'.json').then(function(r){
+    if(!r.ok)throw new Error('lang pack fetch failed: '+r.status);
+    return r.json();
+  }).then(function(data){
+    I18N_DICT[code]=Object.assign({},I18N_DICT[code]||{},data);
+    try{localStorage.setItem(cacheKey,JSON.stringify(data));}catch(e){}
+    _langPackLoading[code]=false;
+    cb&&cb();
+  }).catch(function(err){
+    console.log('[i18n] lang pack unavailable for',code,'- falling back to English for missing keys:',err&&err.message);
+    _langPackLoading[code]=false;
+    cb&&cb();
+  });
+}
 function applyLang(){
   document.body.dir=['ar','ur'].includes(curLang)?'rtl':'ltr';
   // 通用扫描：所有带 data-i18n / data-i18n-ph 的元素（登录/注册页等）
@@ -6340,9 +6377,11 @@ function applyLang(){
 function pickLang(code){
   curLang=code;ls('lang',code);
   document.body.dir=['ar','ur'].includes(code)?'rtl':'ltr';
-  applyLang();
-  buildLangBtns();buildLangList();
-  show('settings');
+  _ensureLangPack(code,function(){
+    applyLang();
+    buildLangBtns();buildLangList();
+    show('settings');
+  });
 }
 
 // ═══ Supabase ═══
