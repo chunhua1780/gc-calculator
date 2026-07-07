@@ -482,7 +482,7 @@ function listenForAllMessages(){
           else{_lastContactsLoad=0;loadContacts();}
           sendNotif();
           if(!chatOpenNow){
-            if('serviceWorker' in navigator&&Notification.permission==='granted'){
+            if('serviceWorker' in navigator&&typeof Notification!=='undefined'&&Notification.permission==='granted'){
               navigator.serviceWorker.ready.then(function(reg){
                 var sn=G.friends&&G.friends[senderId]?G.friends[senderId].name:('User '+senderId);
                 var body=msg.type==='text'?msg.text:msg.type==='image'?i18nT('msgImage'):msg.type==='voice'?i18nT('msgVoice'):msg.type==='video'?i18nT('msgVideo'):'['+msg.type+']';
