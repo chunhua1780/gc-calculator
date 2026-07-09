@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>应用下载中心</title>
+<style>
+  :root{
+    --bg:#f2f2f7; --card:#ffffff; --text:#1c1c1e; --sub:#8e8e93; --accent:#007aff; --border:rgba(60,60,67,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#000000; --card:#1c1c1e; --text:#f5f5f7; --sub:#98989d; --accent:#0a84ff; --border:rgba(255,255,255,.12); }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding:max(28px,env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom));
+    min-height:100vh;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+  h1{font-size:26px;font-weight:700;margin:0 0 6px;text-align:center;}
+  .sub{color:var(--sub);font-size:14px;text-align:center;margin:0 0 28px;line-height:1.5;}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:18px;
+    padding:16px; display:flex; align-items:center; gap:14px; margin-bottom:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);
+  }
+  .icon{width:56px;height:56px;border-radius:14px;flex-shrink:0;object-fit:cover;background:var(--bg);}
+  .info{flex:1;min-width:0;}
+  .name{font-size:17px;font-weight:600;margin-bottom:2px;}
+  .desc{font-size:13px;color:var(--sub);line-height:1.4;}
+  .dl-btn{
+    flex-shrink:0; background:var(--accent); color:#fff; text-decoration:none;
+    font-size:14px; font-weight:600; padding:9px 16px; border-radius:20px; white-space:nowrap;
+  }
+  .dl-btn:active{opacity:.7;}
+  .note{
+    margin-top:28px; padding:14px 16px; background:var(--card); border:1px solid var(--border);
+    border-radius:14px; font-size:12.5px; color:var(--sub); line-height:1.7;
+  }
+  .note b{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>应用下载中心</h1>
+  <p class="sub">选择需要的应用，点击即可下载安装包</p>
+
+  <div class="card">
+    <img class="icon" src="https://chunhua1780.github.io/gc-calculator/icon192.png" alt="">
+    <div class="info">
+      <div class="name">计算器</div>
+      <div class="desc">简洁好用的日常计算工具，支持科学计算模式</div>
+    </div>
+    <a class="dl-btn" href="https://github.com/chunhua1780/gc-calculator/releases/latest/download/app-debug.apk">下载</a>
+  </div>
+
+  <div class="card">
+    <img class="icon" src="https://chunhua1780.github.io/gc-weather/icon192.png" alt="">
+    <div class="info">
+      <div class="name">天气</div>
+      <div class="desc">实时天气、24小时预报、7天预报，支持多城市</div>
+    </div>
+    <a class="dl-btn" href="https://github.com/chunhua1780/gc-weather/releases/latest/download/app-debug.apk">下载</a>
+  </div>
+
+  <div class="card">
+    <img class="icon" src="https://chunhua1780.github.io/gc-clock/icon192.png" alt="">
+    <div class="info">
+      <div class="name">时钟</div>
+      <div class="desc">世界时钟、闹钟、秒表、计时器，一应俱全</div>
+    </div>
+    <a class="dl-btn" href="https://github.com/chunhua1780/gc-clock/releases/latest/download/app-debug.apk">下载</a>
+  </div>
+
+  <div class="card">
+    <img class="icon" src="https://chunhua1780.github.io/gc-notebook/icon192.png" alt="">
+    <div class="info">
+      <div class="name">备忘录</div>
+      <div class="desc">随手记录、清单待办、置顶重要笔记</div>
+    </div>
+    <a class="dl-btn" href="https://github.com/chunhua1780/gc-notebook/releases/latest/download/app-debug.apk">下载</a>
+  </div>
+
+  <div class="note">
+    <b>安装说明：</b>下载完成后，需要在手机"设置"中允许安装来自此来源的应用（未知来源/信任此App），然后打开下载的 APK 文件完成安装。
+  </div>
+</div>
+</body>
+</html>
