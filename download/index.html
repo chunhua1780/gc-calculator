@@ -7,9 +7,10 @@
 <style>
   :root{
     --bg:#f2f2f7; --card:#ffffff; --text:#1c1c1e; --sub:#8e8e93; --accent:#007aff; --border:rgba(60,60,67,.12);
+    --chip-bg:rgba(0,122,255,.08);
   }
   @media (prefers-color-scheme: dark){
-    :root{ --bg:#000000; --card:#1c1c1e; --text:#f5f5f7; --sub:#98989d; --accent:#0a84ff; --border:rgba(255,255,255,.12); }
+    :root{ --bg:#000000; --card:#1c1c1e; --text:#f5f5f7; --sub:#98989d; --accent:#0a84ff; --border:rgba(255,255,255,.12); --chip-bg:rgba(10,132,255,.14); }
   }
   *{box-sizing:border-box;}
   body{
@@ -20,71 +21,121 @@
   }
   .wrap{max-width:520px;margin:0 auto;}
   h1{font-size:26px;font-weight:700;margin:0 0 6px;text-align:center;}
-  .sub{color:var(--sub);font-size:14px;text-align:center;margin:0 0 28px;line-height:1.5;}
+  .sub{color:var(--sub);font-size:14px;text-align:center;margin:0 0 24px;line-height:1.5;}
+
   .card{
     background:var(--card); border:1px solid var(--border); border-radius:18px;
-    padding:16px; display:flex; align-items:center; gap:14px; margin-bottom:14px;
+    padding:16px; margin-bottom:14px;
     box-shadow:0 1px 3px rgba(0,0,0,.04);
   }
+  .card-top{display:flex; align-items:center; gap:14px; margin-bottom:14px;}
   .icon{width:56px;height:56px;border-radius:14px;flex-shrink:0;object-fit:cover;background:var(--bg);}
   .info{flex:1;min-width:0;}
   .name{font-size:17px;font-weight:600;margin-bottom:2px;}
   .desc{font-size:13px;color:var(--sub);line-height:1.4;}
+
+  .btn-row{display:flex;gap:8px;}
   .dl-btn{
-    flex-shrink:0; background:var(--accent); color:#fff; text-decoration:none;
-    font-size:14px; font-weight:600; padding:9px 16px; border-radius:20px; white-space:nowrap;
+    flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    text-decoration:none; font-size:14px; font-weight:600; padding:11px 10px; border-radius:14px;
   }
+  .dl-btn.android{background:var(--accent); color:#fff;}
+  .dl-btn.ios{background:var(--chip-bg); color:var(--accent); border:1px solid var(--border);}
   .dl-btn:active{opacity:.7;}
+
   .note{
-    margin-top:28px; padding:14px 16px; background:var(--card); border:1px solid var(--border);
-    border-radius:14px; font-size:12.5px; color:var(--sub); line-height:1.7;
+    margin-top:8px; padding:16px; background:var(--card); border:1px solid var(--border);
+    border-radius:14px; font-size:13px; color:var(--sub); line-height:1.7;
   }
+  .note h3{font-size:15px;color:var(--text);margin:0 0 10px;}
   .note b{color:var(--text);}
+  .steps{margin:0;padding:0;list-style:none;counter-reset:step;}
+  .steps li{counter-increment:step;padding-left:30px;position:relative;margin-bottom:10px;}
+  .steps li:last-child{margin-bottom:0;}
+  .steps li::before{
+    content:counter(step);position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  }
+  .section-title{font-size:13px;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:28px 0 12px;padding-left:2px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>应用下载中心</h1>
-  <p class="sub">选择需要的应用，点击即可下载安装包</p>
+  <p class="sub">Android 直接下载安装包；iPhone 用 Safari 打开网页版，加入主屏幕即可像 App 一样使用</p>
 
   <div class="card">
-    <img class="icon" src="https://chunhua1780.github.io/gc-calculator/icon192.png" alt="">
-    <div class="info">
-      <div class="name">计算器</div>
-      <div class="desc">简洁好用的日常计算工具，支持科学计算模式</div>
+    <div class="card-top">
+      <img class="icon" src="https://chunhua1780.github.io/gc-calculator/icon192.png" alt="">
+      <div class="info">
+        <div class="name">计算器</div>
+        <div class="desc">简洁好用的日常计算工具，支持科学计算模式</div>
+      </div>
     </div>
-    <a class="dl-btn" href="https://github.com/chunhua1780/gc-calculator/releases/latest/download/app-debug.apk">下载</a>
+    <div class="btn-row">
+      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-calculator/releases/latest/download/app-debug.apk">🤖 Android 下载</a>
+      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-calculator/" target="_blank" rel="noopener">🍎 iPhone 网页版</a>
+    </div>
   </div>
 
   <div class="card">
-    <img class="icon" src="https://chunhua1780.github.io/gc-weather/icon192.png" alt="">
-    <div class="info">
-      <div class="name">天气</div>
-      <div class="desc">实时天气、24小时预报、7天预报，支持多城市</div>
+    <div class="card-top">
+      <img class="icon" src="https://chunhua1780.github.io/gc-weather/icon192.png" alt="">
+      <div class="info">
+        <div class="name">天气</div>
+        <div class="desc">实时天气、24小时预报、7天预报，支持多城市</div>
+      </div>
     </div>
-    <a class="dl-btn" href="https://github.com/chunhua1780/gc-weather/releases/latest/download/app-debug.apk">下载</a>
+    <div class="btn-row">
+      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-weather/releases/latest/download/app-debug.apk">🤖 Android 下载</a>
+      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-weather/" target="_blank" rel="noopener">🍎 iPhone 网页版</a>
+    </div>
   </div>
 
   <div class="card">
-    <img class="icon" src="https://chunhua1780.github.io/gc-clock/icon192.png" alt="">
-    <div class="info">
-      <div class="name">时钟</div>
-      <div class="desc">世界时钟、闹钟、秒表、计时器，一应俱全</div>
+    <div class="card-top">
+      <img class="icon" src="https://chunhua1780.github.io/gc-clock/icon192.png" alt="">
+      <div class="info">
+        <div class="name">时钟</div>
+        <div class="desc">世界时钟、闹钟、秒表、计时器，一应俱全</div>
+      </div>
     </div>
-    <a class="dl-btn" href="https://github.com/chunhua1780/gc-clock/releases/latest/download/app-debug.apk">下载</a>
+    <div class="btn-row">
+      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-clock/releases/latest/download/app-debug.apk">🤖 Android 下载</a>
+      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-clock/" target="_blank" rel="noopener">🍎 iPhone 网页版</a>
+    </div>
   </div>
 
   <div class="card">
-    <img class="icon" src="https://chunhua1780.github.io/gc-notebook/icon192.png" alt="">
-    <div class="info">
-      <div class="name">备忘录</div>
-      <div class="desc">随手记录、清单待办、置顶重要笔记</div>
+    <div class="card-top">
+      <img class="icon" src="https://chunhua1780.github.io/gc-notebook/icon192.png" alt="">
+      <div class="info">
+        <div class="name">备忘录</div>
+        <div class="desc">随手记录、清单待办、置顶重要笔记</div>
+      </div>
     </div>
-    <a class="dl-btn" href="https://github.com/chunhua1780/gc-notebook/releases/latest/download/app-debug.apk">下载</a>
+    <div class="btn-row">
+      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-notebook/releases/latest/download/app-debug.apk">🤖 Android 下载</a>
+      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-notebook/" target="_blank" rel="noopener">🍎 iPhone 网页版</a>
+    </div>
   </div>
+
+  <div class="section-title">使用说明</div>
 
   <div class="note">
-    <b>安装说明：</b>下载完成后，需要在手机"设置"中允许安装来自此来源的应用（未知来源/信任此App），然后打开下载的 APK 文件完成安装。
+    <h3>🤖 Android</h3>
+    点击"Android 下载"获取安装包（.apk 文件）。首次安装需要在系统设置中允许"安装未知来源应用"（部分手机会在安装时自动弹出该提示，按提示允许即可），然后打开文件完成安装。
+  </div>
+
+  <div class="note" style="margin-top:14px;">
+    <h3>🍎 iPhone 加入主屏幕</h3>
+    <ol class="steps">
+      <li>用 <b>Safari 浏览器</b>打开对应App的"iPhone 网页版"链接（必须用 Safari，其他浏览器无法添加到主屏幕）</li>
+      <li>点击底部工具栏中间的<b>分享按钮</b>（方框加箭头图标）</li>
+      <li>在弹出的列表里找到并点击<b>"添加到主屏幕"</b></li>
+      <li>点击右上角<b>"添加"</b>确认</li>
+    </ol>
+    <div style="margin-top:12px;">添加完成后，主屏幕上会出现一个独立的图标，点开就像打开一个正常安装的 App 一样，全屏显示、没有浏览器地址栏。</div>
   </div>
 </div>
 </body>
