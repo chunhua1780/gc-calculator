@@ -19,8 +19,17 @@
     padding:max(28px,env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom));
     min-height:100vh;
   }
+  [dir="rtl"]{direction:rtl;}
   .wrap{max-width:520px;margin:0 auto;}
-  h1{font-size:26px;font-weight:700;margin:0 0 6px;text-align:center;}
+
+  .top-bar{display:flex;justify-content:flex-end;margin-bottom:8px;}
+  .lang-btn{
+    display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);
+    border-radius:20px;padding:7px 12px;font-size:13px;color:var(--text);cursor:pointer;
+  }
+  .lang-btn:active{opacity:.7;}
+
+  h1{font-size:26px;font-weight:700;margin:4px 0 6px;text-align:center;}
   .sub{color:var(--sub);font-size:14px;text-align:center;margin:0 0 24px;line-height:1.5;}
 
   .card{
@@ -51,30 +60,49 @@
   .note b{color:var(--text);}
   .steps{margin:0;padding:0;list-style:none;counter-reset:step;}
   .steps li{counter-increment:step;padding-left:30px;position:relative;margin-bottom:10px;}
+  [dir="rtl"] .steps li{padding-left:0;padding-right:30px;}
   .steps li:last-child{margin-bottom:0;}
   .steps li::before{
     content:counter(step);position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:50%;
     background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;
   }
+  [dir="rtl"] .steps li::before{left:auto;right:0;}
   .section-title{font-size:13px;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:28px 0 12px;padding-left:2px;}
+
+  .lang-sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:100;}
+  .lang-sheet.on{display:flex;}
+  .lang-panel{
+    background:var(--bg);width:100%;max-width:480px;max-height:70vh;overflow-y:auto;
+    border-radius:20px 20px 0 0;padding:14px 8px calc(14px + env(safe-area-inset-bottom));
+  }
+  .lang-item{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;cursor:pointer;font-size:15px;
+  }
+  .lang-item:active{background:var(--chip-bg);}
+  .lang-item .flag{font-size:20px;}
+  .lang-item.cur{color:var(--accent);font-weight:600;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>应用下载中心</h1>
-  <p class="sub">Android 直接下载安装包；iPhone 用 Safari 打开网页版，加入主屏幕即可像 App 一样使用</p>
+  <div class="top-bar">
+    <div class="lang-btn" onclick="toggleLangSheet(true)"><span id="curFlag">🇨🇳</span><span id="curLangName">中文简体</span></div>
+  </div>
+
+  <h1 data-i18n="title">应用下载中心</h1>
+  <p class="sub" data-i18n="subtitle">Android 直接下载安装包；iPhone 用 Safari 打开网页版，加入主屏幕即可像 App 一样使用</p>
 
   <div class="card">
     <div class="card-top">
       <img class="icon" src="https://chunhua1780.github.io/gc-calculator/icon192.png" alt="">
       <div class="info">
-        <div class="name">计算器</div>
-        <div class="desc">简洁好用的日常计算工具，支持科学计算模式</div>
+        <div class="name" data-i18n="calcName">计算器</div>
+        <div class="desc" data-i18n="calcDesc">简洁好用的日常计算工具，支持科学计算模式</div>
       </div>
     </div>
     <div class="btn-row">
-      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-calculator/releases/latest/download/app-debug.apk">🤖 Android 下载</a>
-      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-calculator/" target="_blank" rel="noopener">🍎 iPhone 网页版</a>
+      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-calculator/releases/latest/download/app-debug.apk"><span>🤖</span><span data-i18n="btnAndroid">Android 下载</span></a>
+      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-calculator/" target="_blank" rel="noopener"><span>🍎</span><span data-i18n="btnIos">iPhone 网页版</span></a>
     </div>
   </div>
 
@@ -82,13 +110,13 @@
     <div class="card-top">
       <img class="icon" src="https://chunhua1780.github.io/gc-weather/icon192.png" alt="">
       <div class="info">
-        <div class="name">天气</div>
-        <div class="desc">实时天气、24小时预报、7天预报，支持多城市</div>
+        <div class="name" data-i18n="wxName">天气</div>
+        <div class="desc" data-i18n="wxDesc">实时天气、24小时预报、7天预报，支持多城市</div>
       </div>
     </div>
     <div class="btn-row">
-      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-weather/releases/latest/download/app-debug.apk">🤖 Android 下载</a>
-      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-weather/" target="_blank" rel="noopener">🍎 iPhone 网页版</a>
+      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-weather/releases/latest/download/app-debug.apk"><span>🤖</span><span data-i18n="btnAndroid">Android 下载</span></a>
+      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-weather/" target="_blank" rel="noopener"><span>🍎</span><span data-i18n="btnIos">iPhone 网页版</span></a>
     </div>
   </div>
 
@@ -96,13 +124,13 @@
     <div class="card-top">
       <img class="icon" src="https://chunhua1780.github.io/gc-clock/icon192.png" alt="">
       <div class="info">
-        <div class="name">时钟</div>
-        <div class="desc">世界时钟、闹钟、秒表、计时器，一应俱全</div>
+        <div class="name" data-i18n="clkName">时钟</div>
+        <div class="desc" data-i18n="clkDesc">世界时钟、闹钟、秒表、计时器，一应俱全</div>
       </div>
     </div>
     <div class="btn-row">
-      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-clock/releases/latest/download/app-debug.apk">🤖 Android 下载</a>
-      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-clock/" target="_blank" rel="noopener">🍎 iPhone 网页版</a>
+      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-clock/releases/latest/download/app-debug.apk"><span>🤖</span><span data-i18n="btnAndroid">Android 下载</span></a>
+      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-clock/" target="_blank" rel="noopener"><span>🍎</span><span data-i18n="btnIos">iPhone 网页版</span></a>
     </div>
   </div>
 
@@ -110,33 +138,343 @@
     <div class="card-top">
       <img class="icon" src="https://chunhua1780.github.io/gc-notebook/icon192.png" alt="">
       <div class="info">
-        <div class="name">备忘录</div>
-        <div class="desc">随手记录、清单待办、置顶重要笔记</div>
+        <div class="name" data-i18n="noteName">备忘录</div>
+        <div class="desc" data-i18n="noteDesc">随手记录、清单待办、置顶重要笔记</div>
       </div>
     </div>
     <div class="btn-row">
-      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-notebook/releases/latest/download/app-debug.apk">🤖 Android 下载</a>
-      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-notebook/" target="_blank" rel="noopener">🍎 iPhone 网页版</a>
+      <a class="dl-btn android" href="https://github.com/chunhua1780/gc-notebook/releases/latest/download/app-debug.apk"><span>🤖</span><span data-i18n="btnAndroid">Android 下载</span></a>
+      <a class="dl-btn ios" href="https://chunhua1780.github.io/gc-notebook/" target="_blank" rel="noopener"><span>🍎</span><span data-i18n="btnIos">iPhone 网页版</span></a>
     </div>
   </div>
 
-  <div class="section-title">使用说明</div>
+  <div class="section-title" data-i18n="howTo">使用说明</div>
 
   <div class="note">
     <h3>🤖 Android</h3>
-    点击"Android 下载"获取安装包（.apk 文件）。首次安装需要在系统设置中允许"安装未知来源应用"（部分手机会在安装时自动弹出该提示，按提示允许即可），然后打开文件完成安装。
+    <span data-i18n="androidNote">点击"Android 下载"获取安装包（.apk 文件）。首次安装需要在系统设置中允许"安装未知来源应用"（部分手机会在安装时自动弹出该提示，按提示允许即可），然后打开文件完成安装。</span>
   </div>
 
   <div class="note" style="margin-top:14px;">
-    <h3>🍎 iPhone 加入主屏幕</h3>
+    <h3><span data-i18n="iosNoteTitle">🍎 iPhone 加入主屏幕</span></h3>
     <ol class="steps">
-      <li>用 <b>Safari 浏览器</b>打开对应App的"iPhone 网页版"链接（必须用 Safari，其他浏览器无法添加到主屏幕）</li>
-      <li>点击底部工具栏中间的<b>分享按钮</b>（方框加箭头图标）</li>
-      <li>在弹出的列表里找到并点击<b>"添加到主屏幕"</b></li>
-      <li>点击右上角<b>"添加"</b>确认</li>
+      <li data-i18n="iosStep1">用 <b>Safari 浏览器</b>打开对应App的"iPhone 网页版"链接（必须用 Safari，其他浏览器无法添加到主屏幕）</li>
+      <li data-i18n="iosStep2">点击底部工具栏中间的<b>分享按钮</b>（方框加箭头图标）</li>
+      <li data-i18n="iosStep3">在弹出的列表里找到并点击<b>"添加到主屏幕"</b></li>
+      <li data-i18n="iosStep4">点击右上角<b>"添加"</b>确认</li>
     </ol>
-    <div style="margin-top:12px;">添加完成后，主屏幕上会出现一个独立的图标，点开就像打开一个正常安装的 App 一样，全屏显示、没有浏览器地址栏。</div>
+    <div style="margin-top:12px;" data-i18n="iosNoteBody">添加完成后，主屏幕上会出现一个独立的图标，点开就像打开一个正常安装的 App 一样，全屏显示、没有浏览器地址栏。</div>
   </div>
 </div>
+
+<div class="lang-sheet" id="langSheet" onclick="if(event.target===this)toggleLangSheet(false)">
+  <div class="lang-panel" id="langPanel"></div>
+</div>
+
+<script>
+var DL_LANGS = {
+  'zh-CN': { flag:'🇨🇳', name:'中文简体', dir:'ltr',
+    title:'应用下载中心', subtitle:'Android 直接下载安装包；iPhone 用 Safari 打开网页版，加入主屏幕即可像 App 一样使用',
+    calcName:'计算器', calcDesc:'简洁好用的日常计算工具，支持科学计算模式',
+    wxName:'天气', wxDesc:'实时天气、24小时预报、7天预报，支持多城市',
+    clkName:'时钟', clkDesc:'世界时钟、闹钟、秒表、计时器，一应俱全',
+    noteName:'备忘录', noteDesc:'随手记录、清单待办、置顶重要笔记',
+    btnAndroid:'Android 下载', btnIos:'iPhone 网页版', howTo:'使用说明',
+    androidNote:'点击"Android 下载"获取安装包（.apk 文件）。首次安装需要在系统设置中允许"安装未知来源应用"（部分手机会在安装时自动弹出该提示，按提示允许即可），然后打开文件完成安装。',
+    iosNoteTitle:'🍎 iPhone 加入主屏幕',
+    iosStep1:'用 <b>Safari 浏览器</b>打开对应App的"iPhone 网页版"链接（必须用 Safari，其他浏览器无法添加到主屏幕）',
+    iosStep2:'点击底部工具栏中间的<b>分享按钮</b>（方框加箭头图标）',
+    iosStep3:'在弹出的列表里找到并点击<b>"添加到主屏幕"</b>',
+    iosStep4:'点击右上角<b>"添加"</b>确认',
+    iosNoteBody:'添加完成后，主屏幕上会出现一个独立的图标，点开就像打开一个正常安装的 App 一样，全屏显示、没有浏览器地址栏。' },
+  'zh-TW': { flag:'🇹🇼', name:'中文繁體', dir:'ltr',
+    title:'應用程式下載中心', subtitle:'Android 直接下載安裝包；iPhone 用 Safari 開啟網頁版，加入主畫面即可像 App 一樣使用',
+    calcName:'計算機', calcDesc:'簡潔好用的日常計算工具，支援科學計算模式',
+    wxName:'天氣', wxDesc:'即時天氣、24小時預報、7天預報，支援多城市',
+    clkName:'時鐘', clkDesc:'世界時鐘、鬧鐘、碼錶、計時器，一應俱全',
+    noteName:'備忘錄', noteDesc:'隨手記錄、清單待辦、置頂重要筆記',
+    btnAndroid:'Android 下載', btnIos:'iPhone 網頁版', howTo:'使用說明',
+    androidNote:'點擊「Android 下載」取得安裝包（.apk 檔案）。首次安裝需要在系統設定中允許「安裝未知來源應用程式」（部分手機會在安裝時自動彈出該提示，依提示允許即可），然後開啟檔案完成安裝。',
+    iosNoteTitle:'🍎 iPhone 加入主畫面',
+    iosStep1:'用 <b>Safari 瀏覽器</b>開啟對應App的「iPhone 網頁版」連結（必須用 Safari，其他瀏覽器無法加入主畫面）',
+    iosStep2:'點擊底部工具列中間的<b>分享按鈕</b>（方框加箭頭圖示）',
+    iosStep3:'在彈出的清單裡找到並點擊<b>「加入主畫面」</b>',
+    iosStep4:'點擊右上角<b>「新增」</b>確認',
+    iosNoteBody:'加入完成後，主畫面上會出現一個獨立的圖示，點開就像開啟一個正常安裝的 App 一樣，全螢幕顯示、沒有瀏覽器網址列。' },
+  'en': { flag:'🇺🇸', name:'English', dir:'ltr',
+    title:'App Download Center', subtitle:'Android: download the installer directly. iPhone: open the web version in Safari and add it to your Home Screen to use it like an app.',
+    calcName:'Calculator', calcDesc:'A clean, easy-to-use everyday calculator with scientific mode',
+    wxName:'Weather', wxDesc:'Real-time weather, 24-hour and 7-day forecasts, multiple cities',
+    clkName:'Clock', clkDesc:'World clock, alarm, stopwatch and timer, all in one',
+    noteName:'Notes', noteDesc:'Quick notes, checklists, pin your important notes',
+    btnAndroid:'Android Download', btnIos:'iPhone Web Version', howTo:'How to Use',
+    androidNote:'Tap "Android Download" to get the installer (.apk file). On first install you\'ll need to allow "Install unknown apps" in system settings (many phones prompt for this automatically) — then open the file to finish installing.',
+    iosNoteTitle:'🍎 Add to Home Screen on iPhone',
+    iosStep1:'Open the app\'s "iPhone Web Version" link in <b>Safari</b> (must be Safari — other browsers can\'t add to the Home Screen)',
+    iosStep2:'Tap the <b>Share button</b> in the middle of the bottom toolbar (a square with an arrow)',
+    iosStep3:'Find and tap <b>"Add to Home Screen"</b> in the menu that appears',
+    iosStep4:'Tap <b>"Add"</b> in the top-right corner to confirm',
+    iosNoteBody:'Once added, a standalone icon appears on your Home Screen. Opening it feels just like a normally installed app — full screen, no browser address bar.' },
+  'es': { flag:'🇪🇸', name:'Español', dir:'ltr',
+    title:'Centro de descargas', subtitle:'Android: descarga el instalador directamente. iPhone: abre la versión web en Safari y añádela a la pantalla de inicio para usarla como una app.',
+    calcName:'Calculadora', calcDesc:'Una calculadora sencilla y práctica con modo científico',
+    wxName:'Clima', wxDesc:'Clima en tiempo real, pronóstico de 24 horas y 7 días, varias ciudades',
+    clkName:'Reloj', clkDesc:'Reloj mundial, alarma, cronómetro y temporizador, todo en uno',
+    noteName:'Notas', noteDesc:'Notas rápidas, listas de tareas, fija tus notas importantes',
+    btnAndroid:'Descargar Android', btnIos:'Versión web iPhone', howTo:'Cómo usarlo',
+    androidNote:'Toca "Descargar Android" para obtener el instalador (.apk). En la primera instalación deberás permitir "Instalar apps desconocidas" en los ajustes del sistema (muchos teléfonos lo piden automáticamente), luego abre el archivo para completar la instalación.',
+    iosNoteTitle:'🍎 Añadir a la pantalla de inicio en iPhone',
+    iosStep1:'Abre el enlace "Versión web iPhone" con <b>Safari</b> (debe ser Safari, otros navegadores no permiten añadir a la pantalla de inicio)',
+    iosStep2:'Toca el <b>botón Compartir</b> en el centro de la barra inferior (un cuadrado con una flecha)',
+    iosStep3:'Busca y toca <b>"Añadir a pantalla de inicio"</b> en el menú',
+    iosStep4:'Toca <b>"Añadir"</b> arriba a la derecha para confirmar',
+    iosNoteBody:'Una vez añadido, aparecerá un icono independiente en tu pantalla de inicio. Al abrirlo se sentirá como una app instalada normalmente: pantalla completa, sin barra de direcciones.' },
+  'fr': { flag:'🇫🇷', name:'Français', dir:'ltr',
+    title:'Centre de téléchargement', subtitle:'Android : téléchargez directement l\'installateur. iPhone : ouvrez la version web dans Safari et ajoutez-la à l\'écran d\'accueil pour l\'utiliser comme une app.',
+    calcName:'Calculatrice', calcDesc:'Une calculatrice simple et pratique avec mode scientifique',
+    wxName:'Météo', wxDesc:'Météo en temps réel, prévisions 24h et 7 jours, plusieurs villes',
+    clkName:'Horloge', clkDesc:'Horloge mondiale, alarme, chronomètre et minuteur, tout-en-un',
+    noteName:'Notes', noteDesc:'Notes rapides, listes de tâches, épinglez vos notes importantes',
+    btnAndroid:'Télécharger Android', btnIos:'Version web iPhone', howTo:'Mode d\'emploi',
+    androidNote:'Appuyez sur « Télécharger Android » pour obtenir l\'installateur (.apk). Lors de la première installation, autorisez « Installer des apps inconnues » dans les réglages système (souvent proposé automatiquement), puis ouvrez le fichier pour terminer l\'installation.',
+    iosNoteTitle:'🍎 Ajouter à l\'écran d\'accueil sur iPhone',
+    iosStep1:'Ouvrez le lien « Version web iPhone » avec <b>Safari</b> (obligatoire, les autres navigateurs ne permettent pas cet ajout)',
+    iosStep2:'Appuyez sur le <b>bouton Partager</b> au centre de la barre du bas (un carré avec une flèche)',
+    iosStep3:'Trouvez et appuyez sur <b>« Sur l\'écran d\'accueil »</b> dans le menu',
+    iosStep4:'Appuyez sur <b>« Ajouter »</b> en haut à droite pour confirmer',
+    iosNoteBody:'Une fois ajoutée, une icône indépendante apparaît sur votre écran d\'accueil. En l\'ouvrant, vous aurez l\'impression d\'une app normalement installée : plein écran, sans barre d\'adresse.' },
+  'de': { flag:'🇩🇪', name:'Deutsch', dir:'ltr',
+    title:'App-Downloadcenter', subtitle:'Android: Installationsdatei direkt herunterladen. iPhone: Web-Version in Safari öffnen und zum Home-Bildschirm hinzufügen, um sie wie eine App zu nutzen.',
+    calcName:'Rechner', calcDesc:'Ein übersichtlicher Alltagsrechner mit wissenschaftlichem Modus',
+    wxName:'Wetter', wxDesc:'Echtzeit-Wetter, 24-Stunden- und 7-Tage-Vorhersage, mehrere Städte',
+    clkName:'Uhr', clkDesc:'Weltuhr, Wecker, Stoppuhr und Timer, alles in einem',
+    noteName:'Notizen', noteDesc:'Schnelle Notizen, Checklisten, wichtige Notizen anheften',
+    btnAndroid:'Android-Download', btnIos:'iPhone-Webversion', howTo:'Anleitung',
+    androidNote:'Tippen Sie auf „Android-Download", um die Installationsdatei (.apk) zu erhalten. Bei der ersten Installation müssen Sie „Unbekannte Apps installieren" in den Systemeinstellungen erlauben (viele Telefone fragen automatisch danach), dann die Datei öffnen, um die Installation abzuschließen.',
+    iosNoteTitle:'🍎 Zum Home-Bildschirm hinzufügen (iPhone)',
+    iosStep1:'Öffnen Sie den Link „iPhone-Webversion" in <b>Safari</b> (nur Safari erlaubt das Hinzufügen zum Home-Bildschirm)',
+    iosStep2:'Tippen Sie auf das <b>Teilen-Symbol</b> in der Mitte der unteren Werkzeugleiste (Quadrat mit Pfeil)',
+    iosStep3:'Suchen und tippen Sie im Menü auf <b>„Zum Home-Bildschirm"</b>',
+    iosStep4:'Tippen Sie oben rechts auf <b>„Hinzufügen"</b>, um zu bestätigen',
+    iosNoteBody:'Nach dem Hinzufügen erscheint ein eigenständiges Symbol auf Ihrem Home-Bildschirm. Beim Öffnen fühlt es sich wie eine normal installierte App an: Vollbild, keine Adressleiste.' },
+  'ru': { flag:'🇷🇺', name:'Русский', dir:'ltr',
+    title:'Центр загрузки приложений', subtitle:'Android: скачайте установочный файл напрямую. iPhone: откройте веб-версию в Safari и добавьте на главный экран, чтобы использовать как приложение.',
+    calcName:'Калькулятор', calcDesc:'Простой и удобный калькулятор с научным режимом',
+    wxName:'Погода', wxDesc:'Погода в реальном времени, прогноз на 24 часа и 7 дней, несколько городов',
+    clkName:'Часы', clkDesc:'Мировые часы, будильник, секундомер и таймер — всё в одном',
+    noteName:'Заметки', noteDesc:'Быстрые заметки, списки дел, закрепление важных заметок',
+    btnAndroid:'Скачать для Android', btnIos:'Веб-версия для iPhone', howTo:'Инструкция',
+    androidNote:'Нажмите «Скачать для Android», чтобы получить установочный файл (.apk). При первой установке нужно разрешить «Установку из неизвестных источников» в настройках системы (многие телефоны предложат это автоматически), затем откройте файл для завершения установки.',
+    iosNoteTitle:'🍎 Добавление на главный экран iPhone',
+    iosStep1:'Откройте ссылку «Веб-версия для iPhone» в <b>Safari</b> (только Safari позволяет добавить на главный экран)',
+    iosStep2:'Нажмите кнопку <b>«Поделиться»</b> в центре нижней панели (квадрат со стрелкой)',
+    iosStep3:'Найдите и нажмите <b>«На экран «Домой»»</b> в открывшемся меню',
+    iosStep4:'Нажмите <b>«Добавить»</b> в правом верхнем углу для подтверждения',
+    iosNoteBody:'После добавления на главном экране появится отдельный значок. При открытии это будет выглядеть как обычное установленное приложение: во весь экран, без адресной строки браузера.' },
+  'ar': { flag:'🇸🇦', name:'العربية', dir:'rtl',
+    title:'مركز تنزيل التطبيقات', subtitle:'أندرويد: نزّل ملف التثبيت مباشرة. آيفون: افتح النسخة الإلكترونية في Safari وأضفها إلى الشاشة الرئيسية لاستخدامها كتطبيق.',
+    calcName:'الآلة الحاسبة', calcDesc:'آلة حاسبة يومية بسيطة وسهلة الاستخدام مع وضع علمي',
+    wxName:'الطقس', wxDesc:'طقس مباشر، توقعات 24 ساعة و7 أيام، عدة مدن',
+    clkName:'الساعة', clkDesc:'ساعة عالمية، منبه، ساعة إيقاف، ومؤقت في تطبيق واحد',
+    noteName:'الملاحظات', noteDesc:'ملاحظات سريعة، قوائم مهام، تثبيت الملاحظات المهمة',
+    btnAndroid:'تنزيل أندرويد', btnIos:'نسخة آيفون الإلكترونية', howTo:'طريقة الاستخدام',
+    androidNote:'اضغط على "تنزيل أندرويد" للحصول على ملف التثبيت (.apk). عند التثبيت الأول ستحتاج للسماح بـ"تثبيت التطبيقات من مصادر غير معروفة" من إعدادات النظام (تقترح الكثير من الهواتف ذلك تلقائيًا)، ثم افتح الملف لإكمال التثبيت.',
+    iosNoteTitle:'🍎 الإضافة إلى الشاشة الرئيسية في آيفون',
+    iosStep1:'افتح رابط "نسخة آيفون الإلكترونية" باستخدام <b>Safari</b> (يجب استخدام Safari فقط)',
+    iosStep2:'اضغط على <b>زر المشاركة</b> في منتصف الشريط السفلي (مربع بسهم)',
+    iosStep3:'ابحث عن <b>"إضافة إلى الشاشة الرئيسية"</b> واضغط عليه من القائمة',
+    iosStep4:'اضغط على <b>"إضافة"</b> أعلى اليمين للتأكيد',
+    iosNoteBody:'بعد الإضافة، سيظهر أيقونة مستقلة على شاشتك الرئيسية. عند فتحها ستشعر وكأنها تطبيق مثبت عادي: ملء الشاشة، بدون شريط عنوان.' },
+  'pt': { flag:'🇧🇷', name:'Português', dir:'ltr',
+    title:'Central de downloads', subtitle:'Android: baixe o instalador diretamente. iPhone: abra a versão web no Safari e adicione à tela de início para usar como um app.',
+    calcName:'Calculadora', calcDesc:'Uma calculadora simples e prática com modo científico',
+    wxName:'Clima', wxDesc:'Clima em tempo real, previsão de 24 horas e 7 dias, várias cidades',
+    clkName:'Relógio', clkDesc:'Relógio mundial, alarme, cronômetro e temporizador, tudo em um',
+    noteName:'Notas', noteDesc:'Notas rápidas, listas de tarefas, fixe suas notas importantes',
+    btnAndroid:'Baixar Android', btnIos:'Versão web iPhone', howTo:'Como usar',
+    androidNote:'Toque em "Baixar Android" para obter o instalador (.apk). Na primeira instalação será preciso permitir "Instalar apps desconhecidos" nas configurações do sistema (muitos aparelhos sugerem isso automaticamente), depois abra o arquivo para concluir a instalação.',
+    iosNoteTitle:'🍎 Adicionar à tela de início no iPhone',
+    iosStep1:'Abra o link "Versão web iPhone" no <b>Safari</b> (precisa ser o Safari, outros navegadores não permitem)',
+    iosStep2:'Toque no <b>botão Compartilhar</b> no meio da barra inferior (quadrado com seta)',
+    iosStep3:'Encontre e toque em <b>"Adicionar à Tela de Início"</b> no menu',
+    iosStep4:'Toque em <b>"Adicionar"</b> no canto superior direito para confirmar',
+    iosNoteBody:'Depois de adicionado, um ícone independente aparecerá na sua tela de início. Ao abri-lo, será como um app instalado normalmente: tela cheia, sem barra de endereço.' },
+  'hi': { flag:'🇮🇳', name:'हिन्दी', dir:'ltr',
+    title:'ऐप डाउनलोड सेंटर', subtitle:'Android: इंस्टॉलर सीधे डाउनलोड करें। iPhone: Safari में वेब वर्शन खोलें और होम स्क्रीन पर जोड़कर ऐप की तरह इस्तेमाल करें।',
+    calcName:'कैलकुलेटर', calcDesc:'वैज्ञानिक मोड के साथ आसान रोज़मर्रा का कैलकुलेटर',
+    wxName:'मौसम', wxDesc:'रीयल-टाइम मौसम, 24 घंटे और 7 दिन का पूर्वानुमान, कई शहर',
+    clkName:'घड़ी', clkDesc:'वर्ल्ड क्लॉक, अलार्म, स्टॉपवॉच और टाइमर, सब एक साथ',
+    noteName:'नोट्स', noteDesc:'त्वरित नोट्स, चेकलिस्ट, ज़रूरी नोट्स पिन करें',
+    btnAndroid:'Android डाउनलोड', btnIos:'iPhone वेब वर्शन', howTo:'उपयोग विधि',
+    androidNote:'इंस्टॉलर (.apk फ़ाइल) पाने के लिए "Android डाउनलोड" पर टैप करें। पहली बार इंस्टॉल करते समय सिस्टम सेटिंग्स में "अज्ञात ऐप्स इंस्टॉल करें" की अनुमति देनी होगी (कई फ़ोन यह अपने आप पूछते हैं), फिर फ़ाइल खोलकर इंस्टॉल पूरा करें।',
+    iosNoteTitle:'🍎 iPhone पर होम स्क्रीन पर जोड़ें',
+    iosStep1:'<b>Safari</b> में "iPhone वेब वर्शन" लिंक खोलें (केवल Safari से ही होम स्क्रीन पर जोड़ा जा सकता है)',
+    iosStep2:'नीचे टूलबार के बीच में <b>शेयर बटन</b> पर टैप करें (तीर वाला बॉक्स आइकन)',
+    iosStep3:'मेनू में <b>"होम स्क्रीन पर जोड़ें"</b> खोजें और टैप करें',
+    iosStep4:'पुष्टि के लिए ऊपर दाईं ओर <b>"जोड़ें"</b> पर टैप करें',
+    iosNoteBody:'जोड़ने के बाद, आपकी होम स्क्रीन पर एक स्वतंत्र आइकन दिखाई देगा। इसे खोलने पर यह सामान्य रूप से इंस्टॉल किए गए ऐप जैसा लगेगा: फुल स्क्रीन, बिना एड्रेस बार के।' },
+  'ur': { flag:'🇵🇰', name:'اردو', dir:'rtl',
+    title:'ایپ ڈاؤن لوڈ سینٹر', subtitle:'اینڈرائیڈ: انسٹالر براہ راست ڈاؤن لوڈ کریں۔ آئی فون: Safari میں ویب ورژن کھولیں اور ہوم اسکرین پر شامل کر کے ایپ کی طرح استعمال کریں۔',
+    calcName:'کیلکولیٹر', calcDesc:'سائنسی موڈ کے ساتھ آسان روزمرہ کیلکولیٹر',
+    wxName:'موسم', wxDesc:'حقیقی وقت کا موسم، 24 گھنٹے اور 7 دن کی پیشگوئی، متعدد شہر',
+    clkName:'گھڑی', clkDesc:'ورلڈ کلاک، الارم، اسٹاپ واچ اور ٹائمر، سب ایک ساتھ',
+    noteName:'نوٹس', noteDesc:'فوری نوٹس، چیک لسٹ، اہم نوٹس پن کریں',
+    btnAndroid:'اینڈرائیڈ ڈاؤن لوڈ', btnIos:'آئی فون ویب ورژن', howTo:'استعمال کا طریقہ',
+    androidNote:'انسٹالر (.apk فائل) حاصل کرنے کے لیے "اینڈرائیڈ ڈاؤن لوڈ" پر ٹیپ کریں۔ پہلی بار انسٹال کرتے وقت سسٹم سیٹنگز میں "نامعلوم ایپس انسٹال کریں" کی اجازت دینا ہوگی، پھر فائل کھول کر انسٹالیشن مکمل کریں۔',
+    iosNoteTitle:'🍎 آئی فون پر ہوم اسکرین میں شامل کریں',
+    iosStep1:'<b>Safari</b> میں "آئی فون ویب ورژن" لنک کھولیں (صرف Safari سے ہی ہوم اسکرین میں شامل کیا جا سکتا ہے)',
+    iosStep2:'نیچے ٹول بار کے وسط میں <b>شیئر بٹن</b> پر ٹیپ کریں',
+    iosStep3:'مینو میں <b>"ہوم اسکرین میں شامل کریں"</b> تلاش کر کے ٹیپ کریں',
+    iosStep4:'تصدیق کے لیے اوپر دائیں طرف <b>"شامل کریں"</b> پر ٹیپ کریں',
+    iosNoteBody:'شامل کرنے کے بعد، آپ کی ہوم اسکرین پر ایک آزاد آئیکن نظر آئے گا۔ اسے کھولنے پر یہ عام طور پر انسٹال شدہ ایپ جیسا محسوس ہوگا: فل اسکرین، ایڈریس بار کے بغیر۔' },
+  'bn': { flag:'🇧🇩', name:'বাংলা', dir:'ltr',
+    title:'অ্যাপ ডাউনলোড কেন্দ্র', subtitle:'Android: ইনস্টলার সরাসরি ডাউনলোড করুন। iPhone: Safari-তে ওয়েব ভার্সন খুলে হোম স্ক্রিনে যোগ করে অ্যাপের মতো ব্যবহার করুন।',
+    calcName:'ক্যালকুলেটর', calcDesc:'সায়েন্টিফিক মোড সহ সহজ দৈনন্দিন ক্যালকুলেটর',
+    wxName:'আবহাওয়া', wxDesc:'রিয়েল-টাইম আবহাওয়া, ২৪ ঘণ্টা ও ৭ দিনের পূর্বাভাস, একাধিক শহর',
+    clkName:'ঘড়ি', clkDesc:'ওয়ার্ল্ড ক্লক, অ্যালার্ম, স্টপওয়াচ ও টাইমার, সব একসাথে',
+    noteName:'নোটস', noteDesc:'দ্রুত নোট, চেকলিস্ট, গুরুত্বপূর্ণ নোট পিন করুন',
+    btnAndroid:'Android ডাউনলোড', btnIos:'iPhone ওয়েব ভার্সন', howTo:'ব্যবহার পদ্ধতি',
+    androidNote:'ইনস্টলার (.apk ফাইল) পেতে "Android ডাউনলোড"-এ ট্যাপ করুন। প্রথমবার ইনস্টল করার সময় সিস্টেম সেটিংসে "অজানা অ্যাপ ইনস্টল" অনুমতি দিতে হবে, তারপর ফাইলটি খুলে ইনস্টলেশন সম্পূর্ণ করুন।',
+    iosNoteTitle:'🍎 iPhone-এ হোম স্ক্রিনে যোগ করুন',
+    iosStep1:'<b>Safari</b>-তে "iPhone ওয়েব ভার্সন" লিংকটি খুলুন (শুধু Safari দিয়েই হোম স্ক্রিনে যোগ করা যায়)',
+    iosStep2:'নিচের টুলবারের মাঝখানে <b>শেয়ার বাটনে</b> ট্যাপ করুন',
+    iosStep3:'মেনুতে <b>"হোম স্ক্রিনে যোগ করুন"</b> খুঁজে ট্যাপ করুন',
+    iosStep4:'নিশ্চিত করতে উপরের ডানদিকে <b>"যোগ করুন"</b>-এ ট্যাপ করুন',
+    iosNoteBody:'যোগ করার পর, আপনার হোম স্ক্রিনে একটি স্বতন্ত্র আইকন দেখা যাবে। এটি খুললে সাধারণভাবে ইনস্টল করা অ্যাপের মতোই লাগবে: ফুল স্ক্রিন, অ্যাড্রেস বার ছাড়া।' },
+  'ja': { flag:'🇯🇵', name:'日本語', dir:'ltr',
+    title:'アプリダウンロードセンター', subtitle:'Android：インストーラーを直接ダウンロード。iPhone：Safariでウェブ版を開き、ホーム画面に追加するとアプリのように使えます。',
+    calcName:'電卓', calcDesc:'関数電卓モードも使えるシンプルで便利な電卓',
+    wxName:'天気', wxDesc:'リアルタイム天気、24時間・7日間予報、複数都市対応',
+    clkName:'時計', clkDesc:'世界時計・アラーム・ストップウォッチ・タイマーが全部入り',
+    noteName:'メモ', noteDesc:'さっとメモ、チェックリスト、重要なメモをピン留め',
+    btnAndroid:'Androidダウンロード', btnIos:'iPhoneウェブ版', howTo:'使い方',
+    androidNote:'「Androidダウンロード」をタップしてインストーラー（.apkファイル）を取得します。初回インストール時はシステム設定で「不明なアプリのインストール」を許可する必要があります（多くの端末は自動で表示されます）。その後ファイルを開いてインストールを完了してください。',
+    iosNoteTitle:'🍎 iPhoneでホーム画面に追加',
+    iosStep1:'<b>Safari</b>で「iPhoneウェブ版」のリンクを開く（Safari以外のブラウザではホーム画面に追加できません）',
+    iosStep2:'下部ツールバー中央の<b>共有ボタン</b>（四角に矢印のアイコン）をタップ',
+    iosStep3:'表示されたメニューから<b>「ホーム画面に追加」</b>を探してタップ',
+    iosStep4:'右上の<b>「追加」</b>をタップして確定',
+    iosNoteBody:'追加が完了すると、ホーム画面に独立したアイコンが表示されます。開くと通常インストールしたアプリと同じように、フルスクリーンでアドレスバーなしで表示されます。' },
+  'ko': { flag:'🇰🇷', name:'한국어', dir:'ltr',
+    title:'앱 다운로드 센터', subtitle:'Android: 설치 파일을 바로 다운로드하세요. iPhone: Safari에서 웹 버전을 열고 홈 화면에 추가하면 앱처럼 사용할 수 있습니다.',
+    calcName:'계산기', calcDesc:'공학용 모드를 지원하는 깔끔하고 간편한 계산기',
+    wxName:'날씨', wxDesc:'실시간 날씨, 24시간 및 7일 예보, 여러 도시 지원',
+    clkName:'시계', clkDesc:'세계시계, 알람, 스톱워치, 타이머까지 모두 한 번에',
+    noteName:'메모', noteDesc:'빠른 메모, 체크리스트, 중요한 메모 고정',
+    btnAndroid:'Android 다운로드', btnIos:'iPhone 웹 버전', howTo:'사용 방법',
+    androidNote:'"Android 다운로드"를 눌러 설치 파일(.apk)을 받으세요. 처음 설치할 때는 시스템 설정에서 "알 수 없는 앱 설치"를 허용해야 합니다(많은 기기가 자동으로 안내합니다). 이후 파일을 열어 설치를 완료하세요.',
+    iosNoteTitle:'🍎 iPhone 홈 화면에 추가하기',
+    iosStep1:'<b>Safari</b>에서 "iPhone 웹 버전" 링크를 여세요 (Safari에서만 홈 화면 추가가 가능합니다)',
+    iosStep2:'하단 도구 모음 가운데의 <b>공유 버튼</b>(화살표가 있는 사각형)을 누르세요',
+    iosStep3:'메뉴에서 <b>"홈 화면에 추가"</b>를 찾아 누르세요',
+    iosStep4:'오른쪽 상단의 <b>"추가"</b>를 눌러 확인하세요',
+    iosNoteBody:'추가가 완료되면 홈 화면에 독립된 아이콘이 나타납니다. 열어보면 일반적으로 설치된 앱처럼 전체 화면으로 표시되고 주소창이 없습니다.' },
+  'tr': { flag:'🇹🇷', name:'Türkçe', dir:'ltr',
+    title:'Uygulama İndirme Merkezi', subtitle:'Android: yükleyiciyi doğrudan indirin. iPhone: web sürümünü Safari\'de açın ve bir uygulama gibi kullanmak için Ana Ekran\'a ekleyin.',
+    calcName:'Hesap Makinesi', calcDesc:'Bilimsel modu olan sade ve kullanışlı bir hesap makinesi',
+    wxName:'Hava Durumu', wxDesc:'Gerçek zamanlı hava durumu, 24 saatlik ve 7 günlük tahmin, birden çok şehir',
+    clkName:'Saat', clkDesc:'Dünya saati, alarm, kronometre ve zamanlayıcı bir arada',
+    noteName:'Notlar', noteDesc:'Hızlı notlar, yapılacaklar listesi, önemli notları sabitleyin',
+    btnAndroid:'Android İndir', btnIos:'iPhone Web Sürümü', howTo:'Nasıl Kullanılır',
+    androidNote:'Yükleyiciyi (.apk dosyası) almak için "Android İndir"e dokunun. İlk kurulumda sistem ayarlarından "Bilinmeyen uygulamaları yükle"ye izin vermeniz gerekir (birçok telefon bunu otomatik önerir), ardından dosyayı açarak kurulumu tamamlayın.',
+    iosNoteTitle:'🍎 iPhone\'da Ana Ekrana Ekleme',
+    iosStep1:'"iPhone Web Sürümü" bağlantısını <b>Safari</b>\'de açın (yalnızca Safari Ana Ekrana eklemeye izin verir)',
+    iosStep2:'Alt araç çubuğunun ortasındaki <b>Paylaş düğmesine</b> dokunun (oklu kare simge)',
+    iosStep3:'Açılan menüde <b>"Ana Ekrana Ekle"</b>yi bulup dokunun',
+    iosStep4:'Onaylamak için sağ üstteki <b>"Ekle"</b>ye dokunun',
+    iosNoteBody:'Eklendikten sonra Ana Ekranınızda bağımsız bir simge görünür. Açtığınızda normal şekilde yüklenmiş bir uygulama gibi hissettirir: tam ekran, adres çubuğu yok.' },
+  'nl': { flag:'🇳🇱', name:'Nederlands', dir:'ltr',
+    title:'App-downloadcentrum', subtitle:'Android: download het installatiebestand direct. iPhone: open de webversie in Safari en zet deze op je beginscherm om als app te gebruiken.',
+    calcName:'Rekenmachine', calcDesc:'Een overzichtelijke rekenmachine voor dagelijks gebruik met wetenschappelijke modus',
+    wxName:'Weer', wxDesc:'Actueel weer, 24-uurs- en 7-daagse voorspelling, meerdere steden',
+    clkName:'Klok', clkDesc:'Wereldklok, wekker, stopwatch en timer, allemaal in één',
+    noteName:'Notities', noteDesc:'Snelle notities, checklists, belangrijke notities vastzetten',
+    btnAndroid:'Android downloaden', btnIos:'iPhone webversie', howTo:'Gebruiksaanwijzing',
+    androidNote:'Tik op "Android downloaden" om het installatiebestand (.apk) te krijgen. Bij de eerste installatie moet je "Onbekende apps installeren" toestaan in de systeeminstellingen (veel telefoons stellen dit automatisch voor), open daarna het bestand om de installatie te voltooien.',
+    iosNoteTitle:'🍎 Toevoegen aan beginscherm op iPhone',
+    iosStep1:'Open de link "iPhone webversie" in <b>Safari</b> (alleen Safari kan toevoegen aan het beginscherm)',
+    iosStep2:'Tik op de <b>deelknop</b> in het midden van de onderste werkbalk (vierkant met pijl)',
+    iosStep3:'Zoek en tik op <b>"Zet op beginscherm"</b> in het menu',
+    iosStep4:'Tik rechtsboven op <b>"Voeg toe"</b> om te bevestigen',
+    iosNoteBody:'Na het toevoegen verschijnt er een zelfstandig icoon op je beginscherm. Als je het opent, voelt het als een normaal geïnstalleerde app: volledig scherm, geen adresbalk.' },
+  'no': { flag:'🇳🇴', name:'Norsk', dir:'ltr',
+    title:'Nedlastingssenter for apper', subtitle:'Android: last ned installasjonsfilen direkte. iPhone: åpne nettversjonen i Safari og legg til på hjemskjermen for å bruke den som en app.',
+    calcName:'Kalkulator', calcDesc:'En enkel og oversiktlig kalkulator med vitenskapelig modus',
+    wxName:'Vær', wxDesc:'Sanntidsvær, 24-timers og 7-dagers varsel, flere byer',
+    clkName:'Klokke', clkDesc:'Verdensklokke, alarm, stoppeklokke og tidtaker, alt i ett',
+    noteName:'Notater', noteDesc:'Raske notater, sjekklister, fest viktige notater',
+    btnAndroid:'Last ned Android', btnIos:'iPhone-nettversjon', howTo:'Bruksanvisning',
+    androidNote:'Trykk på «Last ned Android» for å få installasjonsfilen (.apk). Ved første installasjon må du tillate «Installer ukjente apper» i systeminnstillingene (mange telefoner foreslår dette automatisk), åpne deretter filen for å fullføre installasjonen.',
+    iosNoteTitle:'🍎 Legg til på hjemskjermen på iPhone',
+    iosStep1:'Åpne lenken «iPhone-nettversjon» i <b>Safari</b> (kun Safari kan legge til på hjemskjermen)',
+    iosStep2:'Trykk på <b>Del-knappen</b> midt på den nedre verktøylinjen (firkant med pil)',
+    iosStep3:'Finn og trykk på <b>«Legg til på Hjem-skjerm»</b> i menyen',
+    iosStep4:'Trykk på <b>«Legg til»</b> øverst til høyre for å bekrefte',
+    iosNoteBody:'Etter tillegg vises et eget ikon på hjemskjermen din. Når du åpner det, føles det som en vanlig installert app: full skjerm, ingen adresselinje.' },
+  'da': { flag:'🇩🇰', name:'Dansk', dir:'ltr',
+    title:'App-downloadcenter', subtitle:'Android: download installationsfilen direkte. iPhone: åbn webversionen i Safari, og føj den til hjemmeskærmen for at bruge den som en app.',
+    calcName:'Lommeregner', calcDesc:'En enkel og overskuelig lommeregner med videnskabelig tilstand',
+    wxName:'Vejr', wxDesc:'Vejr i realtid, 24-timers og 7-dages prognose, flere byer',
+    clkName:'Ur', clkDesc:'Verdensur, alarm, stopur og timer, alt i ét',
+    noteName:'Noter', noteDesc:'Hurtige noter, tjeklister, fastgør vigtige noter',
+    btnAndroid:'Download Android', btnIos:'iPhone-webversion', howTo:'Sådan bruges det',
+    androidNote:'Tryk på "Download Android" for at hente installationsfilen (.apk). Ved første installation skal du tillade "Installer ukendte apps" i systemindstillingerne (mange telefoner foreslår dette automatisk), åbn derefter filen for at fuldføre installationen.',
+    iosNoteTitle:'🍎 Føj til hjemmeskærm på iPhone',
+    iosStep1:'Åbn linket "iPhone-webversion" i <b>Safari</b> (kun Safari kan føje til hjemmeskærmen)',
+    iosStep2:'Tryk på <b>Del-knappen</b> midt i den nederste værktøjslinje (firkant med pil)',
+    iosStep3:'Find og tryk på <b>"Føj til hjemmeskærm"</b> i menuen',
+    iosStep4:'Tryk på <b>"Føj til"</b> øverst til højre for at bekræfte',
+    iosNoteBody:'Når den er tilføjet, vises et selvstændigt ikon på din hjemmeskærm. Når du åbner det, føles det som en normalt installeret app: fuld skærm, ingen adresselinje.' }
+};
+
+var curDlLang = localStorage.getItem('dlLang') || (function(){
+  var nav = (navigator.language || 'zh-CN');
+  if (DL_LANGS[nav]) return nav;
+  var base = nav.split('-')[0];
+  var match = Object.keys(DL_LANGS).find(function(k){ return k.split('-')[0] === base; });
+  return match || 'en';
+})();
+
+function t(key){ return (DL_LANGS[curDlLang] && DL_LANGS[curDlLang][key]) || DL_LANGS['en'][key] || key; }
+
+function applyDlLang(){
+  var L = DL_LANGS[curDlLang];
+  document.documentElement.lang = curDlLang;
+  document.documentElement.dir = L.dir;
+  document.getElementById('curFlag').textContent = L.flag;
+  document.getElementById('curLangName').textContent = L.name;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    el.innerHTML = t(key);
+  });
+}
+
+function pickDlLang(code){
+  curDlLang = code;
+  localStorage.setItem('dlLang', code);
+  applyDlLang();
+  buildLangPanel();
+  toggleLangSheet(false);
+}
+
+function buildLangPanel(){
+  var panel = document.getElementById('langPanel');
+  panel.innerHTML = Object.keys(DL_LANGS).map(function(code){
+    var L = DL_LANGS[code];
+    var cur = code === curDlLang;
+    return '<div class="lang-item' + (cur ? ' cur' : '') + '" onclick="pickDlLang(\'' + code + '\')">' +
+      '<span class="flag">' + L.flag + '</span><span>' + L.name + '</span>' +
+      (cur ? '<span style="margin-left:auto;">✓</span>' : '') +
+      '</div>';
+  }).join('');
+}
+
+function toggleLangSheet(open){
+  document.getElementById('langSheet').classList.toggle('on', open);
+}
+
+buildLangPanel();
+applyDlLang();
+</script>
 </body>
 </html>
