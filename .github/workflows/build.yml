@@ -27,13 +27,23 @@ jobs:
         cd app
         cordova platform add android
         sed -i 's|</widget>|    <preference name="android-windowSoftInputMode" value="adjustResize"/>\n    <preference name="Orientation" value="portrait"/>\n    <icon src="res/icon.png"/>\n</widget>|' config.xml
-        mkdir -p platforms/android/app/src/main/res/mipmap-anydpi-v26
-        mkdir -p platforms/android/app/src/main/res/drawable
-        mkdir -p platforms/android/app/src/main/res/drawable-nodpi
-        printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">' '    <background android:drawable="@drawable/ic_launcher_background"/>' '    <foreground android:drawable="@drawable/ic_launcher_foreground"/>' '</adaptive-icon>' > platforms/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-        cp platforms/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml platforms/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-        printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="#1c1c1e"/></shape>' > platforms/android/app/src/main/res/drawable/ic_launcher_background.xml
-        cp ../icon-foreground.png platforms/android/app/src/main/res/drawable-nodpi/ic_launcher_foreground.png
+        mkdir -p hooks/after_prepare
+        cp ../icon-foreground.png res/icon-foreground.png
+        printf '%s\n' \
+          '#!/usr/bin/env node' \
+          'const fs=require("fs"),path=require("path");' \
+          'const resDir=path.join(__dirname,"..","..","platforms","android","app","src","main","res");' \
+          'fs.mkdirSync(path.join(resDir,"mipmap-anydpi-v26"),{recursive:true});' \
+          'fs.mkdirSync(path.join(resDir,"drawable"),{recursive:true});' \
+          'fs.mkdirSync(path.join(resDir,"drawable-nodpi"),{recursive:true});' \
+          'const xml="<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<adaptive-icon xmlns:android=\"http://schemas.android.com/apk/res/android\">\n  <background android:drawable=\"@drawable/ic_launcher_background\"/>\n  <foreground android:drawable=\"@drawable/ic_launcher_foreground\"/>\n</adaptive-icon>\n";' \
+          'fs.writeFileSync(path.join(resDir,"mipmap-anydpi-v26","ic_launcher.xml"),xml);' \
+          'fs.writeFileSync(path.join(resDir,"mipmap-anydpi-v26","ic_launcher_round.xml"),xml);' \
+          'fs.writeFileSync(path.join(resDir,"drawable","ic_launcher_background.xml"),"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<shape xmlns:android=\"http://schemas.android.com/apk/res/android\"><solid android:color=\"#1c1c1e\"/></shape>\n");' \
+          'fs.copyFileSync(path.join(__dirname,"..","..","res","icon-foreground.png"),path.join(resDir,"drawable-nodpi","ic_launcher_foreground.png"));' \
+          'console.log("[adaptive-icon hook] done");' \
+          > hooks/after_prepare/010_adaptive_icon.js
+        chmod +x hooks/after_prepare/010_adaptive_icon.js
         cordova build android
         find . -name "*.apk" -path "*debug*" -exec cp {} ../gc-calculator.apk \;
     - name: Find APK
