@@ -9816,11 +9816,9 @@ window.addEventListener('load',function(){
     }
     if(typeof window.offHide==='function'){window.offHide=function(){};}
     if(typeof window.toggleHideMode==='function'){window.toggleHideMode=function(){};}
-    // 计算器皮肤禁止退出登录，防止用户误操作
-    if(typeof window.doLogout==='function'){window.doLogout=function(){return false;};}
-    // 隐藏设置页的退出/注销按钮，以及伪装外壳选择里的其它三个选项（这个App只做计算器）
+    // 隐藏伪装外壳选择里的其它三个选项（这个App只做计算器）
     var _cStyle=document.createElement('style');
-    _cStyle.textContent='#set-logout,button[onclick*="doLogout"],#od-weat,#od-cloc,#od-note{display:none!important}';
+    _cStyle.textContent='#od-weat,#od-cloc,#od-note{display:none!important}';
     document.head.appendChild(_cStyle);
   }catch(e){}
 },false);
